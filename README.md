@@ -8,6 +8,9 @@ This plugin pack is for ManiaLive, the server controller made by NADEO for Mania
 
 ##Installation
 1) Download the latest stable release from the Downloads section
+
 2) Unpack the .zip-file into your ManiaLive directory
+
 3) Update the configfile to include the MLEPP plugins
+
 (more info to come ...)
