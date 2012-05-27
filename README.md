@@ -2,6 +2,8 @@
 
 This plugin pack is for ManiaLive, the server controller made by NADEO for ManiaPlanet.
 
+Tested with [ManiaLive](http://code.google.com/p/manialive/) r380
+
 ##Requirements
 - PHP 5.3 (for ManiaLive)
 - MySQL 4/5 (to store everything in the database)
