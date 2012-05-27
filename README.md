@@ -16,3 +16,10 @@ Tested with [ManiaLive](http://code.google.com/p/manialive/) r380
 3) Update the configfile to include the MLEPP plugins
 
 (more info to come ...)
+
+##To-do list
+- rewrite the Admin plugin
+- port JukeBox
+- update AddRemoveTracks to work with ShootMania MX
+- finish JoinLeaveMessage
+- (get Ranks working)

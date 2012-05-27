@@ -106,6 +106,7 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 			Console::println('['.date('H:i:s').'] Another 20 seconds, calculating ranks...');
 			foreach($this->storage->players as $player) {
 				$points = array_keys($this->ranks);
+				//$rankinfo = $this->connection->getCurrentRankingForLogin($player->login);
 				if($player->score == '') $player->score = 0;
 				if(isset($this->players[$player->login])) {
 					if($this->ranks[$this->closest($points, $player->score)] != $this->players[$player->login]['rank']) {
@@ -114,6 +115,7 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 				}
 				$this->players[$player->login] = array('score' => $player->score,
 													   'rank' => $this->ranks[$this->closest($points, $player->score)]);
+				//print_r($rankinfo);
 			}
 			print_r($this->players);
 			$this->timeBeforeCalc = 20;
