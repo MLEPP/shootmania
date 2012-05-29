@@ -20,6 +20,7 @@ Tested with [ManiaLive](http://code.google.com/p/manialive/) r380
 ##To-do list
 - port JukeBox
 - (get Ranks working)
+
 ##Done list
 - rewrite the Admin plugin
 - update AddRemoveTracks to work with ShootMania MX
