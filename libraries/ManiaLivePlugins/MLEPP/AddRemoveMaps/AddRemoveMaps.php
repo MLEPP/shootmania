@@ -112,7 +112,7 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
      */
     function addlocal($fromLogin, $param1 = NULL, $param2 = NULL, $param3 = NULL) {
         if (!AdminGroup::contains($fromLogin)) {
-			$this->connection->chatSendServerMessageToLogin('$fff»» $f00$iYou don\'t have the permission to do that!', $fromLogin);
+			$this->connection->chatSendServerMessageToLogin('$fff» $f00$iYou don\'t have the permission to do that!', $fromLogin);
             return;
         }
 
@@ -120,7 +120,7 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
         $login = $admin->login;
 
         if (!is_string($param1)) {
-			$this->connection->chatSendServerMessageToLogin('$fff»» $f00$i/admin add local takes a filename as a parameter.', $admin);
+			$this->connection->chatSendServerMessageToLogin('$fff» $f00$i/admin add local takes a filename as a parameter.', $admin);
             Console::println('[' . date('H:i:s') . '] [MLEPP] [AddRemoveMaps] [' . $admin->login . '] Missing parameter . . .');
             return;
         }
@@ -152,10 +152,10 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
                 Dispatcher::dispatch(new onTrackAdded($login, $eventTargetFile, $isTmx));
                 $this->callPublicMethod('MLEPP\Admin', 'saveMatchSettings', $fromLogin, NULL, NULL, true);
             } catch (\Exception $e) {
-				$this->connection->chatSendServerMessageToLogin('$fff»» $f00$i' . $e->getMessage(), $fromLogin);
+				$this->connection->chatSendServerMessageToLogin('$fff» $f00$i' . $e->getMessage(), $fromLogin);
             }
         } else {
-			$this->connection->chatSendServerMessageToLogin('$fff»» $f00$iFile $fff' . $param1 . '.' . $mapExtensions[0] . ' $f00$i at location $fff' . $challengeDir . ' $f00$idoesn\'t exist.', $admin);
+			$this->connection->chatSendServerMessageToLogin('$fff» $f00$iFile $fff' . $param1 . '.' . $mapExtensions[0] . ' $f00$i at location $fff' . $challengeDir . ' $f00$idoesn\'t exist.', $admin);
             Console::println('[' . date('H:i:s') . '] [MLEPP] [AddRemoveMaps] [' . $admin->login . '] Tried to add new local track :' . $param1 . ', but it doesn\'t exist.');
         }
     }
@@ -172,19 +172,19 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
         $loginObj = $this->storage->getPlayerObject($login);
 
         if (!AdminGroup::contains($login)) {
-            $this->connection->chatSendServerMessageToLogin('$fff»» $f00$iYou don\'t have the permission to do that!', $login);
+            $this->connection->chatSendServerMessageToLogin('$fff» $f00$iYou don\'t have the permission to do that!', $login);
             return;
         }
 
         if (!is_numeric($mxid)) {
-			$this->connection->chatSendServerMessageToLogin('$fff»» $f00$iYou have entered a non-numeric value for mx track. All mx tracks are numerical.', $login);
+			$this->connection->chatSendServerMessageToLogin('$fff» $f00$iYou have entered a non-numeric value for mx track. All mx tracks are numerical.', $login);
             Console::println('[' . date('H:i:s') . '] [MLEPP] [AddRemoveMaps] [' . $loginObj->login . '] Use of non-numeric value for TMX track.');
             return;
         }
 
         $trackinfo = $this->getDatas('http://' . self::$mxLocation . '/api/tracks/get_track_info/id/' . $mxid . '?format=json');
         if (is_int($trackinfo)) {
-			$this->connection->chatSendServerMessageToLogin('$fff»» $f00$iAdding track from MX failed with http error $fff' . $trackinfo . '$f00$i.', $login);
+			$this->connection->chatSendServerMessageToLogin('$fff» $f00$iAdding track from MX failed with http error $fff' . $trackinfo . '$f00$i.', $login);
             return;
         } else {
             $trackinfo = json_decode($trackinfo);
@@ -202,7 +202,7 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
 
             if (strlen($trackdata) >= 1024 * 1024) {
                 $size = round(strlen($trackdata) / 1024);
-				$this->connection->chatSendServerMessageToLogin('$fff»» $f00$iThe track you\'re trying to download is too large (' . $size . 'Kb > 1024 Kb).', $loginObj);
+				$this->connection->chatSendServerMessageToLogin('$fff» $f00$iThe track you\'re trying to download is too large (' . $size . 'Kb > 1024 Kb).', $loginObj);
                 Console::println('[' . date('H:i:s') . '] [MLEPP] [ManiaExchange] [' . $login . '] Trackfile is too large (' . $size . 'Kb > 1024 Kb).');
                 return;
             }
@@ -211,7 +211,7 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
             $eventTargetFile = "Maps/Downloaded/MX/" . $this->filterName($trackinfo->Name) . '-' . $mxid . '.Map.Gbx';
 
             if (file_put_contents($targetFile, $trackdata) === false) {
-				$this->connection->chatSendServerMessageToLogin('$fff»» $f00$iCouldn\'t write trackdata. Check directory & file permissions at dedicated tracks folder!', $loginObj);
+				$this->connection->chatSendServerMessageToLogin('$fff» $f00$iCouldn\'t write trackdata. Check directory & file permissions at dedicated tracks folder!', $loginObj);
                 Console::println('[' . date('H:i:s') . '] [MLEPP] [ManiaExchange] [' . $login . '] Trackdata couldn\'t been written. Check directory- and filepermissions!.');
                 return;
             }
@@ -219,7 +219,7 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
             $newChallenge = $this->connection->getMapInfo($targetFile);
             foreach ($this->storage->maps as $chal) {
                 if ($chal->uId == $newChallenge->uId) {
-					$this->connection->chatSendServerMessageToLogin('$fff»» $f00$iThe track you tried to add is already in serverlist.', $loginObj);
+					$this->connection->chatSendServerMessageToLogin('$fff» $f00$iThe track you tried to add is already in serverlist.', $loginObj);
                     Console::println('[' . date('H:i:s') . '] [MLEPP] [ManiaExchange] [' . $login . '] Track already in the tracklist.');
                     return;
                 }
@@ -232,11 +232,11 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
 
                 Console::println('[' . date('H:i:s') . '] [MLEPP] [ManiaExchange] [' . $login . '] Succesfully added track ' . $trackinfo->Name . '.');
             } catch (\Exception $e) {
-				$this->connection->chatSendServerMessageToLogin('$fff»» $f00$i' . $e->getMessage(), $login);
+				$this->connection->chatSendServerMessageToLogin('$fff» $f00$i' . $e->getMessage(), $login);
             }
         } else {
             // track unknown
-			$this->connection->chatSendServerMessageToLogin('$fff»» $f00$iThe track you\'re trying to download doesn\'t exist.', $loginObj);
+			$this->connection->chatSendServerMessageToLogin('$fff» $f00$iThe track you\'re trying to download doesn\'t exist.', $loginObj);
             Console::println('[' . date('H:i:s') . '] [MLEPP] [ManiaExchange] [' . $login . '] Unknown track.');
         }
     }
@@ -352,7 +352,7 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
 
 
         if (!is_file($challengeFile)) {
-			$this->connection->chatSendServerMessageToLogin('$fff»» $f00$iTarget trackfile not found in filesystem. Check, that you have entered correct track id!', $admin);
+			$this->connection->chatSendServerMessageToLogin('$fff» $f00$iTarget trackfile not found in filesystem. Check, that you have entered correct track id!', $admin);
             Console::println('[' . date('H:i:s') . '] [MLEPP] [AddRemoveMaps] [' . $admin->login . '] Target trackfile not found in filesystem.');
             return;
         }
@@ -398,7 +398,7 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
     function RemoveWindow($login, $overrideDir = NULL) {
 
         if (!AdminGroup::contains($login)) {
-            $this->connection->chatSendServerMessageToLogin('$fff»» $f00$iYou don\'t have the permission to do that!', $login);
+            $this->connection->chatSendServerMessageToLogin('$fff» $f00$iYou don\'t have the permission to do that!', $login);
             return;
         }
 
@@ -443,7 +443,7 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
 
     function addLocalWin($login, $overrideDir = false) {
         if (!AdminGroup::contains($login)) {
-            $this->connection->chatSendServerMessageToLogin('$fff»» $f00$iYou don\'t have the permission to do that!', $login);
+            $this->connection->chatSendServerMessageToLogin('$fff» $f00$iYou don\'t have the permission to do that!', $login);
             return;
         }
         $window = AddLocalWindow::Create($login);
@@ -540,7 +540,7 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
                 Dispatcher::dispatch(new onTrackRemoved($login, $eventTargetFile, false));
                 $this->callPublicMethod('MLEPP\Admin', 'saveMatchSettings', $login, NULL, NULL, true);
             } catch (\Exception $e) {
-				$this->connection->chatSendServerMessageToLogin('$fff»» $f00$i' . $e->getMessage(), $login);
+				$this->connection->chatSendServerMessageToLogin('$fff» $f00$i' . $e->getMessage(), $login);
             }
         }
         if (is_array($target) && $target[0] == "changeDir") {
@@ -560,7 +560,7 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
                 Dispatcher::dispatch(new onTrackAdded($login, $eventTargetFile, false));
                 $this->callPublicMethod('MLEPP\Admin', 'saveMatchSettings', $login, NULL, NULL, true);
             } catch (\Exception $e) {
-				$this->connection->chatSendServerMessageToLogin('$fff»» $f00$i' . $e->getMessage(), $login);
+				$this->connection->chatSendServerMessageToLogin('$fff» $f00$i' . $e->getMessage(), $login);
             }
         }
         if (is_array($target) && $target[0] == "changeDir") {
