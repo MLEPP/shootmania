@@ -84,7 +84,7 @@ class JoinLeaveMessage extends \ManiaLive\PluginHandler\Plugin {
 
 		$message = '$39f%title% $fff%nickname%$z$s%spec% $39f[$fff%country%$39f] [Ladder: $fff%ladderrank%$39f] [Rank: $fff%rank%$39f] has joined the server.';
 
-		$this->connection->chatSendServerMessageToLogin('$fff» $fa0Welcome $fff'.$player->nickName.'$z$s$fa0, this server is running $fffMLEPP for ShootMania$fa0!', $login);
+		$this->connection->chatSendServerMessage('$fff» $fa0Welcome $fff'.$player->nickName.'$z$s$fa0, this server is running $fffMLEPP for ShootMania$fa0!', $login);
 		$this->connection->chatSendServerMessage('$fff»» '.$this->controlMsg($message, $player));
 	}
 
