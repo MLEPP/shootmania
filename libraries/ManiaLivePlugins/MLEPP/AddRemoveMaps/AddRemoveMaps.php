@@ -182,7 +182,7 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
             return;
         }
 
-        $trackinfo = $this->getDatas('http://' . self::$mxLocation . '/api/tracks/get_track_info/id/' . $mxid . '?format=json');
+        $trackinfo = $this->getData('http://' . self::$mxLocation . '/api/tracks/get_track_info/id/' . $mxid . '?format=json');
         if (is_int($trackinfo)) {
 			$this->connection->chatSendServerMessageToLogin('$fff» $f00$iAdding track from MX failed with http error $fff' . $trackinfo . '$f00$i.', $login);
             return;
