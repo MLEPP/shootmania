@@ -1,6 +1,6 @@
 <?php
 
-namespace ManiaLivePlugins\MLEPP\AddRemoveTracks\Events;
+namespace ManiaLivePlugins\MLEPP\AddRemoveMaps\Events;
 
 class onTrackAdded extends \ManiaLive\Event\Event {
 	protected $login;

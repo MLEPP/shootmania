@@ -17,15 +17,15 @@ use ManiaLib\Gui\Elements\Quad;
 use ManiaLib\Gui\Elements\Button;
 use ManiaLib\Gui\Layouts\Flow;
 use ManiaLive\Data\Storage;
-use ManiaLive\Gui\Windowing\Controls\ButtonResizeable;
-use ManiaLive\Gui\Windowing\Windows\Info;
-use ManiaLive\Gui\Windowing\Controls\PageNavigator;
-use ManiaLive\Gui\Windowing\Controls\Panel;
-use ManiaLive\Gui\Windowing\Controls\Frame;
+use ManiaLive\Gui\Controls\ButtonResizeable;
+use ManiaLive\Gui\Windows\Info;
+use ManiaLive\Gui\Controls\PageNavigator;
+use ManiaLive\Gui\Controls\Panel;
+use ManiaLive\Gui\Controls\Frame;
 use ManiaLive\Utilities\Time;
 use ManiaLive\Utilities\Console;
 
-class SelectTracklistWindow extends \ManiaLive\Gui\Windowing\ManagedWindow
+class SelectTracklistWindow extends \ManiaLive\Gui\ManagedWindow
 {
 	//components ...
 	private $navigator;

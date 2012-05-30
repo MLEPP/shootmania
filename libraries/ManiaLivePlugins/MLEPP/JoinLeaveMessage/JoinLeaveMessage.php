@@ -82,7 +82,11 @@ class JoinLeaveMessage extends \ManiaLive\PluginHandler\Plugin {
 
 		Console::println('['.date('H:i:s').'] [MLEPP] [JoinLeaveMessage] '.$login.' joins the server.');
 
-		$message = '$39f%title% $fff%nickname%$z$s%spec% $39f[$fff%country%$39f] [Ladder: $fff%ladderrank%$39f] [Rank: $fff%rank%$39f] has joined the server.';
+		if($this->isPluginLoaded('MLEPP\Ranks')) {
+			$message = '$39f%title% $fff%nickname%$z$s%spec% $39f[$fff%country%$39f] [Ladder: $fff%ladderrank%$39f] [Rank: $fff%rank%$39f] has joined the server.';
+		} else {
+			$message = '$39f%title% $fff%nickname%$z$s%spec% $39f[$fff%country%$39f] [Ladder: $fff%ladderrank%$39f] has joined the server.';
+		}
 
 		$this->connection->chatSendServerMessage('$fff» $fa0Welcome $fff'.$player->nickName.'$z$s$fa0, this server is running $fffMLEPP for ShootMania$fa0!', $login);
 		$this->connection->chatSendServerMessage('$fff»» '.$this->controlMsg($message, $player));
@@ -143,9 +147,12 @@ class JoinLeaveMessage extends \ManiaLive\PluginHandler\Plugin {
 			$ladderrank = "n/a";
 		}
 
+		$message = $msg;
+
 		if($this->isPluginLoaded('MLEPP\Ranks')) {
 			$rankinfo = $this->callPublicMethod('MLEPP\Ranks', 'getRank', $player->login);
 			$rank = $rankinfo['rank'].' ('.$rankinfo['score'].')';
+			$message = str_replace('%rank%', $rank, $message);
 		}
 
 		if(AdminGroup::contains($player->login)) {
@@ -154,11 +161,9 @@ class JoinLeaveMessage extends \ManiaLive\PluginHandler\Plugin {
 			$title = 'Player';
 		}
 
-		$message = $msg;
 		$message = str_replace('%nickname%', $player->nickName, $message);
 		$message = str_replace('%title%', $title, $message);
 		$message = str_replace('%spec%', $spec, $message);
-		$message = str_replace('%rank%', $rank, $message);
 		$message = str_replace('%country%', $country, $message);
 		$message = str_replace('%ladderrank%', number_format((int)$ladderrank, 0, '', ' '), $message);
 
