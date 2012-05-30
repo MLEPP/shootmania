@@ -72,10 +72,10 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
      * @return void
      */
     function onLoad() {
-        Console::println('[' . date('H:i:s') . '] [MLEPP] Plugin: Add/Remove Maps r' . $this->getVersion());
+        Console::println('[' . date('H:i:s') . '] [MLEPP] Plugin: Add/Remove Maps v' . $this->getVersion());
         $this->config = Config::getInstance();
 
-        if ($this->isPluginLoaded('MLEPP\Admin', 251)) {
+        if ($this->isPluginLoaded('MLEPP\Admin')) {
             $this->callPublicMethod('MLEPP\Admin', 'addAdminCommand', array($this, 'addLocalWin'), array("add", "track", "local"), true, false, false);
             $this->callPublicMethod('MLEPP\Admin', 'addAdminCommand', array($this, 'RemoveWindow'), array("remove", "track"), true, false, false);
             $this->callPublicMethod('MLEPP\Admin', 'addAdminCommand', array($this, 'addmx'), array("add", "track", "mx"), true, false, false);
@@ -90,8 +90,8 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
      * 	
      */
     function onUnLoad() {
-        Console::println('[' . date('H:i:s') . '] [UNLOAD] Add/Remove Maps r' . $this->getVersion() . '');
-        if ($this->isPluginLoaded('MLEPP\Admin', 251)) {
+        Console::println('[' . date('H:i:s') . '] [UNLOAD] Add/Remove Maps v' . $this->getVersion() . '');
+        if ($this->isPluginLoaded('MLEPP\Admin')) {
             $this->callPublicMethod('MLEPP\Admin', 'removeAdminCommand', 'add', 'track', 'mx');   //remove full add mx command structure
             $this->callPublicMethod('MLEPP\Admin', 'removeAdminCommand', 'add', 'track', 'local');   //remove full add local command structure
             $this->callPublicMethod('MLEPP\Admin', 'removeAdminCommand', 'remove', 'track'); // remove full remove command structure

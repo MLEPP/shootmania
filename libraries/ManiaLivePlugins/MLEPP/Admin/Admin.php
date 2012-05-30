@@ -69,11 +69,6 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
         $this->setPublicMethod('getVersion');
         $this->setPublicMethod('addAdminCommand');
         $this->setPublicMethod('removeAdminCommand');
-
-        //Oliverde8 Menu
-        if ($this->isPluginLoaded('oliverde8\HudMenu')) {
-            Dispatcher::register(\ManiaLivePlugins\oliverde8\HudMenu\onOliverde8HudMenuReady::getClass(), $this);
-        }
     }
 
     /**
@@ -89,7 +84,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
         AdminWindow::$adminPlugin = $this;
         PlayersWindow::$adminPlugin = $this;
         
-        Console::println('[' . date('H:i:s') . '] [MLEPP] Plugin: Admin r' . $this->getVersion());
+        Console::println('[' . date('H:i:s') . '] [MLEPP] Plugin: Admin v' . $this->getVersion());
 
         $this->addAdminCommand(array($this, 'GetRulesScriptInfo'), array('get', 'rules', 'info'), false, false, false);
 		$this->addAdminCommand(array($this, 'GetRulesScriptParams'), array('get', 'rules', 'param'), false, false, false);
@@ -509,7 +504,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
         $player = $this->storage->getPlayerObject($fromLogin);
         if(!AdminGroup::contains($player->login)) {
 		$message = 'No Admin permissions';
-           $this->connection->chatSendServerMessage('$fff»»'. $message, $player);
+           $this->connection->chatSendServerMessage('$fffï¿½ï¿½'. $message, $player);
             return;
         }
         try {
@@ -534,7 +529,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
         $player = $this->storage->getPlayerObject($fromLogin);
         if(!AdminGroup::contains($player->login)) {
 		$message = 'No Admin permissions';
-           $this->connection->chatSendServerMessage('$fff»»'. $message, $player);
+           $this->connection->chatSendServerMessage('$fffï¿½ï¿½'. $message, $player);
             return;
         }
         try {
