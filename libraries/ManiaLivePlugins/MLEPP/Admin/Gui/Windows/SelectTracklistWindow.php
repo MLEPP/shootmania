@@ -72,9 +72,9 @@ class SelectTracklistWindow extends \ManiaLive\Gui\ManagedWindow
 		$this->addComponent($this->navigator);
 	}
 
-	function onResize()
+	function onResize($oldX, $oldY)
 	{
-		$this->table->setSize($this->getSizeX() - 4, $this->getSizeY() - 16);
+		//$this->table->setSize($this->getSizeX() - 4, $this->getSizeY() - 16);
 		$this->calculatePages();
 	}
 
@@ -173,8 +173,8 @@ class SelectTracklistWindow extends \ManiaLive\Gui\ManagedWindow
 
 	function calculatePages()
 	{
-		$this->page_items = floor( ($this->table->getSizeY()-12) / $this->item_height);
-		$this->page_last = ceil(count($this->records) * $this->item_height / max(1, $this->table->getSizeY()-12));
+		$this->page_items = floor( ($this->getSizeY()-12) / $this->item_height);
+		$this->page_last = ceil(count($this->records) * $this->item_height / max(1, $this->getSizeY()-12));
 	}
 
 	function addColumn($name, $percent)

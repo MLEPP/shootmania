@@ -38,6 +38,7 @@ namespace ManiaLivePlugins\MLEPP\Admin;
 
 use ManiaLib\Gui\Elements\Icons128x128_1;
 use ManiaLivePlugins\MLEPP\Admin\Gui\Windows\PlayersWindow;
+use ManiaLivePlugins\MLEPP\Admin\Gui\Windows\SelectTracklistWindow;
 use ManiaLivePlugins\MLEPP\Admin\Gui\Windows\AdminWindow;
 use ManiaLivePlugins\MLEPP\Admin\Gui\Windows\RulesInfo;
 use ManiaLivePlugins\MLEPP\Admin\Gui\Controls\Button;
@@ -57,6 +58,8 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
     private $AdminCommand = array();
 	private $descAdmin = "Provides admin commands. For more help see /admin";
 	private $descPlayers = "Shows all players on server with given id numbers for usage with other plugins.";
+	private $matchsettings;
+
     /**
      * onInit()
      * Function called on initialisation of ManiaLive.
@@ -88,6 +91,10 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 
         $this->addAdminCommand(array($this, 'GetRulesScriptInfo'), array('get', 'rules', 'info'), false, false, false);
 		$this->addAdminCommand(array($this, 'GetRulesScriptParams'), array('get', 'rules', 'param'), false, false, false);
+		$this->addAdminCommand(array($this, 'skip'), array('skip'), false, false, false);
+		$this->addAdminCommand(array($this, 'kick'), array('kick'), false, false, false);
+		$this->addAdminCommand(array($this, 'saveMatchSettings'), array('savematchsettings'), false, false, false);
+		$this->addAdminCommand(array($this, 'loadMatchSettings'), array('loadmatchsettings'), false, false, false);
     }
 
     function onUnLoad() {
@@ -105,7 +112,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
      * @return void
      */
     function onPlayerConnect($login, $isSpec) {
-	$player = $this->storage->getPlayerObject($login);
+		$player = $this->storage->getPlayerObject($login);
         if(AdminGroup::contains($player->login)) {
             $this->showAdminPanel($player->login);
             return;
@@ -202,13 +209,13 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
         $item->addCall(array($this, 'panelCommand'));
         $panel->addItem($item);
         //pluginmanager
-        $item = new Button("Icons64x64_1", "Browser", "pluginmanager");
+        /*$item = new Button("Icons64x64_1", "Browser", "pluginmanager");
         $item->addCall(array($this, 'panelCommand'));
-        $panel->addItem($item);
+        $panel->addItem($item);*/
         //list maps
-        $item = new Button("Icons64x64_1", "ToolRoot", "list");
+        /*$item = new Button("Icons64x64_1", "ToolRoot", "list");
         $item->addCall(array($this, 'panelCommand'));
-        $panel->addItem($item);
+        $panel->addItem($item);*/
         //players
         $item = new Button("Icons64x64_1", "Buddy", "players");
         $item->addCall(array($this, 'panelCommand'));
@@ -391,12 +398,11 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
      * @return
      */
     function admin($login, $param = NULL, $param1 = NULL, $param2 = NULL, $param3 = NULL, $param4 = NULL, $param5 = NULL) {
-	$player = $this->storage->getPlayerObject($login);
-        if(!AdminGroup::contains($player->login)) {
-		$message = 'No Admin permissions';
-           $this->connection->chatSendServerMessage('$fff'.$message, $player);
-            return;
-        }
+		$player = $this->storage->getPlayerObject($login);
+		if(!AdminGroup::contains($player->login)) {
+			$this->connection->chatSendServerMessage('$fff» $f00$iYou don\'t have the permission to do that!', $player);
+			return;
+		}
 
         if ($param == NULL || $param == 'help') {
             return;
@@ -492,7 +498,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
      * @return void
      */
     function adminParameterError($login, $number) {
-        $this->connection->chatSendServerMessage("Wrong number of parameters given. The admin command you entered takes %variable%$number %adminerror%of parameters!");
+        $this->connection->chatSendServerMessage('$f00$iWrong number of parameters given. The admin command you entered takes $fff'.$number.' $f00of parameters!');
         Console::println('[' . date('H:i:s') . '] [MLEPP] [AdminPanel] [' . $login . '] Wrong number of parameters given.');
     }
 
@@ -503,8 +509,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 	function GetRulesScriptParams($fromLogin, $param1 = NULL, $param2 = NULL, $param3 = NULL) {
         $player = $this->storage->getPlayerObject($fromLogin);
         if(!AdminGroup::contains($player->login)) {
-		$message = 'No Admin permissions';
-           $this->connection->chatSendServerMessage('$fff��'. $message, $player);
+        	$this->connection->chatSendServerMessage('$fff» $f00$iYou don\'t have the permission to do that!', $player);
             return;
         }
         try {
@@ -528,8 +533,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
     function GetRulesScriptInfo($fromLogin, $param1 = NULL, $param2 = NULL, $param3 = NULL) {
         $player = $this->storage->getPlayerObject($fromLogin);
         if(!AdminGroup::contains($player->login)) {
-		$message = 'No Admin permissions';
-           $this->connection->chatSendServerMessage('$fff��'. $message, $player);
+           $this->connection->chatSendServerMessage('$fff» $f00$iYou don\'t have the permission to do that!', $player);
             return;
         }
         try {
@@ -554,6 +558,122 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
             $this->connection->chatSendServerMessage('$fff' . $e->getMessage(), $fromLogin);
         }
     }
+
+	/**
+	 * loadMatchSettings()
+	 * Admin function, loads MatchSettings.
+	 *
+	 * @param mixed $fromLogin
+	 * @param mixed $param1
+	 * @param mixed $param2
+	 * @param mixed $param3
+	 * @return void
+	 */
+	function loadMatchSettings($fromLogin = NULL, $param1 = NULL, $param2 = NULL, $param3 = NULL) {
+		$player = $this->storage->getPlayerObject($fromLogin);
+		if(!AdminGroup::contains($player->login)) {
+			$this->connection->chatSendServerMessage('$fff» $f00$iYou don\'t have the permission to do that!', $player);
+			return;
+		}
+
+		$dataDir = $this->connection->gameDataDirectory();
+		$dataDir = str_replace('\\', '/', $dataDir);
+		$matchsettings = $dataDir . "Maps/MatchSettings/";
+
+		if ($param1 != NULL)
+			$tracklist = $param1;
+		try {
+			//if ($this->checkMatchSettingsFile($tracklist)) {
+				$this->connection->loadMatchSettings($matchsettings . $tracklist);
+				$this->connection->chatSendServerMessage('$fff»» $ff0Admin $fff' . $player->nickName . '$z$s$ff0 loaded maplist: $fff' . $tracklist . '$ff0!');
+				$this->matchsettings = $tracklist;
+			/*} else {
+				$this->mlepp->sendChat('%adminerror%Tracklist named %variable%' . $tracklist . '%adminerror% does not exist!', $fromLogin);
+			}*/
+		} catch (\Exception $e) {
+			$this->connection->chatSendServerMessage('$fff» $f00$i' . $e->getMessage(), $fromLogin);
+		}
+	}
+
+	/**
+	 * saveMatchSettings()
+	 * Admin function, saves MatchSettings.
+	 *
+	 * @param mixed $fromLogin
+	 * @param mixed $param1
+	 * @param mixed $param2
+	 * @param mixed $param3
+	 * @param mixed $fromPlugin
+	 * @return void
+	 */
+	function saveMatchSettings($fromLogin = NULL, $param1 = NULL, $param2 = NULL, $param3 = NULL, $fromPlugin = false) {
+		$player = $this->storage->getPlayerObject($fromLogin);
+		if(!AdminGroup::contains($player->login)) {
+			$this->connection->chatSendServerMessage('$fff» $f00$iYou don\'t have the permission to do that!', $player);
+			return;
+		}
+
+		$dataDir = $this->connection->gameDataDirectory();
+		$dataDir = str_replace('\\', '/', $dataDir);
+
+		$matchsettings = $dataDir . "Maps/MatchSettings/";
+
+		$tracklist = $this->matchsettings;
+		/*if (empty($tracklist)) {
+			$this->selectTracklist($fromLogin);
+			return;
+		}*/
+		if ($param1 != NULL && $fromPlugin === false)
+			$tracklist = $param1;
+		try {
+			$this->connection->saveMatchSettings($matchsettings . $tracklist);
+			$this->connection->chatSendServerMessage('$fff» $ff0Maplist $fff' . $tracklist . '$ff0 saved successfully!', $fromLogin);
+		} catch (\Exception $e) {
+			$this->connection->chatSendServerMessage('$fff» $f00$i' . $e->getMessage(), $fromLogin);
+		}
+	}
+
+	function selectTracklist($login) {
+		$window = SelectTracklistWindow::Create($login);
+		$window->setSize(200, 110);
+		$window->clearAll();
+		// prepare cols ...
+		$window->addColumn('Filename', 0.6);
+		$window->addColumn('Action', 0.2);
+
+		// refresh records for this window ...
+		$window->clearItems();
+
+
+		$dataDir = $this->connection->gameDataDirectory();
+		$dataDir = str_replace('\\', '/', $dataDir);
+		$challengeDir = $dataDir . "Maps/MatchSettings";
+
+
+		$localFiles = scandir($challengeDir);
+
+		foreach ($localFiles as $file) {
+			if ($file == ".")
+				continue;
+			if ($file == "..")
+				continue;
+
+			//if (!stristr($file, ".txt"))
+			//		continue;
+
+			$entry = array
+			(
+				'Filename' => array(utf8_encode($file), NULL, false),
+				'Action' => array("Select", array(($challengeDir . "/" . $file), $file), false)
+			);
+
+			$window->addAdminItem($entry, array($this, 'onFileClick'));
+		}
+
+		// display or update window ...
+		$window->centerOnScreen();
+		$window->show();
+	}
 	
      /**
      * forceEndRound()
@@ -566,19 +686,18 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
      * @return void
      */
     function forceEndRound($fromLogin, $param1 = NULL, $param2 = NULL, $param3 = NULL) {
-	$player = $this->storage->getPlayerObject($fromLogin);
-         if(!AdminGroup::contains($player->login)) {
-		$message = 'No Admin permissions';
-            $this->connection->chatSendServerMessage($message, $fromLogin);
+		$player = $this->storage->getPlayerObject($fromLogin);
+        if(!AdminGroup::contains($player->login)) {
+        	$this->connection->chatSendServerMessage('$fff» $f00$iYou don\'t have the permission to do that!', $fromLogin);
             return;
-        }
+		}
 
         try {
             $this->connection->forceEndRound($param1);
             $admin = Storage::GetInstance()->getPlayerObject($fromLogin);
-            $this->connection->chatSendServerMessage('%adminaction%Admin %variable%' . $admin->nickName . '$z$s%adminaction% forces an endRound.');
+            $this->connection->chatSendServerMessage('$fff»» $ff0Admin $fff' . $admin->nickName . '$z$s$ff0 forces the end of this round.');
         } catch (\Exception $e) {
-            $this->connection->chatSendServerMessage('%adminerror%' . $e->getMessage(), $fromLogin);
+            $this->connection->chatSendServerMessage('$fff» $f00$i' . $e->getMessage(), $fromLogin);
         }
     }
 
@@ -593,15 +712,14 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
      * @return
      */
     function kick($fromLogin, $param1, $param2 = NULL, $param3 = NULL) {
-	$player = $this->storage->getPlayerObject($fromLogin);
-         if(!AdminGroup::contains($player->login)) {
-		$message = 'No Admin permissions';
-            $this->connection->chatSendServerMessage($message, $fromLogin);
+		$player = $this->storage->getPlayerObject($fromLogin);
+        if(!AdminGroup::contains($player->login)) {
+            $this->connection->chatSendServerMessage('$fff» $f00$iYou don\'t have the permission to do that!', $fromLogin);
             return;
         }
 
         if (!$this->playerExists($param1)) {
-            $this->connection->chatSendServerMessage('Player %variable%' . $param1 . '$0ae doesn\' exist.', $fromLogin);
+            $this->connection->chatSendServerMessage('$fff» $f00$iPlayer $fff' . $param1 . '$f00 doesn\' exist.', $fromLogin);
             return;
         }
 
@@ -610,9 +728,9 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
         try {
             $this->connection->kick($player);
             $plNick = $player->nickName;
-            $this->connection->chatSendServerMessage('%adminaction%Admin %variable%' . $admin->nickName . '$z$s%adminaction% kicks the player %variable%' . $player->nickName);
+            $this->connection->chatSendServerMessage('$fff»» $ff0Admin $fff' . $admin->nickName . '$z$s$ff0 kicks the player $fff' . $player->nickName);
         } catch (\Exception $e) {
-            $this->connection->chatSendServerMessage('%adminerror%' . $e->getMessage(), $fromLogin);
+            $this->connection->chatSendServerMessage('$fff» $f00$i' . $e->getMessage(), $fromLogin);
         }
     }
 
@@ -628,15 +746,14 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
      * @return
      */
     function blacklist($fromLogin, $param1, $param2 = "", $param3 = NULL) {
-	$player = $this->storage->getPlayerObject($fromLogin);
-    $message = 'No Admin permissions';
-         if(!AdminGroup::contains($player->login)) {
-            $this->connection->chatSendServerMessage($this->mlepp->$message, $fromLogin);
+		$player = $this->storage->getPlayerObject($fromLogin);
+        if(!AdminGroup::contains($player->login)) {
+            $this->connection->chatSendServerMessage('$fff» $f00$iYou don\'t have the permission to do that!', $fromLogin);
             return;
         }
 
         if (!$this->playerExists($param1)) {
-            $this->connection->chatSendServerMessage('Player %variable%' . $param1 . '$0ae doesn\' exist.', $fromLogin);
+            $this->connection->chatSendServerMessage('$fff» $f00$iPlayer $fff' . $param1 . '$f00 doesn\' exist.', $fromLogin);
             return;
         }
 
@@ -654,9 +771,9 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
             } else {
                 $this->manualAddBlacklist($param1);
             }
-            $this->connection->chatSendServerMessage('%adminaction%Admin %variable%' . $admin->nickName . '$z$s%adminaction% blacklists the player %variable%' . $nickname);
+            $this->connection->chatSendServerMessage('$fff»» $ff0Admin $fff' . $admin->nickName . '$z$s$ff0 blacklists the player $fff' . $nickname);
         } catch (\Exception $e) {
-            $this->connection->chatSendServerMessage('%adminerror%' . $e->getMessage(), $fromLogin);
+            $this->connection->chatSendServerMessage('$fff» $f00$i' . $e->getMessage(), $fromLogin);
         }
     }
 
@@ -671,15 +788,14 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
      * @return
      */
     function ban($fromLogin, $param1, $param2 = NULL, $param3 = NULL) {
-	$player = $this->storage->getPlayerObject($fromLogin);
-    $message = 'No Admin permissions';
-         if(!AdminGroup::contains($player->login)) {
-            $this->connection->chatSendServerMessage($message, $fromLogin);
+		$player = $this->storage->getPlayerObject($fromLogin);
+        if(!AdminGroup::contains($player->login)) {
+            $this->connection->chatSendServerMessage('$fff» $f00$iYou don\'t have the permission to do that!', $fromLogin);
             return;
         }
 
         if (!$this->playerExists($param1)) {
-            $this->connection->chatSendServerMessage('Player %variable%' . $param1 . '$0ae doesn\' exist.', $fromLogin);
+            $this->connection->chatSendServerMessage('$fff» $f00$iPlayer $fff' . $param1 . '$f00 doesn\' exist.', $fromLogin);
             return;
         }
 
@@ -693,9 +809,9 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
         $admin = Storage::GetInstance()->getPlayerObject($fromLogin);
         try {
             $this->connection->ban($player);
-            $this->connection->chatSendServerMessage('%adminaction%Admin %variable%' . $admin->nickName . '$z$s%adminaction% bans the player %variable%' . $nickname);
+            $this->connection->chatSendServerMessage('$fff»» $ff0Admin $fff' . $admin->nickName . '$z$s$ff0 bans the player $fff' . $nickname);
         } catch (\Exception $e) {
-            $this->connection->chatSendServerMessage('%adminerror%' . $e->getMessage(), $fromLogin);
+            $this->connection->chatSendServerMessage('$fff» $f00$i' . $e->getMessage(), $fromLogin);
         }
     }
 
@@ -711,14 +827,13 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
      */
     function unban($fromLogin, $param1, $param2 = NULL, $param3 = NULL) {
        	$player = $this->storage->getPlayerObject($fromLogin);
-    $message = 'No Admin permissions';
-         if(!AdminGroup::contains($player->login)) {
-            $this->connection->chatSendServerMessage($message, $fromLogin);
+        if(!AdminGroup::contains($player->login)) {
+            $this->connection->chatSendServerMessage('$fff» $f00$iYou don\'t have the permission to do that!', $fromLogin);
             return;
         }
 
         if (empty($param1)) {
-            $this->connection->chatSendServerMessage('/admin set player unban takes a login as a parameter, none entered.', $fromLogin);
+            $this->connection->chatSendServerMessage('$fff» $f00$i/admin set player unban takes a login as a parameter, none entered.', $fromLogin);
             return;
         }
         $admin = Storage::GetInstance()->getPlayerObject($fromLogin);
@@ -726,9 +841,9 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
         $player->login = $param1;
         try {
             $this->connection->unBan($player);
-            $this->connection->chatSendServerMessage('%adminaction%Admin %variable%' . $admin->nickName . '$z$s%adminaction% unbans the player ' . $player->login);
+            $this->connection->chatSendServerMessage('$fff»» $ff0Admin $fff' . $admin->nickName . '$z$s$ff0 unbans the player ' . $player->login);
         } catch (\Exception $e) {
-            $this->connection->chatSendServerMessage('%adminerror%' . $e->getMessage(), $fromLogin);
+            $this->connection->chatSendServerMessage('$fff» $f00$i' . $e->getMessage(), $fromLogin);
         }
     }
 
@@ -743,15 +858,14 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
      * @return
      */
     function unBlacklist($fromLogin, $param1, $param2 = NULL, $param3 = NULL) {
-        	$player = $this->storage->getPlayerObject($fromLogin);
-    $message = 'No Admin permissions';
-         if(!AdminGroup::contains($player->login)) {
-            $this->connection->chatSendServerMessage($message, $fromLogin);
+		$player = $this->storage->getPlayerObject($fromLogin);
+        if(!AdminGroup::contains($player->login)) {
+            $this->connection->chatSendServerMessage('$fff» $f00$iYou don\'t have the permission to do that!', $fromLogin);
             return;
         }
 
         if (empty($param1)) {
-            $this->connection->chatSendServerMessage('/admin set player unblack takes a s login as a parameter, none entered.', $fromLogin);
+            $this->connection->chatSendServerMessage('$fff» $f00$i/admin set player unblack takes a s login as a parameter, none entered.', $fromLogin);
             return;
         }
         $admin = Storage::GetInstance()->getPlayerObject($fromLogin);
@@ -759,9 +873,9 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
         $player->login = $param1;
         try {
             $this->connection->unBlackList($player);
-            $this->connection->chatSendServerMessage('%adminaction%Admin %variable%' . $admin->nickName . '$z$s%adminaction% unblacklists the player ' . $player->login);
+            $this->connection->chatSendServerMessage('$fff»» $ff0Admin $fff' . $admin->nickName . '$z$s$ff0 unblacklists the player ' . $player->login);
         } catch (\Exception $e) {
-            $this->connection->chatSendServerMessage('%adminerror%' . $e->getMessage(), $fromLogin);
+            $this->connection->chatSendServerMessage('$fff» $f00$i' . $e->getMessage(), $fromLogin);
         }
     }
 
@@ -784,7 +898,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
         }
 
         if (!$this->playerExists($param1)) {
-            $this->connection->chatSendServerMessage('Player %variable%' . $param1 . '$0ae doesn\' exist.', $fromLogin);
+            $this->connection->chatSendServerMessage('Player $fff' . $param1 . '$0ae doesn\' exist.', $fromLogin);
             return;
         }
 
@@ -793,9 +907,9 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
         try {
             $this->connection->ignore($player);
             $plNick = $player->nickName;
-            $this->connection->chatSendServerMessage('%adminaction%Admin %variable%' . $admin->nickName . '$z$s%adminaction% Ignores the player %variable%' . $player->nickName);
+            $this->connection->chatSendServerMessage('$fff»» $ff0Admin $fff' . $admin->nickName . '$z$s$ff0 Ignores the player $fff' . $player->nickName);
         } catch (\Exception $e) {
-            $this->connection->chatSendServerMessage('%adminerror%' . $e->getMessage(), $fromLogin);
+            $this->connection->chatSendServerMessage('$fff» $f00$i' . $e->getMessage(), $fromLogin);
         }
     }
 
@@ -817,7 +931,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
                 return;
             }
         } catch (\Exception $e) {
-            $this->connection->chatSendServerMessage('%adminerror%' . $e->getMessage(), $login);
+            $this->connection->chatSendServerMessage('$fff» $f00$i' . $e->getMessage(), $login);
         }
         // if player found at ignorelist, unignore
         try {
@@ -830,7 +944,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
             // else ignore him.
             $this->ignore($login, $target);
         } catch (\Exception $e) {
-            $this->connection->chatSendServerMessage('%adminerror%' . $e->getMessage(), $login);
+            $this->connection->chatSendServerMessage('$fff» $f00$i' . $e->getMessage(), $login);
         }
     }
 
@@ -877,9 +991,9 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
         $player->login = $param1;
         try {
             $this->connection->unIgnore($player);
-            $this->connection->chatSendServerMessage('%adminaction%Admin %variable%' . $admin->nickName . '$z$s%adminaction% unIgnores the player ' . $player->login);
+            $this->connection->chatSendServerMessage('$fff»» $ff0Admin $fff' . $admin->nickName . '$z$s$ff0 unIgnores the player ' . $player->login);
         } catch (\Exception $e) {
-            $this->connection->chatSendServerMessage('%adminerror%' . $e->getMessage(), $fromLogin);
+            $this->connection->chatSendServerMessage('$fff» $f00$i' . $e->getMessage(), $fromLogin);
         }
     }
 
@@ -1020,7 +1134,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
         }
 
         if (!$this->playerExists($param1)) {
-            $this->connection->chatSendServerMessage('Player %variable%' . $param1 . '$0ae doesn\' exist.', $fromLogin);
+            $this->connection->chatSendServerMessage('Player $fff' . $param1 . '$0ae doesn\' exist.', $fromLogin);
             return;
         }
 
@@ -1029,7 +1143,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
         $this->connection->forceSpectator($player, 1);
         $this->connection->forceSpectator($player, 0);
         $plNick = $player->nickName;
-        $this->connection->chatSendServerMessage('%adminaction%Admin %variable%' . $admin->nickName . '$z$s%adminaction% Forces the player %variable%' . $player->nickName . '$z$s%adminaction% to Spectator.');
+        $this->connection->chatSendServerMessage('$fff»» $ff0Admin $fff' . $admin->nickName . '$z$s$ff0 Forces the player $fff' . $player->nickName . '$z$s$ff0 to Spectator.');
     }
 
     /**
@@ -1051,14 +1165,14 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
         }
 
         if (!$this->playerExists($param1)) {
-            $this->connection->chatSendServerMessage('Player %variable%' . $param1 . '$0ae doesn\'t exist.', $fromLogin);  //fix for notepad++ '
+            $this->connection->chatSendServerMessage('Player $fff' . $param1 . '$0ae doesn\'t exist.', $fromLogin);  //fix for notepad++ '
             return;
         }
 
         $player = Storage::GetInstance()->getPlayerObject($param1);
         $admin = Storage::GetInstance()->getPlayerObject($fromLogin);
         $plNick = $player->nickName;
-        $this->connection->chatSendServerMessage('%adminaction%Admin %variable%' . $admin->nickName . '$z$s%adminaction% Warned the player %variable%' . $player->nickName);
+        $this->connection->chatSendServerMessage('$fff»» $ff0Admin $fff' . $admin->nickName . '$z$s$ff0 Warned the player $fff' . $player->nickName);
         $window = SimpleWindow::Create($param1);
         $window->setTitle("Warning!");
         $window->setText("\n\nAn admin has \$f00warned you for your \$o\$soffensive behaviour.\$z \n\n Continuing this behaviour will get you either: \n * Removed from the chat \n * Kicked from the server \n * You might even get banned \n\nPlease take this in consideration while playing here.");
@@ -1091,11 +1205,11 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
         $admin = Storage::GetInstance()->getPlayerObject($fromLogin);
         try {
             $this->connection->nextMap();
-            $this->connection->chatSendServerMessage('%adminaction%Admin %variable%' . $admin->nickName . '$z$s%adminaction% skipped the Challenge');
+            $this->connection->chatSendServerMessage('$fff»» $ff0Admin $fff' . $admin->nickName . '$z$s$ff0 skipped the map');
         } catch (Exception $e) {
             //Console::println("Error:\n".$e->getMessage());
-            $this->connection->chatSendServerMessage('%adminerror%' . $e->getMessage(), $fromLogin);
-            //$this->connection->chatSendServerMessage('%adminerror%Change in progress. Please be patient.');
+            $this->connection->chatSendServerMessage('$fff» $f00$i' . $e->getMessage(), $fromLogin);
+            //$this->connection->chatSendServerMessage('$fff» $f00$iChange in progress. Please be patient.');
         }
     }
 
@@ -1120,9 +1234,9 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
         $admin = Storage::GetInstance()->getPlayerObject($fromLogin);
         try {
             $this->connection->restartMap();
-            $this->connection->chatSendServerMessage('%adminaction%Admin %variable%' . $admin->nickName . '$z$s%adminaction% restarted the Challenge');
+            $this->connection->chatSendServerMessage('$fff»» $ff0Admin $fff' . $admin->nickName . '$z$s$ff0 restarted the map');
         } catch (Exception $e) {
-            $this->connection->chatSendServerMessage('%adminerror%' . $e->getMessage(), $fromLogin);
+            $this->connection->chatSendServerMessage('$fff» $f00$i' . $e->getMessage(), $fromLogin);
         }
     }
 
