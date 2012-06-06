@@ -41,6 +41,7 @@ use ManiaLive\DedicatedApi\Connection;
 use ManiaLive\Data\Storage;
 use ManiaLive\Features\Admin\AdminGroup;
 use ManiaLive\Config\Loader;
+use ManiaLive\Utilities\Logger;
 
 class Ranks extends \ManiaLive\PluginHandler\Plugin {
 
@@ -98,6 +99,22 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 
 		$this->onTick();
 	}
+	
+	function onRulesScriptCallback($param1, $param2){
+	var_dump($param1);
+	var_dump($param2);
+	if ($param1 = "UnloadMap"){
+	}
+	if ($param1 = "OnHit"){
+	$data = explode(";", $param2);
+	$PlayerShooter = $data[0];
+	$PlayerHits = $data[1];
+	$PlayerVictim = $data[2];
+	$log = Logger::getLog('OnHit');
+	$log->write("Rankings for '{$this->storage->currentMap->name}' ({$this->storage->currentMap->uId}):");
+	$log->write(" Shooter: '{$PlayerShooter}' Victim: '{$PlayerVictim}' Hits:'{$PlayerHits}' ");
+	}
+	}
 
 	function onTick() {
 		$this->timeBeforeCalc--;
@@ -117,7 +134,7 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 													   'rank' => $this->ranks[$this->closest($points, $player->score)]);
 				//print_r($rankinfo);
 			}
-			print_r($this->players);
+			//print_r($this->players);
 			$this->timeBeforeCalc = 20;
 		}
 	}
