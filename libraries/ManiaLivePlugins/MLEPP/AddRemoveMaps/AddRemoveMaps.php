@@ -185,16 +185,16 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
             return;
         }
 
-        $trackinfo = $this->getData('http://' . self::$mxLocation . '/api/tracks/get_track_info/id/' . $mxid . '?format=json');
+        $trackinfo = $this->getData('http://' . self::$mxLocation . '/api/tracks/get_track_info/id/' . $mxid . '?format=xml');
         if (is_int($trackinfo)) {
 			$this->connection->chatSendServerMessage('$fff» $f00$iAdding track from MX failed with http error $fff' . $trackinfo . '$f00$i.', $login);
             return;
         } else {
-            $trackinfo = json_decode($trackinfo);
+            $trackinfo = $read = simplexml_load_string($trackinfo);
         }
 
         if (!is_null($trackinfo)) {
-            $trackdata = $this->getDatas('http://' . self::$mxLocation . '/tracks/download/' . $mxid);
+            $trackdata = $this->getData('http://' . self::$mxLocation . '/tracks/download/' . $mxid);
 
             $dataDir = $this->connection->gameDataDirectory();
             $dataDir = str_replace('\\', '/', $dataDir);
@@ -210,8 +210,8 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
                 return;
             }
 
-            $targetFile = $challengeDir . $this->filterName($trackinfo->Name) . '-' . $mxid . '.Map.Gbx';
-            $eventTargetFile = "Maps/Downloaded/MX/" . $this->filterName($trackinfo->Name) . '-' . $mxid . '.Map.Gbx';
+            $targetFile = $challengeDir . $trackinfo->Name . '-' . $mxid . '.Map.Gbx';
+            $eventTargetFile = "Maps/Downloaded/MX/" . $trackinfo->Name . '-' . $mxid . '.Map.Gbx';
 
             if (file_put_contents($targetFile, $trackdata) === false) {
 				$this->connection->chatSendServerMessage('$fff» $f00$iCouldn\'t write trackdata. Check directory & file permissions at dedicated tracks folder!', $loginObj);
@@ -246,14 +246,13 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
 
 	function getData($url) {
 		$ch = curl_init($url);
-		//curl_setopt($ch, CURLOPT_URL, $url);
+		curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_USERPWD, $this->config->credentials);
 		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLOPT_HTTPAUTH);
 		curl_setopt($ch, CURLOPT_USERAGENT, 'MLEPP ManiaExchange');
 
 		$output = curl_exec($ch);
-		$info = curl_getinfo($ch);
 
 		curl_close($ch);
 
