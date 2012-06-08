@@ -39,6 +39,7 @@ namespace ManiaLivePlugins\MLEPP\Jukebox;
 use ManiaLive\Data\Storage;
 use ManiaLive\Utilities\Console;
 use ManiaLive\Utilities\Time;
+use ManiaLive\Features\Admin\AdminGroup;
 use ManiaLib\Utils\Formatting as String;
 use ManiaLive\DedicatedApi\Connection;
 use ManiaLivePlugins\MLEPP\Jukebox\Gui\Windows\trackList;
@@ -72,12 +73,15 @@ class Jukebox extends \ManiaLive\PluginHandler\Plugin {
 	}
 	
 	function storeNextChallenge($login, $i, $challengeName, $fileName) {
-		foreach($this->listNextChallenges as $c) {
-			if($c['login'] == $login) {
-				$this->connection->chatSendServerMessage('$fff» $080You already have a map in the jukebox!', $login);
-				return;
+		if(!AdminGroup::contains($login)) {
+			foreach($this->listNextChallenges as $c) {
+				if($c['login'] == $login) {
+					$this->connection->chatSendServerMessage('$fff» $080You already have a map in the jukebox!', $login);
+					return;
+				}
 			}
 		}
+
 		$this->listNextChallenges[] = array('id'=>$i, 'name'=>$challengeName, 'login'=>$login, 'nickname' => $this->connection->getPlayerInfo($login)->nickName, 'filename'=>$fileName);
 		$this->connection->chatSendServerMessage('$fff»» $fff'.$this->connection->getPlayerInfo($login)->nickName.'$z$s$080 added $fff'.$challengeName.'$z$s$080 to the jukebox!');
 		Console::println('[' . date('H:i:s') . '] [MLEPP] [Jukebox] '.$login.' added '.$challengeName);
@@ -99,6 +103,7 @@ class Jukebox extends \ManiaLive\PluginHandler\Plugin {
 				$i = 1;
 				foreach($this->listNextChallenges as $c) {
 					$message .= '$fff'.$i.'$080. [$fff'.Core::stripColors($c['name']).'$z$s$080] ';
+					$i++;
 				}
 
 				$this->connection->chatSendServerMessage($message, $login);
