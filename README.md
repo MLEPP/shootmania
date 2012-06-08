@@ -6,7 +6,7 @@ Tested with [ManiaLive](http://code.google.com/p/manialive/) r380
 
 Currently MLEPP for ShootMania is under development. You can always download the latest commit [here](https://github.com/MLEPP/shootmania/downloads/) (click "Download as zip" or "Download as tar.gz")!
 
-Our aim is to release a bèta-version (v0.1.0) of MLEPP for ShootMania in the weekend of June 3th.
+Current release: v0.1.0 (bèta), 08-06-2012
 
 ##Requirements
 - PHP 5.3 (for ManiaLive)
@@ -17,12 +17,6 @@ Our aim is to release a bèta-version (v0.1.0) of MLEPP for ShootMania in the we
 
 2) Unpack the .zip-file into your ManiaLive directory
 
-3) Update the configfile to include the MLEPP plugins
+3) Move the files in the scripts/ directory into the UserData/Scripts/Modes/ShootMania directory of your server
 
-(more info to come ...)
-
-##To-do list for v0.1.0 (bèta)
-- port JukeBox
-
-##To-do list for later versions
-- get Ranks working
+4) Update the configfile to include the MLEPP plugins
