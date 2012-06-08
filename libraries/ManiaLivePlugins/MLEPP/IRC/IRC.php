@@ -81,6 +81,7 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
         $this->enableTickerEvent();
         
 		Console::println('[' . date('H:i:s') . '] [MLEPP] Plugin: IRC Bot r'.$this->getVersion());
+		$this->callPublicMethod('MLEPP\Core', 'registerPlugin', 'IRC', $this);
         
         $this->socket = fsockopen($this->config->server, $this->config->port);
         
