@@ -76,6 +76,7 @@ protected $listNextChallenges = array();
 		}
 		$this->listNextChallenges[] = array('id'=>$i, 'name'=>$challengeName, 'login'=>$login, 'nickname' => $this->connection->getPlayerInfo($login)->nickName, 'filename'=>$fileName);
 		$this->connection->chatSendServerMessage('$fff»» $fff'.$this->connection->getPlayerInfo($login)->nickName.'$z$s$080 added $fff'.$challengeName.'$z$s$080 to the jukebox!');
+		Console::println('[' . date('H:i:s') . '] [MLEPP] [Jukebox] '.$login.' added '.$challengeName);
 	}
 	
 	function mode_onEndMap($mapname) {
@@ -83,6 +84,7 @@ protected $listNextChallenges = array();
 			$next = array_shift($this->listNextChallenges);
 			$this->connection->ChooseNextMap($next['filename']);
 			$this->connection->chatSendServerMessage('$fff»» $080The next map will be $fff'.$next['name'].'$z$s$080 as requested by $fff'.$next['nickname'].'$z$s$080!');
+			Console::println('[' . date('H:i:s') . '] [MLEPP] [Jukebox] Next map will be '.$next['name'].' as requested by '.$next['login']);
 		}
 	}
 
