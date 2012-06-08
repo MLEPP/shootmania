@@ -14,14 +14,14 @@
 /* ------------------------------------- */
 
 #Setting MapPointsLimit			111	as "Points to win a map"
-#Setting OffZoneTimeLimit		45	as "OffZone shrink time"
+#Setting OffZoneTimeLimit		50	as "OffZone shrink time"
 #Setting OffZoneActivationTime	4	as "OffZone activation time"
 #Setting SpawnInterval			5	as "Time between waves of spawns"
 
 #Const C_UITickPeriod			200		///< Update UI every xx milliseconds
 #Const C_OffZoneAutoStartTime	-1		///< Automatically start the offzone after xx seconds
 #Const C_OffZoneMinRadius		8.		///< Minimum size of the OffZone at the end
-#Const C_DefaultOffZoneRadius	250.	///< Default radius of the OffZone
+#Const C_DefaultOffZoneRadius	300.	///< Default radius of the OffZone
 
 /* ------------------------------------- */
 // Globales variables

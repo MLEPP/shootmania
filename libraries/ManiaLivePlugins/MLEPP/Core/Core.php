@@ -85,6 +85,54 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 			}
 		}
 	}
+
+	static function stripColors($input, $for_tm = true) {
+		return
+			//Replace all occurrences of a null character back with a pair of dollar
+			//signs for displaying in TM, or a single dollar for log messages etc.
+			str_replace("\0", ($for_tm ? '$$' : '$'),
+				//Replace links (introduced in TMU)
+				preg_replace(
+					'/
+				#Strip TMF H, L & P links by stripping everything between each square
+				#bracket pair until another $H, $L or $P sequence (or EoS) is found;
+				#this allows a $H to close a $L and vice versa, as does the game
+				\\$[hlp](.*?)(?:\\[.*?\\](.*?))*(?:\\$[hlp]|$)
+				/ixu',
+					//Keep the first and third capturing groups if present
+					'$1$2',
+					//Replace various patterns beginning with an unescaped dollar
+					preg_replace(
+						'/
+					#Match a single dollar sign and any of the following:
+					\\$
+					(?:
+						#Strip color codes by matching any hexadecimal character and
+						#any other two characters following it (except $)
+						[0-9a-f][^$][^$]
+						#Strip any incomplete color codes by matching any hexadecimal
+						#character followed by another character (except $)
+						|[0-9a-f][^$]
+						#Strip any single style code (including an invisible UTF8 char)
+						#that is not an H, L or P link or a bracket ($[ and $])
+						|[^][hlp]
+						#Strip the dollar sign if it is followed by [ or ], but do not
+						#strip the brackets themselves
+						|(?=[][])
+						#Strip the dollar sign if it is at the end of the string
+						|$
+					)
+					#Ignore alphabet case, ignore whitespace in pattern & use UTF-8 mode
+					/ixu',
+						//Replace any matches with nothing (i.e. strip matches)
+						'',
+						//Replace all occurrences of dollar sign pairs with a null character
+						str_replace('$$', "\0", $input)
+					)
+				)
+			)
+			;
+	}  // stripColors
 }
 
 ?>

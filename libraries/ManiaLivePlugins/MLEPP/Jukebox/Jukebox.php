@@ -42,10 +42,12 @@ use ManiaLive\Utilities\Time;
 use ManiaLib\Utils\Formatting as String;
 use ManiaLive\DedicatedApi\Connection;
 use ManiaLivePlugins\MLEPP\Jukebox\Gui\Windows\trackList;
+use ManiaLivePlugins\MLEPP\Core\Core;
 
 class Jukebox extends \ManiaLive\PluginHandler\Plugin {
 
-protected $listNextChallenges = array();
+	protected $listNextChallenges = array();
+	private $mlepp;
 
 	function onInit() {
 		$this->setVersion('0.1.0');
@@ -56,6 +58,8 @@ protected $listNextChallenges = array();
 		$this->enableDedicatedEvents();
 		$this->registerChatCommand("list", "displayWindowList", 0, true);
 		$this->registerChatCommand("l", "displayWindowList", 0, true);
+		$this->registerChatCommand("jukebox", "jukeboxCommand", 1, true);
+		$this->registerChatCommand("jb", "jukeboxCommand", 1, true);
 		$this->callPublicMethod('MLEPP\Core', 'registerPlugin', 'Jukebox', $this);
 	}
 	
@@ -84,9 +88,36 @@ protected $listNextChallenges = array();
 			$next = array_shift($this->listNextChallenges);
 			$this->connection->ChooseNextMap($next['filename']);
 			$this->connection->chatSendServerMessage('$fff»» $080The next map will be $fff'.$next['name'].'$z$s$080 as requested by $fff'.$next['nickname'].'$z$s$080!');
-			Console::println('[' . date('H:i:s') . '] [MLEPP] [Jukebox] Next map will be '.$next['name'].' as requested by '.$next['login']);
+			Console::println('[' . date('H:i:s') . '] [MLEPP] [Jukebox] Next map will be '.Core::stripColors($next['name']).' as requested by '.$next['login']);
 		}
 	}
 
+	function jukeboxCommand($login, $param1 = null, $param2 = null) {
+		if($param1 == 'list' || $param1 == 'l') {
+			if(count($this->listNextChallenges) > 0) {
+				$message = '$fff» $080Maps currently in the jukebox: ';
+				$i = 1;
+				foreach($this->listNextChallenges as $c) {
+					$message .= '$fff'.$i.'$080. [$fff'.Core::stripColors($c['name']).'$z$s$080] ';
+				}
+
+				$this->connection->chatSendServerMessage($message, $login);
+			} else {
+				$this->connection->chatSendServerMessage('$fff» $f00$iThere are no maps in the jukebox!', $login);
+			}
+		} elseif($param1 == 'drop' || $param1 == 'd') {
+			$jukeboxreversed = array_reverse($this->listNextChallenges, true);
+			$i = count($this->listNextChallenges)-1;
+			foreach($jukeboxreversed as $c) {
+				if($c['login'] == $login) {
+					$this->connection->chatSendServerMessage('$fff»» $fff'.$c['nickname'].'$z$s$080 dropped his map $fff'.$c['name'].'$z$s$080 from the jukebox!');
+					Console::println('[' . date('H:i:s') . '] [MLEPP] [Jukebox] '.$c['login'].' dropped his map '.Core::stripColors($c['name']).' from the jukebox!');
+					unset($this->listNextChallenges[$i]);
+					return;
+				}
+				$i--;
+			}
+		}
+	}
 }
 ?>
