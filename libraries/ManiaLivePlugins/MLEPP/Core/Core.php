@@ -50,6 +50,7 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 	function onLoad() {
 		$this->enableDedicatedEvents();
 		Console::println('[' . date('H:i:s') . '] [MLEPP] Core v' . $this->getVersion());
+		$this->connection->chatSendServerMessage('$fff» $fa0Welcome, this server is running $fffMLEPP for ShootMania$fa0!');
 	}
 
 	function registerPlugin($plugin, $class) {
