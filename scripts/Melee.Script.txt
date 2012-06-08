@@ -1,0 +1,267 @@
+#RequireContext CSmMode
+
+#Include "Libs/Nadeo/Mode.Script.txt"
+#Include "Libs/Nadeo/ShootMania/SM.Script.txt" as SM
+#Include "Libs/Nadeo/ShootMania/Score.Script.txt" as Score
+#Include "MathLib" as MathLib
+#Include "TextLib" as TextLib
+
+#Const CompatibleChallengeTypes "MeleeArena"
+#Const C_UITickInterval 200
+
+#Setting TimeLimit	600 as "Time limit"
+#Setting PointLimit	25	as "Point limit"
+
+declare Ident[] SpawnsList;
+declare Ident LatestSpawnId;
+
+Void FillSpawnsList() {
+	foreach (BlockSpawn in BlockSpawns) { SpawnsList.add(BlockSpawn.Id); }
+}
+
+Void SpawnPlayers(CPlayer _Player) {
+	if (SpawnsList.count == 0) FillSpawnsList();
+	declare SpawnId = NullId;
+	while (True) {
+		SpawnId = SpawnsList[MathLib::Rand(0, SpawnsList.count - 1)];
+		if (SpawnId != LatestSpawnId) break;
+		if (SpawnsList.count == 1) break;
+	}
+	SM::SpawnPlayer(_Player, 0, BlockSpawns[SpawnId]);
+	LatestSpawnId = SpawnId;
+	declare Tmp = SpawnsList.remove(SpawnId);
+}
+
+Text UpdateLayerInfos(CPlayer _Player) {
+	if (_Player.Score == Null) return "";
+	
+	return """
+		<frame posn="150 -88">
+			<label posn="0 1" halign="left" valign="bottom" text="/{{{ Scores.count }}}"/>
+			<label posn="0 0" halign="right" valign="bottom" style="TextRaceChrono" text="{{{ Scores.keyof(_Player.Score) + 1 }}}"/>
+		</frame>
+	""";
+}
+
+/* ------------------------------------- */
+/** Get the help manialink string.
+ *
+ * @return		The manialink string
+ */
+Text UpdateLayerSpawnScreen() {
+	declare Text ML;
+	
+	declare TempForI18n = _("Free for all\n- Survive as long as possible to score a maximum of points.\n- Bonus points are awarded for the pole capture and for each player hit.\n- If the pole is captured then the playing area will start to shrink. If a player leaves this area he is eliminated.\n- The first player to reach %1 points wins.");
+	
+	ML = """
+		<script><!--
+			main () {
+				declare FrameRules	<=> Page.GetFirstChild("FrameRules");
+				declare FrameShow	<=> Page.GetFirstChild("FrameShow");
+				declare ShowRules = False;
+					
+				while(True) {
+					if (ShowRules) {
+						FrameRules.Show();
+						FrameShow.Hide();
+					} else {
+						FrameRules.Hide();
+						FrameShow.Show();
+					}
+
+					yield;
+
+					// process events.
+					foreach (Event in PendingEvents) {
+						switch (Event.Type) {
+							case CGameManialinkScriptEvent::Type::MouseClick :
+							{		
+								if (Event.ControlId == "FrameRules") ShowRules = !ShowRules;
+							}
+					
+							case CGameManialinkScriptEvent::Type::KeyPress:
+							{
+								if (Event.CharPressed == "2424832") ShowRules = !ShowRules;	// F1
+							}
+						}
+					}
+				}
+			}
+		--></script>
+		<frame posn="0 -70 0" id="FrameShow">
+			<quad posn="0 0 10" sizen="140 20" halign="center" valign="center" style="Bgs1InRace" substyle="BgTitle3_5" />
+			<label posn="0 0 11" scale="2" halign="center" valign="center" style="TextTitle3" text="{{{ _("Press F1 to show rules") }}}" />
+		</frame>
+		<frame posn="0 50 1" id="FrameRules">
+			<frame posn="0 0 5">
+				<quad posn="0 0 10" sizen="120 20" halign="center" valign="center" style="Bgs1InRace" substyle="BgTitle3_5" />
+				<label posn="0 0 11" scale="2" halign="center" valign="center" style="TextTitle3" text="$fffMelee" />
+			</frame>
+			<frame posn="0 -10 5">
+				<quad posn="0 0 10" sizen="300 120" halign="center" bgcolor="222c" />
+				<label posn="-145 -5 11" sizen="145 5" scale="2" autonewline="1" style="TextCardSmallScores2" text="{{{ _("Free for all\n\n- Hit an opponent to score a point. \n- The player with the most points wins. ") }}}" />
+			</frame>
+		</frame>
+	""";
+	
+	return ML;
+}
+
+main() {
+	UseClans = False;	
+	
+	declare LayerSpawnScreen <=> UIManager.UILayerCreate();
+	LayerSpawnScreen.Type = CUILayer::EUILayerType::ScreenIn3d;
+	
+	while (!ServerShutdownRequested) {
+		LoadMap();
+		XmlRpc.SendCallback("beginMap",MapName);
+		
+		SpawnsList.clear();
+		LatestSpawnId = NullId;
+		
+		XmlRpc.SendCallback("beginMatch",MapName);
+		Score::MatchBegin();
+		
+		XmlRpc.SendCallback("beginRound",MapName);
+		Score::RoundBegin();
+			
+		MatchEndRequested = False;	
+		
+		UIManager.ResetAll();
+		SM::SetupDefaultVisibility();
+		LayerSpawnScreen.ManialinkPage = UpdateLayerSpawnScreen();
+		UIManager.UIAll.UILayers.add(LayerSpawnScreen);
+		
+		UIManager.UIAll.UISequence = CUIConfig::EUISequence::Intro;
+		UIManager.UIAll.BigMessage = _("New match");
+		UIManager.UIAll.BigMessage = "";
+
+		UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
+		declare LastUITick = 0;
+		StartTime = Now;
+		EndTime = StartTime + (TimeLimit * 1000);
+		while (!MatchEndRequested && !ServerShutdownRequested)
+		{		
+			yield;
+			
+			foreach (Event, PendingEvents) {	
+				if (Event.Type == CSmModeEvent::EType::OnArmorEmpty) {
+					if (Event.Shooter == Event.Victim || Event.Shooter == Null) {
+						Score::RemovePoints(Event.Victim, 1);
+					}
+					PassOn(Event);
+				} else if (Event.Type == CSmModeEvent::EType::OnHit) {
+					if (Event.Shooter == Event.Victim) {
+						Discard(Event);					
+					} else {
+						declare Points = Event.Damage / 100;
+						Score::AddPoints(Event.Shooter, Points);
+						Event.ShooterPoints = Points;
+						PassOn(Event);
+					}
+				} else if (Event.Type == CSmModeEvent::EType::OnPlayerRequestRespawn) {				
+					Score::RemovePoints(Event.Player, 1);
+					PassOn(Event);
+				} else {
+					PassOn(Event);
+				}
+			}	
+				
+			foreach (Player in Players) {
+				// Spawn 
+				if (Player.SpawnStatus == CPlayer::ESpawnStatus::NotSpawned && !Player.RequestsSpectate) {
+					SpawnPlayers(Player);
+				}
+			}
+			
+			/* -------------------------------------- */
+			// Update UI
+			if (LastUITick + C_UITickInterval < Now) {
+				declare UsedLayers = Ident[];
+				
+				// Add layer and create it if necessary
+				foreach (Player in Players) {
+					declare UI <=> UIManager.GetUI(Player);
+					if (UI == Null) continue;
+					
+					declare CUILayer LayerInfos;
+					if (UI.UILayers.count != 1) {
+						LayerInfos <=> UIManager.UILayerCreate();
+						UI.UILayers.add(LayerInfos);
+					} else {
+						LayerInfos <=> UI.UILayers[0];
+					}
+					UsedLayers.add(LayerInfos.Id);
+					LayerInfos.ManialinkPage = UpdateLayerInfos(Player);
+				}
+				// Remove layers
+				declare LayersToRemove = Ident[];
+				foreach (Layer in UIManager.UILayers) {
+					if (!UsedLayers.exists(Layer.Id) && Layer != LayerSpawnScreen) {
+						LayersToRemove.add(Layer.Id);
+					}
+				}
+				foreach (LayerId in LayersToRemove) {
+					UIManager.UILayerDestroy(UIManager.UILayers[LayerId]);
+				}
+				
+				LastUITick = Now;
+			}
+			
+			////////////////////////////////////
+			// victory conditions
+			declare IsMatchOver = False;
+			if (Now > StartTime + (TimeLimit * 1000)) 
+				IsMatchOver = True;
+			foreach (Player in Players) {
+				if (Player.Score != Null && Player.Score.RoundPoints >= PointLimit) 
+					IsMatchOver = True;
+			}
+		
+			if (IsMatchOver)
+				break;
+		}
+		
+		XmlRpc.SendCallback("endRound",MapName);
+		Score::RoundEnd();
+		
+		XmlRpc.SendCallback("endMatch",MapName);
+		Score::MatchEnd(True);	
+		
+		////////////////////////////////////
+		// End match sequence.
+		declare CUser Winner <=> Null;
+		declare MaxPoints = 0;
+		foreach (Score in Scores) {
+			if (Score.Points > MaxPoints) {
+				MaxPoints = Score.Points;
+				Winner <=> Score.User;
+			} else if (Score.Points == MaxPoints) {
+				Winner <=> Null;
+			}
+		}
+		foreach (Player in Players) {
+			if (Player.User != Winner)
+				UnspawnPlayer(Player);
+		}
+		
+		if (Winner != Null) {
+			UIManager.UIAll.BigMessage = TextLib::Compose(_("$<%1$> wins the match!"), Winner.Name);
+		} else {
+			UIManager.UIAll.BigMessage = _("|Match|Draw");
+		}
+		sleep(5000);
+		
+		UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;	
+		UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;		
+		
+		UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;		
+		UIManager.UIAll.BigMessage = "";	
+		
+		XmlRpc.SendCallback("endMap",MapName);
+		UnloadMap();		
+	}
+	
+	UIManager.UILayerDestroy(LayerSpawnScreen);
+}
