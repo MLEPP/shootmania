@@ -75,8 +75,6 @@ class Karma extends \ManiaLive\PluginHandler\Plugin {
 		$this->callPublicMethod('MLEPP\Core', 'registerPlugin', 'Karma', $this);
 	}
 
-
-
 	/**
 	 * onReady()
 	 * Function called when ManiaLive is ready loading.
@@ -113,7 +111,7 @@ class Karma extends \ManiaLive\PluginHandler\Plugin {
 	 * @return void
 	 */
 
-	function mode_onBeginMap($map, $warmUp, $matchContinuation) {
+	function mode_onBeginMap($map) {
 		$this->karma();
 	}
 
