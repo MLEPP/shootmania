@@ -42,6 +42,8 @@ use ManiaLive\Data\Storage;
 use ManiaLive\Features\Admin\AdminGroup;
 use ManiaLive\Config\Loader;
 
+use ManiaLivePlugins\MLEPP\Core\Core;
+
 class Karma extends \ManiaLive\PluginHandler\Plugin {
 
 	private $playerKarmas = array();
@@ -105,13 +107,12 @@ class Karma extends \ManiaLive\PluginHandler\Plugin {
 	 * Function called on begin of the map.
 	 *
 	 * @param $map
-	 * @param mixed $warmUp
-	 * @param mixed $matchContinuation
-	 * @internal param mixed $challenge
 	 * @return void
 	 */
 
 	function mode_onBeginMap($map) {
+		$challenge = $this->connection->getCurrentMapInfo();
+		$this->connection->chatSendServerMessage('$fff»» $06fNew map: $fff'.Core::stripColors($challenge->name).'$06f by $fff'.$challenge->author.'$06f.');
 		$this->karma();
 	}
 
