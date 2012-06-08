@@ -72,7 +72,10 @@ class Karma extends \ManiaLive\PluginHandler\Plugin {
 		$this->enableDatabase();
 		$this->enableDedicatedEvents();
 		Console::println('['.date('H:i:s').'] [MLEPP] Plugin: Karma v'.$this->getVersion() );
+		$this->callPublicMethod('MLEPP\Core', 'registerPlugin', 'Karma', $this);
 	}
+
+
 
 	/**
 	 * onReady()
@@ -110,7 +113,7 @@ class Karma extends \ManiaLive\PluginHandler\Plugin {
 	 * @return void
 	 */
 
-	function onBeginMap($map, $warmUp, $matchContinuation) {
+	function mode_onBeginMap($map, $warmUp, $matchContinuation) {
 		$this->karma();
 	}
 
@@ -172,7 +175,7 @@ class Karma extends \ManiaLive\PluginHandler\Plugin {
 
 	function getMapKarma($uid = null) {
 		if(is_null($uid)) {
-			$challenge = $this->storage->currentMap;
+			$challenge = $this->connection->getCurrentMapInfo();
 			$uid = $challenge->uId;
 		}
 
@@ -252,7 +255,7 @@ class Karma extends \ManiaLive\PluginHandler\Plugin {
 	 */
 
 	function updateKarmaToDatabase($login, $value) {
-		$challenge = $this->storage->currentMap;
+		$challenge = $this->connection->getCurrentMapInfo();
 		$uid = $challenge->uId;
 		//check if player is at database
 		$g =  "SELECT * FROM `karma` WHERE `karma_playerlogin` = ".$this->db->quote($login)."
