@@ -149,7 +149,8 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
         if ($targetFile !== false) {
             try {
                 $this->connection->insertMap($targetFile);
-				$this->connection->chatSendServerMessage('$fff»» $ff0Admin ' . $admin->nickName . '$z$s$ff0 added new local track $fff' . $param1);
+				$mapinfo = $this->connection->getMapInfo($targetFile);
+				$this->connection->chatSendServerMessage('$fff»» $ff0Admin $fff' . $admin->nickName . '$z$s$ff0 added new local track $fff' . $mapinfo->name.'$z$s$ff0!');
                 Console::println('[' . date('H:i:s') . '] [MLEPP] [AddRemoveMaps] [' . $admin->login . '] Added new local track :' . $param1);
                 $eventTargetFile = $targetFile;
                 Dispatcher::dispatch(new onTrackAdded($login, $eventTargetFile, $isTmx));

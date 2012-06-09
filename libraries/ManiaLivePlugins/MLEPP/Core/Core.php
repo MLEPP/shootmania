@@ -45,19 +45,90 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 	function onInit() {
 		$this->setVersion('0.1.0');
 		$this->setPublicMethod('registerPlugin');
+		$this->setPublicMethod('getPlayerInfo');
 	}
 
 	function onLoad() {
+		$this->enableDatabase();
 		$this->enableDedicatedEvents();
 		Console::println('[' . date('H:i:s') . '] [MLEPP] Core v' . $this->getVersion());
 		$this->connection->chatSendServerMessage('$fff» $fa0Welcome, this server is running $fffMLEPP for ShootMania$fa0!');
+
+
+		if(!$this->db->tableExists('players')) {
+			$q = "CREATE TABLE IF NOT EXISTS `players` (
+  					`player_id` mediumint(9) NOT NULL AUTO_INCREMENT,
+  					`player_login` varchar(50) NOT NULL,
+  					`player_nickname` varchar(100) DEFAULT NULL,
+  					`player_nation` varchar(50) NOT NULL,
+  					`player_updatedat` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  					`player_timeplayed` int(10) NOT NULL DEFAULT '0',
+  					`player_points` mediumint(9) NOT NULL DEFAULT '0',
+  					PRIMARY KEY (`player_id`),
+  					UNIQUE KEY `player_login` (`player_login`)
+				  ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
+			$this->db->query($q);
+		}
+
+		foreach($this->storage->players as $player) {
+			$this->insertPlayer($player);
+		}
+
+		foreach($this->storage->spectators as $player) {
+			$this->insertPlayer($player);
+		}
+	}
+
+	function insertPlayer($player) {
+		$g =  "SELECT * FROM `players` WHERE `player_login` = ".$this->db->quote($player->login).";";
+		$query = $this->db->query($g);
+
+		if($query->recordCount() == 0) {
+			$q = "INSERT INTO `players` (
+					`player_login`,
+					`player_nickname`,
+					`player_nation`,
+					`player_updatedat`
+				  ) VALUES (
+					'".$player->login."',
+					'".$player->nickName."',
+					".$this->db->quote(str_replace('World|', '', $player->path)).",
+					'".date('Y-m-d H:i:s')."'
+				  )";
+		} else {
+			$q = "UPDATE `players`
+				  SET `player_nickname` = '".$player->nickName."',
+				      `player_nation` = ".$this->db->quote(str_replace('World|', '', $player->path)).",
+				      `player_updatedat` = '".date('Y-m-d H:i:s')."'
+				  WHERE `player_login` = '".$player->login."'";
+		}
+
+		$this->db->query($q);
+	}
+
+	function onPlayerConnect($login, $isSpectator) {
+		$player = $this->storage->getPlayerObject($login);
+		$this->insertPlayer($player);
 	}
 
 	function registerPlugin($plugin, $class) {
 		$this->plugins[$plugin] = $class;
 	}
 
+	//$this->callPublicMethod('MLEPP\Core', 'getPlayerInfo', $login);
+	function getPlayerInfo($login) {
+		$g =  "SELECT * FROM `players` WHERE `player_login` = ".$this->db->quote($login).";";
+		$query = $this->db->query($g);
+
+		if($query->recordCount() == 1) {
+			return $query->fetchAll();
+		} else {
+			return false;
+		}
+	}
+
 	function onRulesScriptCallback($param1, $param2) {
+		Console::println('[' . date('H:i:s') . '] Script callback: '.$param1.', with parameter: '.$param2);
 		switch($param1) {
 			case 'beginMap':
 				$this->callMethods('mode_onBeginMap', $param2);

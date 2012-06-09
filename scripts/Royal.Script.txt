@@ -466,6 +466,7 @@ main() {
 							SurvivalBonus = TotalPlayersSpawned - PlayersNbAlive + 1;
 							if (PlayersNbAlive == 1) SurvivalBonus = SurvivalBonus + TotalPlayersSpawned;
 							if (PlayersNbAlive == 2) SurvivalBonus = SurvivalBonus + (TotalPlayersSpawned / 2);
+							XmlRpc.SendCallback("playerDeath", Event.Victim.Login);
 							Score::AddPoints(Event.Victim, SurvivalBonus);
 							Top::IncrementPlayerPoints("Survival", Event.Victim, SurvivalBonus);
 						}
@@ -487,6 +488,7 @@ main() {
 										PoleBonus = Bonus;
 										Score::AddPoints(Players[PlayerId], PoleBonus);
 										Top::IncrementPlayerPoints("Pole", Players[PlayerId], PoleBonus);
+										XmlRpc.SendCallback("poleCapture", Players[PlayerId].Login);
 										UIManager.UIAll.SendNotice(TextLib::Compose(_("$<%1$> activated the OffZone"), Players[PlayerId].Name), 
 												CUIConfig::ENoticeLevel::MatchInfo, Null, 
 												CUIConfig::EAvatarVariant::Default, 
@@ -499,6 +501,8 @@ main() {
 					} else if (Event.Type == CSmModeEvent::EType::OnPlayerRequestRespawn) {
 						declare Integer SpawnTime for Event.Player;
 						SpawnTime = Now;
+						
+						XmlRpc.SendCallback("playerRespawn", Event.Player.Login);
 						
 						if (Event.Player.Score != Null) {
 							declare SurvivalBonus for Event.Player.Score = 0;
@@ -520,6 +524,7 @@ main() {
 								RoundHits += 1;
 								declare Points = (RoundHits + 1) / 2;
 								Score::AddPoints(Event.Shooter, Points);
+								XmlRpc.SendCallback("playerHit", "Victim:"^Event.Victim.Login^";Shooter:"^Event.Shooter.Login);
 								Top::IncrementPlayerPoints("Hit", Event.Shooter, Points);
 								CumulPoints += Points;
 							}
@@ -675,8 +680,16 @@ main() {
 		Score::MatchEnd(True);	
 		Top::RoundEnd();
 		Top::MatchEnd();
+		
+		declare PlayerList = "";
+		foreach (Player in Players) {
+			PlayerList = PlayerList^(Player.Login^":"^Player.Score.Points^";");
+		}
+		foreach (Player in Spectators) {
+			PlayerList = PlayerList^(Player.Login^":"^Player.Score.Points^";");
+		}
 
-		XmlRpc.SendCallback("endMap",MapName);
+		XmlRpc.SendCallback("endMap",PlayerList);
 
 		UIManager.UIAll.UILayers.clear();
 

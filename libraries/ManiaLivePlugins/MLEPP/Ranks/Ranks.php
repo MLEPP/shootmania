@@ -45,31 +45,28 @@ use ManiaLive\Utilities\Logger;
 
 class Ranks extends \ManiaLive\PluginHandler\Plugin {
 
-	public $ranks = array(0 => 'Private',
-						  2 => 'Testrank',
-						  150 => 'Private First Class',
-						  500 => 'Lance Corporal',
-						  800 => 'Corporal',
-						  2500 => 'Sergeant',
-						  5000 => 'Staff Sergeant',
-						  8000 => 'Gunnery Sergeant',
-						  20000 => 'Master Sergeant',
-						  30000 => 'First Sergeant',
-						  40000 => 'Master Gunnery Sergeant',
-						  50000 => 'Sergeant Major',
-						  60000 => '2nd Lieutenant',
-						  75000 => '1st Lieutenant',
-						  90000 => 'Captain',
-						  115000 => 'Major',
-						  125000 => 'Lieutenant Colonel',
-						  150000 => 'Colonel',
-						  180000 => 'Brigadier General',
-						  200000 => 'Major General',
-						  220000 => 'Lieutenant General',
-						  250000 => 'General');
+	public $ranks = array('0' => 'Private',
+						  '150' => 'Private First Class',
+						  '500' => 'Lance Corporal',
+						  '800' => 'Corporal',
+						  '2500' => 'Sergeant',
+						  '5000' => 'Staff Sergeant',
+						  '8000' => 'Gunnery Sergeant',
+						  '20000' => 'Master Sergeant',
+						  '30000' => 'First Sergeant',
+						  '40000' => 'Master Gunnery Sergeant',
+						  '50000' => 'Sergeant Major',
+						  '60000' => '2nd Lieutenant',
+						  '75000' => '1st Lieutenant',
+						  '90000' => 'Captain',
+						  '115000' => 'Major',
+						  '125000' => 'Lieutenant Colonel',
+						  '150000' => 'Colonel',
+						  '180000' => 'Brigadier General',
+						  '200000' => 'Major General',
+						  '220000' => 'Lieutenant General',
+						  '250000' => 'General');
 	public $players = array();
-	private $timeBeforeCalc = 20;
-	private $times = 0;
 
 	/**
 	 * onInit()
@@ -92,70 +89,72 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 	 */
 
 	function onLoad() {
+		$this->enableDatabase();
 		$this->enableDedicatedEvents();
 		$this->enableTickerEvent();
 
 		Console::println('['.date('H:i:s').'] [MLEPP] Plugin: Ranks v'.$this->getVersion() );
+		$this->callPublicMethod('MLEPP\Core', 'registerPlugin', 'Ranks', $this);
 
 		$this->onTick();
-	}
-	
-	function onRulesScriptCallback($param1, $param2){
-	var_dump($param1);
-	var_dump($param2);
-	if ($param1 = "UnloadMap"){
-	}
-	if ($param1 = "OnHit"){
-	$data = explode(";", $param2);
-	$PlayerShooter = $data[0];
-	$PlayerHits = $data[1];
-	$PlayerVictim = $data[2];
-	$log = Logger::getLog('OnHit');
-	$log->write("Rankings for '{$this->storage->currentMap->name}' ({$this->storage->currentMap->uId}):");
-	$log->write(" Shooter: '{$PlayerShooter}' Victim: '{$PlayerVictim}' Hits:'{$PlayerHits}' ");
-	}
+
+		$points = array_keys($this->ranks);
+		foreach($this->storage->players as $player) {
+			$this->players[$player->login] = array('score' => 0,
+												   'rank' => $this->ranks[$this->closest($points, 0)]);
+		}
 	}
 
-	function onTick() {
-		$this->timeBeforeCalc--;
-		$this->times++;
-		if($this->timeBeforeCalc === 0) {
-			Console::println('['.date('H:i:s').'] Another 20 seconds, calculating ranks...');
-			foreach($this->storage->players as $player) {
-				$points = array_keys($this->ranks);
-				//$rankinfo = $this->connection->getCurrentRankingForLogin($player->login);
-				if($player->score == '') $player->score = 0;
-				if(isset($this->players[$player->login])) {
-					if($this->ranks[$this->closest($points, $player->score)] != $this->players[$player->login]['rank']) {
-						$this->connection->chatSendServerMessage('$fff»» '.$player->nickName.'$z$s$39f promoted from $fff'.$this->players[$player->login]['rank'].'$39f to $fff'.$this->ranks[$this->closest($points, $player->score)].'$39f!');
+	function onPlayerConnect($login, $isSpectator) {
+		$player = $this->storage->getPlayerObject($login);
+		$points = array_keys($this->ranks);
+
+		$this->players[$player->login] = array('score' => 0,
+										       'rank' => $this->ranks[$this->closest($points, 0)]);
+	}
+
+	function mode_onEndMap($scores) {
+		$players = explode(';', $scores);
+		$points = array_keys($this->ranks);
+
+		foreach($players as $player) {
+			if (strpos($player, ':') !== false) {
+				$arrayplayer = explode(':', $player);
+				$playerinfo = $this->storage->getPlayerObject($arrayplayer[0]);
+				if($arrayplayer[1] == '') $arrayplayer[1] = 0;
+				if(isset($this->players[$arrayplayer[0]])) {
+					if($this->ranks[$this->closest($points, ($this->players[$arrayplayer[0]]['score'] + $arrayplayer[1]))] != $this->players[$arrayplayer[0]]['rank']) {
+						$this->connection->chatSendServerMessage('$fff»» '.$playerinfo->nickName.'$z$s$39f promoted from $fff'.$this->players[$arrayplayer[0]]['rank'].'$39f to $fff'.$this->ranks[$this->closest($points, ($this->players[$arrayplayer[0]]['score'] + $arrayplayer[1]))].'$39f!');
+						Console::println('['.date('H:i:s').'] [MLEPP] [Ranks] '.$playerinfo->login.' promoted from '.$this->players[$arrayplayer[0]]['rank'].' to '.$this->ranks[$this->closest($points, ($this->players[$arrayplayer[0]]['score'] + $arrayplayer[1]))].'!');
 					}
 				}
-				$this->players[$player->login] = array('score' => $player->score,
-													   'rank' => $this->ranks[$this->closest($points, $player->score)]);
-				//print_r($rankinfo);
+				$this->players[$arrayplayer[0]] = array('score' => $this->players[$arrayplayer[0]]['score'] + $arrayplayer[1],
+													    'rank' => $this->ranks[$this->closest($points, $arrayplayer[1])]);
+				$q = "UPDATE `players` SET `player_points` = '".($this->players[$arrayplayer[0]]['score'] + $arrayplayer[1])."' WHERE `player_login` = '".$arrayplayer[0]."'";
+				$this->db->query($q);
 			}
-			//print_r($this->players);
-			$this->timeBeforeCalc = 20;
 		}
 	}
 
 	function getRank($login) {
 		$players = array_keys($this->players);
-		if(!in_array($login, $players)) {
-			$player = $this->storage->getPlayerObject($login);
-			$points = array_keys($this->ranks);
-			if($player->score == '') $player->score = 0;
-			$this->players[$player->login] = array('score' => $player->score,
-												   'rank' => $this->ranks[$this->closest($points, $player->score)]);
+		$points = array_keys($this->ranks);
+
+		if(in_array($login, $players)) {
+			return $this->players[$login];
+		} else {
+			$q = "SELECT `player_points` WHERE `player_login` = '".$login."'";
+			$query = $this->db->query($q);
+			$info = $query->fetchAll();
+
+			return array('score' => $info->player_points,
+						 'rank' => $this->ranks[$this->closest($points, $info->player_points)]);
 		}
-		return $this->players[$login];
 	}
 
 	function closest($array, $number) {
 		sort($array);
-		foreach($array as $a) {
-			if($a <= $number) return $a;
-		}
+		return max(array_intersect($array, range(0,$number)));
 	}
 }
 

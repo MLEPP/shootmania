@@ -93,6 +93,9 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 		$this->addAdminCommand(array($this, 'GetRulesScriptParams'), array('get', 'rules', 'param'), false, false, false);
 		$this->addAdminCommand(array($this, 'skip'), array('skip'), false, false, false);
 		$this->addAdminCommand(array($this, 'kick'), array('kick'), false, false, false);
+		$this->addAdminCommand(array($this, 'cancel'), array('cancel'), false, false, false);
+		$this->addAdminCommand(array($this, 'enableCallvotes'), array('enablevotes'), false, false, false);
+		$this->addAdminCommand(array($this, 'disableCallvotes'), array('disablevotes'), false, false, false);
 		$this->addAdminCommand(array($this, 'saveMatchSettings'), array('savematchsettings'), false, false, false);
 		$this->addAdminCommand(array($this, 'loadMatchSettings'), array('loadmatchsettings'), false, false, false);
     }
@@ -734,6 +737,63 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
         }
     }
 
+	/**
+	 * cancel()
+	 * Admin function, cancels vote.
+	 *
+	 * @param mixed $fromLogin
+	 * @param mixed $param1
+	 * @param mixed $param2
+	 * @param mixed $param3
+	 * @return
+	 */
+	function cancel($fromLogin, $param1 = NULL, $param2 = NULL, $param3 = NULL) {
+		$player = $this->storage->getPlayerObject($fromLogin);
+		if(!AdminGroup::contains($player->login)) {
+			$this->connection->chatSendServerMessage('$fff» $f00$iYou don\'t have the permission to do that!', $fromLogin);
+			return;
+		}
+
+		$admin = Storage::GetInstance()->getPlayerObject($fromLogin);
+		try {
+			$this->connection->cancelVote();
+			$this->connection->chatSendServerMessage('$fff»» $ff0Admin $fff' . $admin->nickName . '$z$s$ff0 canceled the current CallVote!');
+		} catch (\Exception $e) {
+			$this->connection->chatSendServerMessage('$fff» $f00$i' . $e->getMessage(), $fromLogin);
+		}
+	}
+
+	function disableCallvotes($fromLogin, $param1 = NULL, $param2 = NULL, $param3 = NULL) {
+		$player = $this->storage->getPlayerObject($fromLogin);
+		if(!AdminGroup::contains($player->login)) {
+			$this->connection->chatSendServerMessage('$fff» $f00$iYou don\'t have the permission to do that!', $fromLogin);
+			return;
+		}
+
+		$admin = Storage::GetInstance()->getPlayerObject($fromLogin);
+		try {
+			$this->connection->setCallVoteTimeOut(0);
+			$this->connection->chatSendServerMessage('$fff»» $ff0Admin $fff' . $admin->nickName . '$z$s$ff0 disabled CallVotes!');
+		} catch (\Exception $e) {
+			$this->connection->chatSendServerMessage('$fff» $f00$i' . $e->getMessage(), $fromLogin);
+		}
+	}
+
+	function enableCallvotes($fromLogin, $param1 = NULL, $param2 = NULL, $param3 = NULL) {
+		$player = $this->storage->getPlayerObject($fromLogin);
+		if(!AdminGroup::contains($player->login)) {
+			$this->connection->chatSendServerMessage('$fff» $f00$iYou don\'t have the permission to do that!', $fromLogin);
+			return;
+		}
+
+		$admin = Storage::GetInstance()->getPlayerObject($fromLogin);
+		try {
+			$this->connection->setCallVoteTimeOut(60);
+			$this->connection->chatSendServerMessage('$fff»» $ff0Admin $fff' . $admin->nickName . '$z$s$ff0 enabled CallVotes!');
+		} catch (\Exception $e) {
+			$this->connection->chatSendServerMessage('$fff» $f00$i' . $e->getMessage(), $fromLogin);
+		}
+	}
 
      /**
      * blacklist()
