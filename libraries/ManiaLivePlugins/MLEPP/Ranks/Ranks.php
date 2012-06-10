@@ -146,6 +146,26 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 			}
 		}
 	}
+	
+	function mode_onPlayerRespawn($respawns){
+		$players = explode(';', $respawns);
+		//var_dump($players);
+		foreach($players as $player) {
+				$playerinfo = $this->storage->getPlayerObject($player);
+				$this->connection->chatSendServerMessage('$fff»» '.$playerinfo->nickName.'$z$s$39f Respawned$39f!');
+				Console::println('['.date('H:i:s').'] [MLEPP] [Ranks] '.$playerinfo->login.' Respawned!');
+			}
+		}
+
+	function mode_onPoleCapture($polecapture){
+		$players = explode(';', $polecapture);
+		//var_dump($players);
+		foreach($players as $player) {
+				$playerinfo = $this->storage->getPlayerObject($player);
+				$this->connection->chatSendServerMessage('$fff»» '.$playerinfo->nickName.'$z$s$39f Captured the Pole$39f!');
+				Console::println('['.date('H:i:s').'] [MLEPP] [Ranks] '.$playerinfo->login.' Captured the Pole!');
+			}
+		}
 
 	function ranksCommand($login, $param1 = null, $param2 = null, $param3 = null) {
 		$points = array_keys($this->ranks);
