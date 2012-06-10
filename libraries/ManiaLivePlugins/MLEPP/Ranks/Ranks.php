@@ -43,6 +43,8 @@ use ManiaLive\Features\Admin\AdminGroup;
 use ManiaLive\Config\Loader;
 use ManiaLive\Utilities\Logger;
 
+use ManiaLivePlugins\MLEPP\Core\Core;
+
 use ManiaLivePlugins\MLEPP\Ranks\Gui\Windows\ListWindow;
 
 class Ranks extends \ManiaLive\PluginHandler\Plugin {
@@ -98,6 +100,7 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 		Console::println('['.date('H:i:s').'] [MLEPP] Plugin: Ranks v'.$this->getVersion() );
 		$this->callPublicMethod('MLEPP\Core', 'registerPlugin', 'Ranks', $this);
 		$cmd = $this->registerChatCommand("top100", "top100Command", 0, true);
+		$cmd = $this->registerChatCommand("ranks", "ranksCommand", 0, true);
 
 		$this->onTick();
 
@@ -119,6 +122,7 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 	}
 
 	function mode_onEndMap($scores) {
+		print_r($this->players);
 		$players = explode(';', $scores);
 		$points = array_keys($this->ranks);
 
@@ -133,12 +137,38 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 						Console::println('['.date('H:i:s').'] [MLEPP] [Ranks] '.$playerinfo->login.' promoted from '.$this->players[$arrayplayer[0]]['rank'].' to '.$this->ranks[$this->closest($points, ($this->players[$arrayplayer[0]]['score'] + $arrayplayer[1]))].'!');
 					}
 				}
+
+				unset($this->players[$arrayplayer[0]]);
 				$this->players[$arrayplayer[0]] = array('score' => $this->players[$arrayplayer[0]]['score'] + $arrayplayer[1],
 													    'rank' => $this->ranks[$this->closest($points, $arrayplayer[1])]);
 				$q = "UPDATE `players` SET `player_points` = '".($this->players[$arrayplayer[0]]['score'] + $arrayplayer[1])."' WHERE `player_login` = '".$arrayplayer[0]."'";
 				$this->db->query($q);
 			}
 		}
+	}
+
+	function ranksCommand($login, $param1 = null, $param2 = null, $param3 = null) {
+		$points = array_keys($this->ranks);
+		$window = ListWindow::Create($login);
+		$players = array();
+
+		foreach($this->storage->players as $player) {
+			$players[] = array('nickname' => $player->nickName,
+				'points' => $this->players[$player->login]['score'],
+				'rank' => $this->players[$player->login]['rank']);
+		}
+
+		foreach($this->storage->spectators as $player) {
+			$players[] = array('nickname' => $player->nickName,
+				'points' => $this->players[$player->login]['score'],
+				'rank' => $this->players[$player->login]['rank']);
+		}
+
+		$this->array_sort_by_column($players, 'points');
+		$players = array_reverse($players);
+
+		$window->setInfos($players, $this->storage->server->name, 'Rankings of players currently on');
+		$window->show();
 	}
 
 	function top100Command($login, $param1 = null, $param2 = null, $param3 = null) {
@@ -153,8 +183,17 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 								 'rank' => $this->ranks[$this->closest($points, $player->player_points)]);
 			$i++;
 		}
-		$window->setInfos($players, $this->storage->server->name);
+		$window->setInfos($players, $this->storage->server->name, 'TOP 100 best players on');
 		$window->show();
+	}
+
+	function array_sort_by_column(&$arr, $col, $dir = SORT_ASC) {
+		$sort_col = array();
+		foreach ($arr as $key=> $row) {
+			$sort_col[$key] = $row[$col];
+		}
+
+		array_multisort($sort_col, $dir, $arr);
 	}
 
 	function getRank($login) {

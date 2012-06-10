@@ -26,6 +26,7 @@ class ListWindow extends \ManiaLive\Gui\ManagedWindow
 
 	private $serverName;
 	private $players = array();
+	private $title;
 	private $action;
 	private $nbChallengesPlayed;
 
@@ -46,10 +47,11 @@ class ListWindow extends \ManiaLive\Gui\ManagedWindow
 		$this->nbpage = 1;
 	}
 
-	function setInfos($players = array(), $serverName)
+	function setInfos($players = array(), $serverName, $title)
 	{
 		$this->players = $players;
 		$this->serverName = $serverName;
+		$this->title = $title;
 		$this->connection =  Connection::getInstance();
 	}
 
@@ -90,7 +92,7 @@ class ListWindow extends \ManiaLive\Gui\ManagedWindow
 		$this->tableau->clearComponents();
 		$posy = 0;
 		$num = 1;
-		$this->setTitle('TOP 100 best players on $fff'.$this->serverName);
+		$this->setTitle($this->title.' $fff'.$this->serverName);
 
 		if(count($this->players) > 0)
 		{
