@@ -41,6 +41,7 @@ use ManiaLive\Utilities\Console;
 class Core extends \ManiaLive\PluginHandler\Plugin {
 
 	private $plugins = array();
+	private $players = array();
 
 	function onInit() {
 		$this->setVersion('0.1.0');
@@ -71,11 +72,21 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 		}
 
 		foreach($this->storage->players as $player) {
-			$this->insertPlayer($player);
+			$this->onPlayerConnect($player->login, false);
 		}
 
 		foreach($this->storage->spectators as $player) {
-			$this->insertPlayer($player);
+			$this->onPlayerConnect($player->login, false);
+		}
+	}
+
+	function onUnload() {
+		foreach($this->storage->players as $player) {
+			$this->onPlayerDisconnect($player->login);
+		}
+
+		foreach($this->storage->spectators as $player) {
+			$this->onPlayerDisconnect($player->login);
 		}
 	}
 
@@ -109,6 +120,14 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 	function onPlayerConnect($login, $isSpectator) {
 		$player = $this->storage->getPlayerObject($login);
 		$this->insertPlayer($player);
+
+		$this->players[$login] = time();
+	}
+
+	function onPlayerDisconnect($login) {
+		$info = $this->db->query("SELECT `player_timeplayed` FROM `players` WHERE `player_login` = '".$login."'")->fetchStdObject();
+		$q = "UPDATE `players` SET `player_timeplayed` = '".($info->player_timeplayed + (time()-$this->players[$login]))."' WHERE `player_login` = '".$login."'";
+		$this->db->query($q);
 	}
 
 	function registerPlugin($plugin, $class) {

@@ -32,7 +32,7 @@ class trackList extends \ManiaLive\Gui\ManagedWindow
 	function onConstruct()
 	{
 		parent::onConstruct();
-		$this->setSize(212, 126);
+		$this->setSize(180, 120);
 		$this->centerOnScreen();
 		$this->tableau = new Frame();
 		$this->tableau->setPosition(0, -10);

@@ -43,8 +43,6 @@ use ManiaLive\Features\Admin\AdminGroup;
 use ManiaLive\Config\Loader;
 
 use ManiaLivePlugins\MLEPP\Karma\Gui\Windows\ListWindow;
-use ManiaLivePlugins\MLEPP\Karma\Gui\Controls\Header;
-use ManiaLivePlugins\MLEPP\Karma\Gui\Controls\Normal;
 
 use ManiaLivePlugins\MLEPP\Core\Core;
 
@@ -90,7 +88,7 @@ class Karma extends \ManiaLive\PluginHandler\Plugin {
 
 	function onReady() {
 		$cmd = $this->registerChatCommand("karma", "karma", 0, true);
-		//$cmd = $this->registerChatCommand("whokarma", "whoKarma", 0, true);
+		$cmd = $this->registerChatCommand("whokarma", "whoKarma", 0, true);
 		$cmd = $this->registerChatCommand("++", "votePlus", 0, true);
 		$cmd = $this->registerChatCommand("--", "voteMin", 0, true);
 
@@ -169,49 +167,17 @@ class Karma extends \ManiaLive\PluginHandler\Plugin {
 		}
 	}
 
-	/*function whoKarma($login) {
-		$window = ListWindow::Create($login);
-		$window->setTitle('/whokarma - Who voted what?');
-		$window->setSize(180, 100);
-		$window->clearAll();
-		// prepare cols ...
-		//$window->addColumn('NickName', 0.4);
-		$window->addColumn('Login', 0.4);
-		$window->addColumn('Vote', 0.2);
-
-		$positive = array();
-		$negative = array();
-
-		// refresh records for this window ...
-		$window->clearItems();
-		$id = 1;
-		foreach(array_keys($this->playerKarmas) as $login) {
-			$value = $this->playerKarmas[$login];
-			/*$player = $this->connection->getDetailedPlayerInfo($login);
-			$nickName = $player->nickName;
-
-			if($value == '+' ||$value == '++' || $value == '+++') {
-				$positive[] = array(//'NickName' => $nickName,
-					'Login' => $login,
-					'Vote' => $value);
-			} else {
-				$negative[] = array(//'NickName' => $nickName,
-					'Login' => $login,
-					'Vote' => $value);
-			}
+	function whoKarma($login) {
+		if(!empty($this->playerKarmas)) {
+			$window = ListWindow::Create($login);
+			$map = $this->connection->getCurrentMapInfo();
+			$window->setInfos($this->playerKarmas, $map->name);
+			$window->show();
+		} else {
+			$player = $this->storage->getPlayerObject($login);
+			$this->connection->chatSendServerMessage('$fff» $f00$iNo karma votes on this map!', $player);
 		}
-
-		foreach($positive as $posi) {
-			$window->addItem($posi);
-		}
-
-		foreach($negative as $negi) {
-			$window->addItem($negi);
-		}
-
-		$window->centerOnScreen();
-		$window->show();
-	}*/
+	}
 
 	/**
 	 * getMapKarma()

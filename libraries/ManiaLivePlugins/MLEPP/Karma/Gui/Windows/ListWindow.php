@@ -1,191 +1,173 @@
 <?php
+
 namespace ManiaLivePlugins\MLEPP\Karma\Gui\Windows;
 
-use ManiaLivePlugins\MLEPP\Karma\Gui\Controls\Header;
-use ManiaLivePlugins\MLEPP\Karma\Gui\Controls\Normal;
-use ManiaLive\Gui\Windowing\WindowHandler;
-
-use ManiaLive\PluginHandler\PluginHandler;
-
-use ManiaLib\Gui\Elements\Bgs1InRace;
-use ManiaLib\Gui\Tools;
-use ManiaLib\Gui\Elements\Icons64x64_1;
-use ManiaLib\Gui\Elements\BgsPlayerCard;
 use ManiaLib\Gui\Elements\Label;
-use ManiaLib\Gui\Elements\Entry;
+use ManiaLib\Gui\Elements\Bgs1InRace;
 use ManiaLib\Gui\Elements\Quad;
-use ManiaLib\Gui\Elements\Button;
-use ManiaLib\Gui\Layouts\Flow;
-use ManiaLive\Data\Storage;
-use ManiaLive\Gui\Windowing\Controls\ButtonResizeable;
-use ManiaLive\Gui\Windowing\Windows\Info;
-use ManiaLive\Gui\Windowing\Controls\PageNavigator;
-use ManiaLive\Gui\Windowing\Controls\Panel;
-use ManiaLive\Gui\Windowing\Controls\Frame;
+use ManiaLib\Gui\Elements\BgsPlayerCard;
+use ManiaLib\Gui\Elements\Icons64x64_1;
 use ManiaLive\Utilities\Time;
-use ManiaLive\Utilities\Console;
+use ManiaLive\DedicatedApi\Connection;
+use ManiaLive\Gui\Controls\Frame;
+use ManiaLive\Gui\Controls\PageNavigator;
 
 class ListWindow extends \ManiaLive\Gui\ManagedWindow
 {
-	//components ...
+	private $tableau = array();
 	private $navigator;
-	private $table;
-	private $btn_player;
-	private $btn_website;
-	private $navigator_back;
-	
+	private $bgresume;
+	private $textInfos;
+	private $showInfos = false;
+
 	private $page;
-	private $records;
-	private $page_last;
-	private $page_items;
-	private $item_height;
-	private $table_height;
-	private $columns;
-	private $info;
-	private $highlight;
-	private $callback;
-	
-	function initializeComponents()
+	private $nbpage;
+	private $currentChallengeindex;
+
+	private $karmaVotes = array();
+	private $mapName;
+	private $karmaInfo = array();
+	private $action;
+	private $nbChallengesPlayed;
+
+	function onConstruct()
 	{
-		$this->page = 1;
-		$this->page_last = 1;
-		$this->item_height = 6;
-		$this->table_height = 0;
-		$this->records = array();
-		$this->columns = array();
-		$this->highlight = false;
-		$this->panel = new Panel();
-		$this->panel->setTitle('Players on the server');
-		$this->setMaximizable();
-		
-		// add background for navigation elements ...
-		$this->navigator_back = new BgsPlayerCard();
-		$this->navigator_back->setSubStyle(BgsPlayerCard::BgCardSystem);
-		$this->addComponent($this->navigator_back);
-		
-		// create records-table ...
-		$this->table = new Frame($this->getSizeX() - 4, $this->getSizeY() - 18);
-		$this->table->applyLayout(new Flow());
-		$this->table->setPosition(2, 16);
-		$this->addComponent($this->table);
-		
-		// create page navigator ...
+		parent::onConstruct();
+		$this->setSize(180, 120);
+		$this->centerOnScreen();
+		$this->tableau = new Frame();
+		$this->tableau->setPosition(0, -10);
+		$this->addComponent($this->tableau);
+
 		$this->navigator = new PageNavigator();
 		$this->addComponent($this->navigator);
+
+		$this->makeFirstLine(-15.5);
+		$this->page = 1;
+		$this->nbpage = 1;
 	}
-	
-	function onResize($oldX, $oldY)
+
+	function setInfos($karmaVotes = array(), $mapName)
 	{
-		//$this->table->setSize($this->getSizeX() - 4, $this->getSizeY() - 21);
-		//$this->calculatePages();
+		$this->karmaVotes = $karmaVotes;
+		$this->mapName = $mapName;
+		$this->connection =  Connection::getInstance();
 	}
-	
+
+	function makeFirstLine($posy = 0)
+	{
+		$texte = new Label();
+		$texte->setSize(10, 4);
+		$texte->setPosition(3, $posy, 2);
+		$texte->setTextColor("000");
+		$texte->setTextSize(2);
+		$texte->setText("Id");
+		$this->addComponent($texte);
+		$texte = new Label();
+		$texte->setSize(55, 4);
+		$texte->setPosition(15, $posy, 2);
+		$texte->setTextColor("000");
+		$texte->setTextSize(2);
+		$texte->setText("NickName");
+		$this->addComponent($texte);
+		$texte = new Label();
+		$texte->setSize(37.5, 4);
+		$texte->setPosition(80, $posy, 2);
+		$texte->setTextColor("000");
+		$texte->setTextSize(2);
+		$texte->setText("Login");
+		$this->addComponent($texte);
+		$texte = new Label();
+		$texte->setSize(10, 4);
+		$texte->setPosition(112, $posy, 2);
+		$texte->setTextColor("000");
+		$texte->setTextSize(2);
+		$texte->setText("Vote");
+		$this->addComponent($texte);
+	}
+
 	function onDraw()
 	{
-		// refresh table ...
-		$this->table->clearComponents();
-		
-		// create table header ...
-		foreach ($this->columns as $name => $percent)
-		{
-			$cell = new Header($percent * $this->table->getSizeX(), $this->item_height + 1);
-			$cell->setText($name);
-			
-			$this->table->addComponent($cell);
+		$this->tableau->clearComponents();
+		$posy = 0;
+		$num = 1;
+		$this->setTitle('Karma votes on $fff'.$this->mapName);
+
+		$karmaLogins = array_keys($this->karmaVotes);
+		foreach($karmaLogins as $login) {
+			$player = $this->connection->getPlayerInfo($login);
+			$this->karmaInfo[] = array('login' => $login, 'player' => $player, 'vote' => $this->karmaVotes[$login]);
 		}
-		
-		// create table body ...
-		$count = count($this->records);
-		$max = $this->page_items * $this->page;
-		for ($i = $this->page_items * ($this->page - 1); $i < $count && $i < $max; $i++)
+
+		if(count($this->karmaVotes) > 0)
 		{
-			$record = $this->records[$i];
-			
-			foreach ($this->columns as $name => $percent)
+			$posy -= 10;
+			for($i=($this->page-1)*15; $i<=($this->page)*15-1; ++$i)
 			{
-				if ($name != "Spec") {
-					$cell = new Normal($percent * $this->table->getSizeX(), $this->item_height);
-					if (isset($record[$name]))
-						$cell->setText($record[$name]);
-					else
-						$cell->setText(' ');
-				}
-				else {
-					$icon = "Race";
-					if ($record[$name] == "Spec") $icon = "Spec";
-					$cell = new SpecIcon($percent * $this->table->getSizeX(), $this->item_height, $icon);
-				}
-								
-				$this->table->addComponent($cell);
+				if(!isset($this->karmaInfo[$i]))break;
+				//$this->setLineBgs($posy, $i, $karmaInfo[$i]->name, $this->challengesList[$i]->fileName);
+				$texte = new Label();
+				$texte->setSize(6.5, 3);
+				$texte->setPosition(6.5, $posy-0.5, 2);
+				$texte->setTextColor("FFF");
+				$texte->setTextSize(2);
+				$texte->setHalign("right");
+				$texte->setText(($i+1).".");
+				$this->tableau->addComponent($texte);
+				$texte = new Label();
+				$texte->setSize(63, 3);
+				$texte->setPosition(15.5, $posy-0.5, 3);
+				$texte->setTextColor("FFF");
+				$texte->setTextSize(2);
+				$texte->setText($this->karmaInfo[$i]['player']->nickName);
+				$this->tableau->addComponent($texte);
+				$texte = new Label();
+				$texte->setSize(30, 3);
+				$texte->setPosition(80.5, $posy-0.5, 3);
+				$texte->setTextColor("FFF");
+				$texte->setTextSize(2);
+				$texte->setText($this->karmaInfo[$i]['login']);
+				$this->tableau->addComponent($texte);
+				$texte = new Label();
+				$texte->setSize(15.5, 3);
+				$texte->setPosition(114, $posy-0.5, 3);
+				$texte->setTextColor("FFF");
+				$texte->setTextSize(2);
+				$texte->setText($this->karmaInfo[$i]['vote']);
+				$this->tableau->addComponent($texte);
+				$posy -= 6;
 			}
 		}
-		
-		// add page navigator to the bottom ...
+
+		$this->nbpage = intval((count($this->karmaInfo)-1)/15)+1;
+
 		$this->navigator->setPositionX($this->getSizeX() / 2);
-		$this->navigator->setPositionY($this->getSizeY() - 4);
-				
-		// place navigation background ...
-		$this->navigator_back->setValign('bottom');
-		$this->navigator_back->setSize($this->getSizeX() - 0.6, 8);
-		$this->navigator_back->setPosition(0.3, $this->getSizeY() - 0.3);
-		
-		// configure ...
+		$this->navigator->setPositionY(-($this->getSizeY() - 6));
 		$this->navigator->setCurrentPage($this->page);
-		$this->navigator->setPageNumber($this->page_last);
+		$this->navigator->setPageNumber($this->nbpage);
 		$this->navigator->showText(true);
 		$this->navigator->showLast(true);
-		
-		if ($this->page < $this->page_last && $this->info == null)
+
+		if ($this->page < $this->nbpage)
 		{
-			$this->navigator->arrowNext->setAction($this->callback('showNextPage'));
-			$this->navigator->arrowLast->setAction($this->callback('showLastPage'));
+			$this->navigator->arrowNext->setAction($this->createAction(array($this,'showNextPage')));
+			$this->navigator->arrowLast->setAction($this->createAction(array($this,'showLastPage')));
 		}
 		else
 		{
 			$this->navigator->arrowNext->setAction(null);
 			$this->navigator->arrowLast->setAction(null);
 		}
-		
-		if ($this->page > 1 && $this->info == null)
+
+		if ($this->page > 1)
 		{
-			$this->navigator->arrowPrev->setAction($this->callback('showPrevPage'));
-			$this->navigator->arrowFirst->setAction($this->callback('showFirstPage'));
+			$this->navigator->arrowPrev->setAction($this->createAction(array($this,'showPrevPage')));
+			$this->navigator->arrowFirst->setAction($this->createAction(array($this,'showFirstPage')));
 		}
 		else
 		{
 			$this->navigator->arrowPrev->setAction(null);
 			$this->navigator->arrowFirst->setAction(null);
-		}
-	}
-
-	function calculatePages()
-	{
-		//$this->page_items = floor( ($this->table->getSizeY()-12) / $this->item_height);
-		//$this->page_last = ceil(count($this->records) * $this->item_height / max(1, $this->table->getSizeY()-12));
-	}
-
-	function addColumn($name, $percent)
-	{
-		$this->columns[$name] = $percent;
-	}
-
-	function clearItems()
-	{
-		$this->records = array();
-	}
-
-	function clearAll()
-	{
-		$this->columns = array();
-		$this->records = array();
-	}
-
-	function addItem($record)
-	{
-		if (is_array($record))
-		{
-			$this->records[] = $record;
-			$this->calculatePages();
 		}
 	}
 
@@ -203,7 +185,7 @@ class ListWindow extends \ManiaLive\Gui\ManagedWindow
 
 	function showLastPage($login = null)
 	{
-		$this->page = $this->page_last;
+		$this->page = $this->nbpage;
 		if ($login) $this->show();
 	}
 
@@ -213,8 +195,16 @@ class ListWindow extends \ManiaLive\Gui\ManagedWindow
 		if ($login) $this->show();
 	}
 
-	function destroy()
+	function showInfos($login = null, $showInfos)
 	{
-		parent::destroy();
+		$this->showInfos = $showInfos;
+		if($login)$this->show();
+	}
+
+	function setAction($action = array())
+	{
+		$this->action = $action;
 	}
 }
+
+?>

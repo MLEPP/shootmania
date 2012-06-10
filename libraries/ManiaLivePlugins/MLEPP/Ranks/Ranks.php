@@ -145,7 +145,7 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 		} else {
 			$q = "SELECT `player_points` FROM `players` WHERE `player_login` = '".$login."'";
 			$query = $this->db->query($q);
-			$info = $query->fetchAll();
+			$info = $query->fetchStdObject();
 
 			return array('score' => $info->player_points,
 						 'rank' => $this->ranks[$this->closest($points, $info->player_points)]);
