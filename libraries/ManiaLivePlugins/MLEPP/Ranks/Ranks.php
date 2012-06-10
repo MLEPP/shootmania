@@ -100,8 +100,11 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 
 		$points = array_keys($this->ranks);
 		foreach($this->storage->players as $player) {
-			$this->players[$player->login] = array('score' => 0,
-												   'rank' => $this->ranks[$this->closest($points, 0)]);
+			$this->players[$player->login] = $this->getRank($player->login);
+		}
+
+		foreach($this->storage->spectators as $player) {
+			$this->players[$player->login] = $this->getRank($player->login);
 		}
 	}
 
@@ -109,8 +112,7 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 		$player = $this->storage->getPlayerObject($login);
 		$points = array_keys($this->ranks);
 
-		$this->players[$player->login] = array('score' => 0,
-										       'rank' => $this->ranks[$this->closest($points, 0)]);
+		$this->players[$player->login] = $this->getRank($player->login);
 	}
 
 	function mode_onEndMap($scores) {

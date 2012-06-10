@@ -38,6 +38,8 @@ namespace ManiaLivePlugins\MLEPP\Core;
 use ManiaLive\Data\Storage;
 use ManiaLive\Utilities\Console;
 
+use ManiaLivePlugins\MLEPP\Core\Gui\Windows\ListWindow;
+
 class Core extends \ManiaLive\PluginHandler\Plugin {
 
 	private $plugins = array();
@@ -52,6 +54,8 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 	function onLoad() {
 		$this->enableDatabase();
 		$this->enableDedicatedEvents();
+		$cmd = $this->registerChatCommand("active", "activeCommand", 0, true);
+
 		Console::println('[' . date('H:i:s') . '] [MLEPP] Core v' . $this->getVersion());
 		$this->connection->chatSendServerMessage('$fff» $fa0Welcome, this server is running $fffMLEPP for ShootMania$fa0!');
 
@@ -88,6 +92,19 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 		foreach($this->storage->spectators as $player) {
 			$this->onPlayerDisconnect($player->login);
 		}
+	}
+
+	function activeCommand($login, $param1 = null, $param2 = null, $param3 = null) {
+		$window = ListWindow::Create($login);
+		$query = $this->db->query("SELECT * FROM `players` ORDER BY `player_timeplayed` DESC LIMIT 0,100");
+		$players = array();
+		$i = 0;
+		while($player = $query->fetchStdObject()) {
+			$players[$i] = $player;
+			$i++;
+		}
+		$window->setInfos($players, $this->storage->server->name);
+		$window->show();
 	}
 
 	function insertPlayer($player) {
