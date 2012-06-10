@@ -143,7 +143,7 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 		if(in_array($login, $players)) {
 			return $this->players[$login];
 		} else {
-			$q = "SELECT `player_points` WHERE `player_login` = '".$login."'";
+			$q = "SELECT `player_points` FROM `players` WHERE `player_login` = '".$login."'";
 			$query = $this->db->query($q);
 			$info = $query->fetchAll();
 
