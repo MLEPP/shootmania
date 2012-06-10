@@ -153,15 +153,19 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 		$players = array();
 
 		foreach($this->storage->players as $player) {
-			$players[] = array('nickname' => $player->nickName,
-				'points' => $this->players[$player->login]['score'],
-				'rank' => $this->players[$player->login]['rank']);
+			try {
+				$players[] = array('nickname' => $player->nickName,
+								   'points' => $this->players[$player->login]['score'],
+								   'rank' => $this->players[$player->login]['rank']);
+			} catch (\Exception $e) {}
 		}
 
 		foreach($this->storage->spectators as $player) {
-			$players[] = array('nickname' => $player->nickName,
-				'points' => $this->players[$player->login]['score'],
-				'rank' => $this->players[$player->login]['rank']);
+			try {
+				$players[] = array('nickname' => $player->nickName,
+								   'points' => $this->players[$player->login]['score'],
+								   'rank' => $this->players[$player->login]['rank']);
+			} catch(\Exception $e) {}
 		}
 
 		$this->array_sort_by_column($players, 'points');
