@@ -382,7 +382,7 @@ main() {
 			OffZoneRadiusSpeed = 0.;
 			OffZoneCenterBlockId = Goal.Id;	
 			
-			//SetNbFakePlayers(12, 0); ///< Debug
+			SetNbFakePlayers(50, 0); ///< Debug
 			WaitForPlayers(1);
 			
 			/* ------------------------------------- */
@@ -524,7 +524,7 @@ main() {
 								RoundHits += 1;
 								declare Points = (RoundHits + 1) / 2;
 								Score::AddPoints(Event.Shooter, Points);
-								XmlRpc.SendCallback("playerHit", "Victim:"^Event.Victim.Login^";Shooter:"^Event.Shooter.Login);
+								XmlRpc.SendCallback("playerHit", "Victim:"^Event.Victim.Login^";Shooter:"^Event.Shooter.Login^";"^Points);
 								Top::IncrementPlayerPoints("Hit", Event.Shooter, Points);
 								CumulPoints += Points;
 							}
