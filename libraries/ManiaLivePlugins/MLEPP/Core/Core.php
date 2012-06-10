@@ -119,13 +119,13 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 					`player_updatedat`
 				  ) VALUES (
 					'".$player->login."',
-					'".$player->nickName."',
+					".$this->db->quote($player->nickName).",
 					".$this->db->quote(str_replace('World|', '', $player->path)).",
 					'".date('Y-m-d H:i:s')."'
 				  )";
 		} else {
 			$q = "UPDATE `players`
-				  SET `player_nickname` = '".$player->nickName."',
+				  SET `player_nickname` = ".$this->db->quote($player->nickName).",
 				      `player_nation` = ".$this->db->quote(str_replace('World|', '', $player->path)).",
 				      `player_updatedat` = '".date('Y-m-d H:i:s')."'
 				  WHERE `player_login` = '".$player->login."'";
@@ -142,9 +142,11 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 	}
 
 	function onPlayerDisconnect($login) {
-		$info = $this->db->query("SELECT `player_timeplayed` FROM `players` WHERE `player_login` = '".$login."'")->fetchStdObject();
-		$q = "UPDATE `players` SET `player_timeplayed` = '".($info->player_timeplayed + (time()-$this->players[$login]))."' WHERE `player_login` = '".$login."'";
-		$this->db->query($q);
+		try {
+			$info = $this->db->query("SELECT `player_timeplayed` FROM `players` WHERE `player_login` = '".$login."'")->fetchStdObject();
+			$q = "UPDATE `players` SET `player_timeplayed` = '".($info->player_timeplayed + (time()-$this->players[$login]))."' WHERE `player_login` = '".$login."'";
+			$this->db->query($q);
+		} catch(\Exception $e) {}
 	}
 
 	function registerPlugin($plugin, $class) {

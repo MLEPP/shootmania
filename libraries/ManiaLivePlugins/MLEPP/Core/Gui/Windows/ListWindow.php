@@ -61,28 +61,28 @@ class ListWindow extends \ManiaLive\Gui\ManagedWindow
 		$texte->setPosition(4, $posy, 2);
 		$texte->setTextColor("000");
 		$texte->setTextSize(2);
-		$texte->setText("Id");
+		$texte->setText("\$oId");
 		$this->addComponent($texte);
 		$texte = new Label();
 		$texte->setSize(55, 4);
 		$texte->setPosition(15, $posy, 2);
 		$texte->setTextColor("000");
 		$texte->setTextSize(2);
-		$texte->setText("NickName");
+		$texte->setText("\$oNickName");
 		$this->addComponent($texte);
 		$texte = new Label();
 		$texte->setSize(37.5, 4);
 		$texte->setPosition(80, $posy, 2);
 		$texte->setTextColor("000");
 		$texte->setTextSize(2);
-		$texte->setText("Login");
+		$texte->setText("\$oLogin");
 		$this->addComponent($texte);
 		$texte = new Label();
 		$texte->setSize(30, 4);
 		$texte->setPosition(113, $posy, 2);
 		$texte->setTextColor("000");
 		$texte->setTextSize(2);
-		$texte->setText("Time played");
+		$texte->setText("\$oTime played");
 		$this->addComponent($texte);
 	}
 
@@ -103,7 +103,7 @@ class ListWindow extends \ManiaLive\Gui\ManagedWindow
 				$texte = new Label();
 				$texte->setSize(6.5, 3);
 				$texte->setPosition(7.5, $posy-0.5, 2);
-				$texte->setTextColor("FFF");
+				$texte->setTextColor("000");
 				$texte->setTextSize(2);
 				$texte->setHalign("right");
 				$texte->setText(($i+1).".");
@@ -111,21 +111,21 @@ class ListWindow extends \ManiaLive\Gui\ManagedWindow
 				$texte = new Label();
 				$texte->setSize(63, 3);
 				$texte->setPosition(15.5, $posy-0.5, 3);
-				$texte->setTextColor("FFF");
+				$texte->setTextColor("000");
 				$texte->setTextSize(2);
 				$texte->setText($this->players[$i]->player_nickname);
 				$this->tableau->addComponent($texte);
 				$texte = new Label();
 				$texte->setSize(30, 3);
 				$texte->setPosition(80.5, $posy-0.5, 3);
-				$texte->setTextColor("FFF");
+				$texte->setTextColor("000");
 				$texte->setTextSize(2);
 				$texte->setText($this->players[$i]->player_login);
 				$this->tableau->addComponent($texte);
 				$texte = new Label();
 				$texte->setSize(15.5, 3);
 				$texte->setPosition(114, $posy-0.5, 3);
-				$texte->setTextColor("FFF");
+				$texte->setTextColor("000");
 				$texte->setTextSize(2);
 
 				$MwTime = $this->players[$i]->player_timeplayed;

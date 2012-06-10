@@ -1,6 +1,6 @@
 <?php
 
-namespace ManiaLivePlugins\MLEPP\Karma\Gui\Windows;
+namespace ManiaLivePlugins\MLEPP\Ranks\Gui\Windows;
 
 use ManiaLib\Gui\Elements\Label;
 use ManiaLib\Gui\Elements\Bgs1InRace;
@@ -11,7 +11,6 @@ use ManiaLive\Utilities\Time;
 use ManiaLive\DedicatedApi\Connection;
 use ManiaLive\Gui\Controls\Frame;
 use ManiaLive\Gui\Controls\PageNavigator;
-use ManiaLivePlugins\MLEPP\Core\Core;
 
 class ListWindow extends \ManiaLive\Gui\ManagedWindow
 {
@@ -25,8 +24,8 @@ class ListWindow extends \ManiaLive\Gui\ManagedWindow
 	private $nbpage;
 	private $currentChallengeindex;
 
-	private $mapName;
-	private $karmaInfo = array();
+	private $serverName;
+	private $players = array();
 	private $action;
 	private $nbChallengesPlayed;
 
@@ -47,19 +46,18 @@ class ListWindow extends \ManiaLive\Gui\ManagedWindow
 		$this->nbpage = 1;
 	}
 
-	function setInfos($karmaInfo = array(), $mapName)
+	function setInfos($players = array(), $serverName)
 	{
-		$this->karmaInfo = $karmaInfo;
-		$this->mapName = $mapName;
+		$this->players = $players;
+		$this->serverName = $serverName;
 		$this->connection =  Connection::getInstance();
-		//$this->mlepp =  Core::getInstance();
 	}
 
 	function makeFirstLine($posy = 0)
 	{
 		$texte = new Label();
 		$texte->setSize(10, 4);
-		$texte->setPosition(3, $posy, 2);
+		$texte->setPosition(4, $posy, 2);
 		$texte->setTextColor("000");
 		$texte->setTextSize(2);
 		$texte->setText("\$oId");
@@ -76,14 +74,14 @@ class ListWindow extends \ManiaLive\Gui\ManagedWindow
 		$texte->setPosition(80, $posy, 2);
 		$texte->setTextColor("000");
 		$texte->setTextSize(2);
-		$texte->setText("\$oLogin");
+		$texte->setText("\$oRank");
 		$this->addComponent($texte);
 		$texte = new Label();
-		$texte->setSize(10, 4);
-		$texte->setPosition(112, $posy, 2);
+		$texte->setSize(30, 4);
+		$texte->setPosition(113, $posy, 2);
 		$texte->setTextColor("000");
 		$texte->setTextSize(2);
-		$texte->setText("\$oVote");
+		$texte->setText("\$oPoints");
 		$this->addComponent($texte);
 	}
 
@@ -92,19 +90,19 @@ class ListWindow extends \ManiaLive\Gui\ManagedWindow
 		$this->tableau->clearComponents();
 		$posy = 0;
 		$num = 1;
-		$this->setTitle('Karma votes on $fff'.$this->mapName);
+		$this->setTitle('TOP 100 best players on $fff'.$this->serverName);
 
-		if(count($this->karmaInfo) > 0)
+		if(count($this->players) > 0)
 		{
 			$posy -= 10;
 			for($i=($this->page-1)*15; $i<=($this->page)*15-1; ++$i)
 			{
-				if(!isset($this->karmaInfo[$i]))break;
+				if(!isset($this->players[$i]))break;
 				//$this->setLineBgs($posy, $i, $karmaInfo[$i]->name, $this->challengesList[$i]->fileName);
 				$texte = new Label();
 				$texte->setSize(6.5, 3);
-				$texte->setPosition(6.5, $posy-0.5, 2);
-				$texte->setTextColor("00");
+				$texte->setPosition(7.5, $posy-0.5, 2);
+				$texte->setTextColor("000");
 				$texte->setTextSize(2);
 				$texte->setHalign("right");
 				$texte->setText(($i+1).".");
@@ -114,27 +112,28 @@ class ListWindow extends \ManiaLive\Gui\ManagedWindow
 				$texte->setPosition(15.5, $posy-0.5, 3);
 				$texte->setTextColor("000");
 				$texte->setTextSize(2);
-				$texte->setText($this->karmaInfo[$i]['player']->player_nickname);
+				$texte->setText($this->players[$i]['nickname']);
 				$this->tableau->addComponent($texte);
 				$texte = new Label();
 				$texte->setSize(30, 3);
 				$texte->setPosition(80.5, $posy-0.5, 3);
 				$texte->setTextColor("000");
 				$texte->setTextSize(2);
-				$texte->setText($this->karmaInfo[$i]['login']);
+				$texte->setText($this->players[$i]['rank']);
 				$this->tableau->addComponent($texte);
 				$texte = new Label();
 				$texte->setSize(15.5, 3);
 				$texte->setPosition(114, $posy-0.5, 3);
 				$texte->setTextColor("000");
 				$texte->setTextSize(2);
-				$texte->setText($this->karmaInfo[$i]['vote']);
+				$texte->setText($this->players[$i]['points']);
+				$texte->setHalign("left");
 				$this->tableau->addComponent($texte);
 				$posy -= 6;
 			}
 		}
 
-		$this->nbpage = intval((count($this->karmaInfo)-1)/15)+1;
+		$this->nbpage = intval((count($this->players)-1)/15)+1;
 
 		$this->navigator->setPositionX($this->getSizeX() / 2);
 		$this->navigator->setPositionY(-($this->getSizeY() - 6));

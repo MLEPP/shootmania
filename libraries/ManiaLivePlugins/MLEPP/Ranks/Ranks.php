@@ -43,6 +43,8 @@ use ManiaLive\Features\Admin\AdminGroup;
 use ManiaLive\Config\Loader;
 use ManiaLive\Utilities\Logger;
 
+use ManiaLivePlugins\MLEPP\Ranks\Gui\Windows\ListWindow;
+
 class Ranks extends \ManiaLive\PluginHandler\Plugin {
 
 	public $ranks = array('0' => 'Private',
@@ -95,6 +97,7 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 
 		Console::println('['.date('H:i:s').'] [MLEPP] Plugin: Ranks v'.$this->getVersion() );
 		$this->callPublicMethod('MLEPP\Core', 'registerPlugin', 'Ranks', $this);
+		$cmd = $this->registerChatCommand("top100", "top100Command", 0, true);
 
 		$this->onTick();
 
@@ -136,6 +139,22 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 				$this->db->query($q);
 			}
 		}
+	}
+
+	function top100Command($login, $param1 = null, $param2 = null, $param3 = null) {
+		$points = array_keys($this->ranks);
+		$window = ListWindow::Create($login);
+		$query = $this->db->query("SELECT * FROM `players` ORDER BY `player_points` DESC LIMIT 0,100");
+		$players = array();
+		$i = 0;
+		while($player = $query->fetchStdObject()) {
+			$players[$i] = array('nickname' => $player->player_nickname,
+								 'points' => $player->player_points,
+								 'rank' => $this->ranks[$this->closest($points, $player->player_points)]);
+			$i++;
+		}
+		$window->setInfos($players, $this->storage->server->name);
+		$window->show();
 	}
 
 	function getRank($login) {
