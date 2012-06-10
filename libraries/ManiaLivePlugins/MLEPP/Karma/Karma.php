@@ -171,7 +171,19 @@ class Karma extends \ManiaLive\PluginHandler\Plugin {
 		if(!empty($this->playerKarmas)) {
 			$window = ListWindow::Create($login);
 			$map = $this->connection->getCurrentMapInfo();
-			$window->setInfos($this->playerKarmas, $map->name);
+			$karmaLogins = array_keys($this->playerKarmas);
+			$karmaInfo = array();
+
+			foreach($karmaLogins as $login) {
+				$player = $this->callPublicMethod('MLEPP\Core', 'getPlayerInfo', $login);
+				if($player == false) {
+					$player = new \stdClass();
+					$player->player_nickname = 'None';
+				}
+				$karmaInfo[] = array('login' => $login, 'player' => $player, 'vote' => $this->playerKarmas[$login]);
+			}
+
+			$window->setInfos($karmaInfo, $map->name);
 			$window->show();
 		} else {
 			$player = $this->storage->getPlayerObject($login);

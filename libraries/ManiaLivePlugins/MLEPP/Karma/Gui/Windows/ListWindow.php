@@ -11,6 +11,7 @@ use ManiaLive\Utilities\Time;
 use ManiaLive\DedicatedApi\Connection;
 use ManiaLive\Gui\Controls\Frame;
 use ManiaLive\Gui\Controls\PageNavigator;
+use ManiaLivePlugins\MLEPP\Core\Core;
 
 class ListWindow extends \ManiaLive\Gui\ManagedWindow
 {
@@ -24,7 +25,6 @@ class ListWindow extends \ManiaLive\Gui\ManagedWindow
 	private $nbpage;
 	private $currentChallengeindex;
 
-	private $karmaVotes = array();
 	private $mapName;
 	private $karmaInfo = array();
 	private $action;
@@ -47,11 +47,12 @@ class ListWindow extends \ManiaLive\Gui\ManagedWindow
 		$this->nbpage = 1;
 	}
 
-	function setInfos($karmaVotes = array(), $mapName)
+	function setInfos($karmaInfo = array(), $mapName)
 	{
-		$this->karmaVotes = $karmaVotes;
+		$this->karmaInfo = $karmaInfo;
 		$this->mapName = $mapName;
 		$this->connection =  Connection::getInstance();
+		//$this->mlepp =  Core::getInstance();
 	}
 
 	function makeFirstLine($posy = 0)
@@ -93,13 +94,7 @@ class ListWindow extends \ManiaLive\Gui\ManagedWindow
 		$num = 1;
 		$this->setTitle('Karma votes on $fff'.$this->mapName);
 
-		$karmaLogins = array_keys($this->karmaVotes);
-		foreach($karmaLogins as $login) {
-			$player = $this->connection->getPlayerInfo($login);
-			$this->karmaInfo[] = array('login' => $login, 'player' => $player, 'vote' => $this->karmaVotes[$login]);
-		}
-
-		if(count($this->karmaVotes) > 0)
+		if(count($this->karmaInfo) > 0)
 		{
 			$posy -= 10;
 			for($i=($this->page-1)*15; $i<=($this->page)*15-1; ++$i)
@@ -119,7 +114,7 @@ class ListWindow extends \ManiaLive\Gui\ManagedWindow
 				$texte->setPosition(15.5, $posy-0.5, 3);
 				$texte->setTextColor("FFF");
 				$texte->setTextSize(2);
-				$texte->setText($this->karmaInfo[$i]['player']->nickName);
+				$texte->setText($this->karmaInfo[$i]['player']->player_nickname);
 				$this->tableau->addComponent($texte);
 				$texte = new Label();
 				$texte->setSize(30, 3);

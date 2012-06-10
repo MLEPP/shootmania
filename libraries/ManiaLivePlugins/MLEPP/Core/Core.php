@@ -140,7 +140,7 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 		$query = $this->db->query($g);
 
 		if($query->recordCount() == 1) {
-			return $query->fetchAll();
+			return $query->fetchStdObject();
 		} else {
 			return false;
 		}
