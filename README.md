@@ -8,6 +8,8 @@ Currently MLEPP for ShootMania is under development. You can always download the
 
 Current release: v0.1.0 (bèta), 08-06-2012
 
+Next **expected** release: v0.2.0 (bèta), 12-06-2012 (including statistics (kills/deaths) and ranks)
+
 ##Requirements
 - PHP 5.3 (for ManiaLive)
 - MySQL 4/5 (to store everything in the database) (optional)
