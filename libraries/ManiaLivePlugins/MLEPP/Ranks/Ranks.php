@@ -157,13 +157,54 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 			}
 		}
 
-	function mode_onPoleCapture($polecapture){
+	function mode_onPoleCapture($polecapture) {
 		$players = explode(';', $polecapture);
+		$challenge = $this->storage->currentMap;
 		//var_dump($players);
 		foreach($players as $player) {
 				$playerinfo = $this->storage->getPlayerObject($player);
 				$this->connection->chatSendServerMessage('$fff»» '.$playerinfo->nickName.'$z$s$39f Captured the Pole$39f!');
 				Console::println('['.date('H:i:s').'] [MLEPP] [Ranks] '.$playerinfo->login.' Captured the Pole!');
+				// increase the player's wins
+$g =  "SELECT * FROM `captures` WHERE `player` = ".$this->db->quote($playerinfo->login)." and mapUid = ".$this->db->quote($challenge->uId).";";
+		$query = $this->db->query($g);
+
+		if($query->recordCount() == 0) {
+				$q1 = "INSERT INTO  `captures` (
+						`player` ,
+						`mapUid` ,
+						`captures`
+						)
+						VALUES (
+						'".$playerinfo->login."',  '".$challenge->uId."',  '+1'
+						);
+						";
+						$query = $this->db->query($q1);
+					}
+					else
+					{
+						$q2 = "update captures
+					set captures=captures+1 where mapUid='".$challenge->uId."' and player ='".$playerinfo->login."'";
+				$querys = $this->db->query($q2);
+						}
+
+				$q = "SELECT `captures` from `captures` where `player` = '" . $playerinfo->login . "' and mapUid = '".$challenge->uId."'";
+
+				$data = $this->db->query($q);
+				$windata = $data->fetchStdObject();
+				$wins = $windata->captures;
+				if ($wins % 10 == 0) {
+					Console::println('' . $playerinfo->login . ' Captured the pole for the ' . $wins . '. time on '.$challenge->uId.'.');
+					$message = $playerinfo->nickName . '$z$s$fff Captured the pole for the ' . $wins . ' time on '.$challenge->uId.'';
+					$this->connection->chatSendServerMessage($message);
+				} else {
+					$message = "You Captured the pole for the $wins. time on '.$challenge->uId.'";
+					try {
+						$this->connection->chatSendServerMessage($message, $playerinfo->login);
+					} catch (\Exception $e) {
+						## ignore the error if player has leaved the server before chatmessage is sent.
+					}
+				}
 			}
 		}
 
