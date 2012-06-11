@@ -138,9 +138,11 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 					}
 				}
 
+				$player = array('score' => $this->players[$arrayplayer[0]]['score'] + $arrayplayer[1],
+								'rank' => $this->ranks[$this->closest($points, ($this->players[$arrayplayer[0]]['score'] + $arrayplayer[1]))]);
 				unset($this->players[$arrayplayer[0]]);
-				$this->players[$arrayplayer[0]] = array('score' => $this->players[$arrayplayer[0]]['score'] + $arrayplayer[1],
-													    'rank' => $this->ranks[$this->closest($points, $arrayplayer[1])]);
+				$this->players[$arrayplayer[0]] = $player;
+
 				$q = "UPDATE `players` SET `player_points` = '".($this->players[$arrayplayer[0]]['score'] + $arrayplayer[1])."' WHERE `player_login` = '".$arrayplayer[0]."'";
 				$this->db->query($q);
 			}
