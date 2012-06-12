@@ -108,8 +108,19 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
   					`kill_victim` varchar(60) NOT NULL,
   					`kill_shooter` varchar(60) NOT NULL,
   					`kill_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-  					`kill_mapUid` int(11) NOT NULL,
+  					`kill_mapUid` varchar(60) NOT NULL,
   					PRIMARY KEY (`kill_id`)
+				  ) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;";
+			$this->db->query($q);
+		}
+
+		if(!$this->db->tableExists('captures')) {
+			$q = "CREATE TABLE IF NOT EXISTS `captures` (
+  					`capture_id` mediumint(9) NOT NULL AUTO_INCREMENT,
+  					`capture_playerLogin` varchar(60) NOT NULL,
+					`capture_mapUid` varchar(60) NOT NULL,
+  					`capture_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  					PRIMARY KEY (`capture_id`)
 				  ) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;";
 			$this->db->query($q);
 		}
@@ -119,7 +130,8 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 		if(!isset($playerinfo->player_kills)) {
 			$q = "ALTER TABLE `players`
 				  ADD `player_kills` MEDIUMINT( 9 ) NOT NULL DEFAULT '0',
-				  ADD `player_deaths` MEDIUMINT( 9 ) NOT NULL DEFAULT '0'";
+				  ADD `player_deaths` MEDIUMINT( 9 ) NOT NULL DEFAULT '0',
+				  ADD `player_captures` MEDIUMINT( 9 ) NOT NULL DEFAULT '0'";
 			$this->db->query($q);
 		}
 
@@ -167,6 +179,26 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 		}
 	}
 
+	function mode_onPoleCapture($login) {
+		$map = $this->connection->getCurrentMapInfo();
+
+		// Insert kill into the database
+		$q = "INSERT INTO `captures` (
+				`capture_playerLogin`,
+				`capture_mapUid`,
+				`capture_time`
+			  ) VALUES (
+			    '".$login."',
+			    '".$map->uId."',
+			    '".date('Y-m-d H:i:s')."'
+			  )";
+		$this->db->query($q);
+
+		// update capture statistics
+		$info = $this->db->query("SELECT * FROM `players` WHERE `player_login` = '".$login."'")->fetchStdObject();
+		$this->db->query("UPDATE `players` SET `player_captures` = '".($info->player_captures+1)."' WHERE `player_login` = '".$login."'");
+	}
+
 	function mode_onPlayerDeath($victim, $shooter = null) {
 		if(is_null($shooter)) return;
 
@@ -203,23 +235,25 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 
 		foreach($this->storage->players as $player) {
 			try {
-				$dbinfo = $this->db->query("SELECT `player_kills`, `player_deaths` FROM `players` WHERE `player_login` = '".$player->login."'")->fetchStdObject();
+				$dbinfo = $this->db->query("SELECT `player_kills`, `player_deaths`, `player_captures` FROM `players` WHERE `player_login` = '".$player->login."'")->fetchStdObject();
 				$players[] = array('nickname' => $player->nickName,
 								   'points' => $this->players[$player->login]['score'],
 								   'rank' => $this->players[$player->login]['rank'],
 								   'kills' => $dbinfo->player_kills,
-								   'deaths' => $dbinfo->player_deaths);
+								   'deaths' => $dbinfo->player_deaths,
+								   'captures' => $dbinfo->player_captures);
 			} catch (\Exception $e) { }
 		}
 
 		foreach($this->storage->spectators as $player) {
 			try {
-				$dbinfo = $this->db->query("SELECT `player_kills`, `player_deaths` FROM `players` WHERE `player_login` = '".$player->login."'")->fetchStdObject();
+				$dbinfo = $this->db->query("SELECT `player_kills`, `player_deaths`, `player_captures` FROM `players` WHERE `player_login` = '".$player->login."'")->fetchStdObject();
 				$players[] = array('nickname' => $player->nickName,
 								   'points' => $this->players[$player->login]['score'],
 								   'rank' => $this->players[$player->login]['rank'],
 								   'kills' => $dbinfo->player_kills,
-								   'deaths' => $dbinfo->player_deaths);
+								   'deaths' => $dbinfo->player_deaths,
+								   'captures' => $dbinfo->player_captures);
 			} catch(\Exception $e) { }
 		}
 
@@ -241,7 +275,8 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 								 'points' => $player->player_points,
 								 'rank' => $this->ranks[$this->closest($points, $player->player_points)],
 								 'kills' => $player->player_kills,
-								 'deaths' => $player->player_deaths);
+								 'deaths' => $player->player_deaths,
+								 'captures' => $player->player_captures);
 			$i++;
 		}
 		$window->setInfos($players, $this->storage->server->name, 'TOP 100 best players on');

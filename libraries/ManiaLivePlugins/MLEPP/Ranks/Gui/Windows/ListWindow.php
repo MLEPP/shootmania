@@ -33,7 +33,7 @@ class ListWindow extends \ManiaLive\Gui\ManagedWindow
 	function onConstruct()
 	{
 		parent::onConstruct();
-		$this->setSize(180, 120);
+		$this->setSize(190, 120);
 		$this->centerOnScreen();
 		$this->tableau = new Frame();
 		$this->tableau->setPosition(0, -10);
@@ -105,6 +105,13 @@ class ListWindow extends \ManiaLive\Gui\ManagedWindow
 		$texte->setTextColor("000");
 		$texte->setTextSize(2);
 		$texte->setText("\$ok/d ratio");
+		$this->addComponent($texte);
+		$texte = new Label();
+		$texte->setSize(10, 4);
+		$texte->setPosition(167, $posy, 2);
+		$texte->setTextColor("000");
+		$texte->setTextSize(2);
+		$texte->setText("\$oCaptures");
 		$this->addComponent($texte);
 	}
 
@@ -179,6 +186,14 @@ class ListWindow extends \ManiaLive\Gui\ManagedWindow
 					$kd = $this->players[$i]['kills'];
 				}
 				$texte->setText(number_format($kd, 2, ',', ''));
+				$texte->setHalign("left");
+				$this->tableau->addComponent($texte);
+				$texte = new Label();
+				$texte->setSize(10, 3);
+				$texte->setPosition(167, $posy-0.5, 3);
+				$texte->setTextColor("000");
+				$texte->setTextSize(2);
+				$texte->setText($this->players[$i]['captures']);
 				$texte->setHalign("left");
 				$this->tableau->addComponent($texte);
 				$posy -= 6;
