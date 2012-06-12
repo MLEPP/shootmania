@@ -102,7 +102,26 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 		$cmd = $this->registerChatCommand("top100", "top100Command", 0, true);
 		$cmd = $this->registerChatCommand("ranks", "ranksCommand", 0, true);
 
-		$this->onTick();
+		if(!$this->db->tableExists('kills')) {
+			$q = "CREATE TABLE IF NOT EXISTS `kills` (
+  					`kill_id` mediumint(9) NOT NULL AUTO_INCREMENT,
+  					`kill_victim` varchar(60) NOT NULL,
+  					`kill_shooter` varchar(60) NOT NULL,
+  					`kill_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
+  					`kill_mapUid` int(11) NOT NULL,
+  					PRIMARY KEY (`kill_id`)
+				  ) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;";
+			$this->db->query($q);
+		}
+
+		$playerinfo = $this->db->query("SELECT * FROM `players` ORDER BY `player_id` DESC LIMIT 0,1")->fetchStdObject();
+
+		if(!isset($playerinfo->player_kills)) {
+			$q = "ALTER TABLE `players`
+				  ADD `player_kills` MEDIUMINT( 9 ) NOT NULL DEFAULT '0',
+				  ADD `player_deaths` MEDIUMINT( 9 ) NOT NULL DEFAULT '0'";
+			$this->db->query($q);
+		}
 
 		$points = array_keys($this->ranks);
 		foreach($this->storage->players as $player) {
@@ -122,8 +141,7 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 	}
 
 	function mode_onEndMap($scores) {
-		print_r($this->players);
-		$players = explode(';', $scores);
+		$players = $scores;
 		$points = array_keys($this->ranks);
 
 		foreach($players as $player) {
@@ -148,67 +166,35 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 			}
 		}
 	}
-	
-	function mode_onPlayerRespawn($respawns){
-		$players = explode(';', $respawns);
-		//var_dump($players);
-		foreach($players as $player) {
-				$playerinfo = $this->storage->getPlayerObject($player);
-				$this->connection->chatSendServerMessage('$fff»» '.$playerinfo->nickName.'$z$s$39f Respawned$39f!');
-				Console::println('['.date('H:i:s').'] [MLEPP] [Ranks] '.$playerinfo->login.' Respawned!');
-			}
-		}
 
-	function mode_onPoleCapture($polecapture) {
-		$players = explode(';', $polecapture);
-		$challenge = $this->storage->currentMap;
-		//var_dump($players);
-		foreach($players as $player) {
-				$playerinfo = $this->storage->getPlayerObject($player);
-				$this->connection->chatSendServerMessage('$fff»» '.$playerinfo->nickName.'$z$s$39f Captured the Pole$39f!');
-				Console::println('['.date('H:i:s').'] [MLEPP] [Ranks] '.$playerinfo->login.' Captured the Pole!');
-				// increase the player's wins
-$g =  "SELECT * FROM `captures` WHERE `player` = ".$this->db->quote($playerinfo->login)." and mapUid = ".$this->db->quote($challenge->uId).";";
-		$query = $this->db->query($g);
+	function mode_onPlayerDeath($victim, $shooter = null) {
+		if(is_null($shooter)) return;
 
-		if($query->recordCount() == 0) {
-				$q1 = "INSERT INTO  `captures` (
-						`player` ,
-						`mapUid` ,
-						`captures`
-						)
-						VALUES (
-						'".$playerinfo->login."',  '".$challenge->uId."',  '+1'
-						);
-						";
-						$query = $this->db->query($q1);
-					}
-					else
-					{
-						$q2 = "update captures
-					set captures=captures+1 where mapUid='".$challenge->uId."' and player ='".$playerinfo->login."'";
-				$querys = $this->db->query($q2);
-						}
+		$map = $this->connection->getCurrentMapInfo();
 
-				$q = "SELECT `captures` from `captures` where `player` = '" . $playerinfo->login . "' and mapUid = '".$challenge->uId."'";
+		// Insert kill into the database
+		$q = "INSERT INTO `kills` (
+				`kill_victim`,
+				`kill_shooter`,
+				`kill_time`,
+				`kill_mapUid`
+			  ) VALUES (
+			    '".$victim."',
+			    '".$shooter."',
+			    '".date('Y-m-d H:i:s')."',
+			    '".$map->uId."'
+			  )";
+		$this->db->query($q);
 
-				$data = $this->db->query($q);
-				$windata = $data->fetchStdObject();
-				$wins = $windata->captures;
-				if ($wins % 10 == 0) {
-					Console::println('' . $playerinfo->login . ' Captured the pole for the ' . $wins . '. time on '.$challenge->uId.'.');
-					$message = $playerinfo->nickName . '$z$s$fff Captured the pole for the ' . $wins . ' time on '.$challenge->uId.'';
-					$this->connection->chatSendServerMessage($message);
-				} else {
-					$message = "You Captured the pole for the $wins. time on '.$challenge->uId.'";
-					try {
-						$this->connection->chatSendServerMessage($message, $playerinfo->login);
-					} catch (\Exception $e) {
-						## ignore the error if player has leaved the server before chatmessage is sent.
-					}
-				}
-			}
-		}
+		// update kill/death statistics
+		$shooterinfo = $this->db->query("SELECT * FROM `players` WHERE `player_login` = '".$shooter."'")->fetchStdObject();
+		$this->db->query("UPDATE `players` SET `player_kills` = '".($shooterinfo->player_kills+1)."' WHERE `player_login` = '".$shooter."'");
+
+		$victiminfo = $this->db->query("SELECT * FROM `players` WHERE `player_login` = '".$victim."'")->fetchStdObject();
+		$this->db->query("UPDATE `players` SET `player_deaths` = '".($victiminfo->player_deaths+1)."' WHERE `player_login` = '".$victim."'");
+
+		Console::println('['.date('H:i:s').'] [MLEPP] [Ranks] '.$victim.' was killed by '.$shooter);
+	}
 
 	function ranksCommand($login, $param1 = null, $param2 = null, $param3 = null) {
 		$points = array_keys($this->ranks);
@@ -217,18 +203,24 @@ $g =  "SELECT * FROM `captures` WHERE `player` = ".$this->db->quote($playerinfo-
 
 		foreach($this->storage->players as $player) {
 			try {
+				$dbinfo = $this->db->query("SELECT `player_kills`, `player_deaths` FROM `players` WHERE `player_login` = '".$player->login."'")->fetchStdObject();
 				$players[] = array('nickname' => $player->nickName,
 								   'points' => $this->players[$player->login]['score'],
-								   'rank' => $this->players[$player->login]['rank']);
-			} catch (\Exception $e) {}
+								   'rank' => $this->players[$player->login]['rank'],
+								   'kills' => $dbinfo->player_kills,
+								   'deaths' => $dbinfo->player_deaths);
+			} catch (\Exception $e) { }
 		}
 
 		foreach($this->storage->spectators as $player) {
 			try {
+				$dbinfo = $this->db->query("SELECT `player_kills`, `player_deaths` FROM `players` WHERE `player_login` = '".$player->login."'")->fetchStdObject();
 				$players[] = array('nickname' => $player->nickName,
 								   'points' => $this->players[$player->login]['score'],
-								   'rank' => $this->players[$player->login]['rank']);
-			} catch(\Exception $e) {}
+								   'rank' => $this->players[$player->login]['rank'],
+								   'kills' => $dbinfo->player_kills,
+								   'deaths' => $dbinfo->player_deaths);
+			} catch(\Exception $e) { }
 		}
 
 		$this->array_sort_by_column($players, 'points');
@@ -247,7 +239,9 @@ $g =  "SELECT * FROM `captures` WHERE `player` = ".$this->db->quote($playerinfo-
 		while($player = $query->fetchStdObject()) {
 			$players[$i] = array('nickname' => $player->player_nickname,
 								 'points' => $player->player_points,
-								 'rank' => $this->ranks[$this->closest($points, $player->player_points)]);
+								 'rank' => $this->ranks[$this->closest($points, $player->player_points)],
+								 'kills' => $player->player_kills,
+								 'deaths' => $player->player_deaths);
 			$i++;
 		}
 		$window->setInfos($players, $this->storage->server->name, 'TOP 100 best players on');

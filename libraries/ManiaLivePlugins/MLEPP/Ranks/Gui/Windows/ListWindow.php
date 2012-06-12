@@ -79,11 +79,32 @@ class ListWindow extends \ManiaLive\Gui\ManagedWindow
 		$texte->setText("\$oRank");
 		$this->addComponent($texte);
 		$texte = new Label();
-		$texte->setSize(30, 4);
+		$texte->setSize(15, 4);
 		$texte->setPosition(113, $posy, 2);
 		$texte->setTextColor("000");
 		$texte->setTextSize(2);
 		$texte->setText("\$oPoints");
+		$this->addComponent($texte);
+		$texte = new Label();
+		$texte->setSize(10, 4);
+		$texte->setPosition(129, $posy, 2);
+		$texte->setTextColor("000");
+		$texte->setTextSize(2);
+		$texte->setText("\$oKills");
+		$this->addComponent($texte);
+		$texte = new Label();
+		$texte->setSize(10, 4);
+		$texte->setPosition(140, $posy, 2);
+		$texte->setTextColor("000");
+		$texte->setTextSize(2);
+		$texte->setText("\$oDeaths");
+		$this->addComponent($texte);
+		$texte = new Label();
+		$texte->setSize(15, 4);
+		$texte->setPosition(151, $posy, 2);
+		$texte->setTextColor("000");
+		$texte->setTextSize(2);
+		$texte->setText("\$ok/d ratio");
 		$this->addComponent($texte);
 	}
 
@@ -129,6 +150,35 @@ class ListWindow extends \ManiaLive\Gui\ManagedWindow
 				$texte->setTextColor("000");
 				$texte->setTextSize(2);
 				$texte->setText($this->players[$i]['points']);
+				$texte->setHalign("left");
+				$this->tableau->addComponent($texte);
+				$texte = new Label();
+				$texte->setSize(10, 3);
+				$texte->setPosition(130, $posy-0.5, 3);
+				$texte->setTextColor("000");
+				$texte->setTextSize(2);
+				$texte->setText($this->players[$i]['kills']);
+				$texte->setHalign("left");
+				$this->tableau->addComponent($texte);
+				$texte = new Label();
+				$texte->setSize(10, 3);
+				$texte->setPosition(141, $posy-0.5, 3);
+				$texte->setTextColor("000");
+				$texte->setTextSize(2);
+				$texte->setText($this->players[$i]['deaths']);
+				$texte->setHalign("left");
+				$this->tableau->addComponent($texte);
+				$texte = new Label();
+				$texte->setSize(10, 3);
+				$texte->setPosition(152, $posy-0.5, 3);
+				$texte->setTextColor("000");
+				$texte->setTextSize(2);
+				if($this->players[$i]['deaths'] != 0) {
+					$kd = ($this->players[$i]['kills']/$this->players[$i]['deaths']);
+				} else {
+					$kd = $this->players[$i]['kills'];
+				}
+				$texte->setText(number_format($kd, 2, ',', ''));
 				$texte->setHalign("left");
 				$this->tableau->addComponent($texte);
 				$posy -= 6;

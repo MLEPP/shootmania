@@ -44,6 +44,7 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 
 	private $plugins = array();
 	private $players = array();
+	private $lastHit = array();
 
 	function onInit() {
 		$this->setVersion('0.1.0');
@@ -107,6 +108,118 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 		$window->show();
 	}
 
+	function onPlayerConnect($login, $isSpectator) {
+		$player = $this->storage->getPlayerObject($login);
+		$this->insertPlayer($player);
+
+		$this->players[$login] = time();
+	}
+
+	function onPlayerDisconnect($login) {
+		try {
+			$info = $this->db->query("SELECT `player_timeplayed` FROM `players` WHERE `player_login` = '".$login."'")->fetchStdObject();
+			$q = "UPDATE `players` SET `player_timeplayed` = '".($info->player_timeplayed + (time()-$this->players[$login]))."' WHERE `player_login` = '".$login."'";
+			$this->db->query($q);
+		} catch(\Exception $e) {}
+	}
+
+	function onRulesScriptCallback($param1, $param2) {
+		Console::println('[' . date('H:i:s') . '] Script callback: '.$param1.', with parameter: '.$param2);
+		switch($param1) {
+			case 'beginMap':
+				$this->callMethods('mode_onBeginMap', $param2);
+				return;
+			case 'endMap':
+				$scores = explode(';', $param2);
+				$this->callMethods('mode_onEndMap', $scores);
+				return;
+			case 'beginRound':
+				$this->callMethods('mode_onBeginRound', $param2);
+				return;
+			case 'endRound':
+				$this->callMethods('mode_onEndRound', $param2);
+				return;
+			case 'poleCapture':
+				$this->callMethods('mode_onPoleCapture', $param2);
+				return;
+			case 'playerRespawn':
+				$this->callMethods('mode_onPlayerRespawn', $param2);
+				return;
+			case 'playerDeath':
+				$this->mode_onPlayerDeath($param2);
+				return;
+			case 'playerHit':
+				$this->mode_onPlayerHit($param2);
+				return;
+		}
+	}
+
+	// param = Victim:###;Shooter:###
+	function mode_onPlayerHit($param) {
+		$players = explode(';', $param);
+		$victim = str_replace('Victim:', '', $players[0]);
+		$shooter = str_replace('Shooter:', '', $players[1]);
+
+		unset($this->lastHit[$victim]);
+		$this->lastHit[$victim] = array('shooter' => $shooter,
+									    'time' => time());
+
+		$this->callMethods('mode_onPlayerHit', $victim, $shooter);
+	}
+
+	function mode_onPlayerDeath($param) {
+		$victim = $param;
+
+		if(in_array($victim, array_keys($this->lastHit))) {
+			$hit = $this->lastHit[$victim];
+			if($hit['time'] == time() || $hit['time'] == (time()+1)) {
+				$this->callMethods('mode_onPlayerDeath', $param, $hit['shooter']);
+			} else {
+				// just died, probably by offzone
+				$this->callMethods('mode_onPlayerDeath', $param);
+			}
+		} else {
+			// just died, probably by offzone
+			$this->callMethods('mode_onPlayerDeath', $param);
+		}
+	}
+
+	function callMethods($callback, $param = null, $param2 = null, $param3 = null) {
+		foreach($this->plugins as $plugin) {
+			if(method_exists($plugin, $callback)) {
+				if(is_null($param)) {
+					$plugin->$callback();
+				} else {
+					if(is_null($param2)) {
+						$plugin->$callback($param);
+					} else {
+						if(is_null($param3)) {
+							$plugin->$callback($param, $param2);
+						} else {
+							$plugin->$callback($param, $param2, $param3);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	function registerPlugin($plugin, $class) {
+		$this->plugins[$plugin] = $class;
+	}
+
+	//$this->callPublicMethod('MLEPP\Core', 'getPlayerInfo', $login);
+	function getPlayerInfo($login) {
+		$g =  "SELECT * FROM `players` WHERE `player_login` = ".$this->db->quote($login).";";
+		$query = $this->db->query($g);
+
+		if($query->recordCount() == 1) {
+			return $query->fetchStdObject();
+		} else {
+			return false;
+		}
+	}
+
 	function insertPlayer($player) {
 		$g =  "SELECT * FROM `players` WHERE `player_login` = ".$this->db->quote($player->login).";";
 		$query = $this->db->query($g);
@@ -132,67 +245,6 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 		}
 
 		$this->db->query($q);
-	}
-
-	function onPlayerConnect($login, $isSpectator) {
-		$player = $this->storage->getPlayerObject($login);
-		$this->insertPlayer($player);
-
-		$this->players[$login] = time();
-	}
-
-	function onPlayerDisconnect($login) {
-		try {
-			$info = $this->db->query("SELECT `player_timeplayed` FROM `players` WHERE `player_login` = '".$login."'")->fetchStdObject();
-			$q = "UPDATE `players` SET `player_timeplayed` = '".($info->player_timeplayed + (time()-$this->players[$login]))."' WHERE `player_login` = '".$login."'";
-			$this->db->query($q);
-		} catch(\Exception $e) {}
-	}
-
-	function registerPlugin($plugin, $class) {
-		$this->plugins[$plugin] = $class;
-	}
-
-	//$this->callPublicMethod('MLEPP\Core', 'getPlayerInfo', $login);
-	function getPlayerInfo($login) {
-		$g =  "SELECT * FROM `players` WHERE `player_login` = ".$this->db->quote($login).";";
-		$query = $this->db->query($g);
-
-		if($query->recordCount() == 1) {
-			return $query->fetchStdObject();
-		} else {
-			return false;
-		}
-	}
-
-	function onRulesScriptCallback($param1, $param2) {
-		Console::println('[' . date('H:i:s') . '] Script callback: '.$param1.', with parameter: '.$param2);
-		switch($param1) {
-			case 'beginMap':
-				$this->callMethods('mode_onBeginMap', $param2);
-				return;
-			case 'endMap':
-				$this->callMethods('mode_onEndMap', $param2);
-				return;
-			case 'beginRound':
-				$this->callMethods('mode_onBeginRound', $param2);
-				return;
-			case 'endRound':
-				$this->callMethods('mode_onEndRound', $param2);
-				return;
-		}
-	}
-
-	function callMethods($callback, $param = null) {
-		foreach($this->plugins as $plugin) {
-			if(method_exists($plugin, $callback)) {
-				if(is_null($param)) {
-					$plugin->$callback();
-				} else {
-					$plugin->$callback($param);
-				}
-			}
-		}
 	}
 
 	static function stripColors($input, $for_tm = true) {
