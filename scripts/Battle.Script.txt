@@ -200,6 +200,7 @@ main() {
 							Discard(Event);			
 						} else {			
 							if(Event.Damage > 0) {
+							    XmlRpc.SendCallback("playerHit", "Victim:"^Event.Victim.Login^";Shooter:"^Event.Shooter.Login^";"^Points);
 								Score::AddPoints( Event.Shooter, 1);									
 								Top::IncrementPlayerPoints("Damages", Event.Shooter, 1);
 								Airshot::OnHit(Event.Shooter, Event.Victim);
@@ -208,6 +209,7 @@ main() {
 						}
 					} else if (Event.Type == CSmModeEvent::EType::OnArmorEmpty) {		
 						BalancedWeapons::OnOut(Event.Shooter, Event.Victim);
+						XmlRpc.SendCallback("playerDeath", Event.Victim.Login);
 						PassOn(Event);						
 					} else if (Event.Type == CSmModeEvent::EType::OnCapture) {	
 						LastestCapturedGoalId = Event.BlockPole.Id;
@@ -534,7 +536,15 @@ main() {
 			
 		MatchEndRequested = False;
 		
-		XmlRpc.SendCallback("endMap",MapName);
+		declare PlayerList = "";
+        foreach (Player in Players) {
+        	PlayerList = PlayerList^(Player.Login^":"^Player.Score.Points^";");
+        }
+        foreach (Player in Spectators) {
+        	PlayerList = PlayerList^(Player.Login^":"^Player.Score.Points^";");
+        }
+
+        XmlRpc.SendCallback("endMap",PlayerList);
 		UnloadMap();
 	}
 	

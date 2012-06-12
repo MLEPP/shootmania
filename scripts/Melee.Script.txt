@@ -150,6 +150,7 @@ main() {
 					if (Event.Shooter == Event.Victim || Event.Shooter == Null) {
 						Score::RemovePoints(Event.Victim, 1);
 					}
+					XmlRpc.SendCallback("playerDeath", Event.Victim.Login);
 					PassOn(Event);
 				} else if (Event.Type == CSmModeEvent::EType::OnHit) {
 					if (Event.Shooter == Event.Victim) {
@@ -158,10 +159,12 @@ main() {
 						declare Points = Event.Damage / 100;
 						Score::AddPoints(Event.Shooter, Points);
 						Event.ShooterPoints = Points;
+						XmlRpc.SendCallback("playerHit", "Victim:"^Event.Victim.Login^";Shooter:"^Event.Shooter.Login^";"^Points);
 						PassOn(Event);
 					}
 				} else if (Event.Type == CSmModeEvent::EType::OnPlayerRequestRespawn) {				
 					Score::RemovePoints(Event.Player, 1);
+					XmlRpc.SendCallback("playerRespawn", Event.Player.Login);
 					PassOn(Event);
 				} else {
 					PassOn(Event);
@@ -259,7 +262,15 @@ main() {
 		UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;		
 		UIManager.UIAll.BigMessage = "";	
 		
-		XmlRpc.SendCallback("endMap",MapName);
+		declare PlayerList = "";
+        foreach (Player in Players) {
+        	PlayerList = PlayerList^(Player.Login^":"^Player.Score.Points^";");
+        }
+        foreach (Player in Spectators) {
+        	PlayerList = PlayerList^(Player.Login^":"^Player.Score.Points^";");
+        }
+
+        XmlRpc.SendCallback("endMap",PlayerList);
 		UnloadMap();		
 	}
 	
