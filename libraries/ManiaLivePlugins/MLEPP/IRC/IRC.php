@@ -6,7 +6,7 @@
  * -- MLEPP Plugin --
  * @name IRC
  * @date 06-09-2011
- * @version r1170
+ * @version v0.2.0
  * @website mlepp.trackmania.nl
  * @package MLEPP
  *
@@ -61,7 +61,7 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
      */
 	
 	function onInit() {        
-		$version = '0.1.0';
+		$version = '0.2.0';
 		$this->setVersion($version);
         $this->setPublicMethod('getVersion');
 
@@ -80,7 +80,7 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
         $this->enableApplicationEvents();
         $this->enableTickerEvent();
         
-		Console::println('[' . date('H:i:s') . '] [MLEPP] Plugin: IRC Bot r'.$this->getVersion());
+		Console::println('[' . date('H:i:s') . '] [MLEPP] Plugin: IRC Bot v'.$this->getVersion());
 		$this->callPublicMethod('MLEPP\Core', 'registerPlugin', 'IRC', $this);
         
         $this->socket = fsockopen($this->config->server, $this->config->port);
@@ -125,7 +125,7 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
                             $this->write('JOIN '.$this->config->channels[$i]);
                         }
                         sleep(1);
-                        $this->say('Running MLEPP IRC Bot r'.$this->getVersion().'.');
+                        $this->say('Running MLEPP IRC Bot v'.$this->getVersion().'.');
                         $this->joined = true;
                         break;
                     }

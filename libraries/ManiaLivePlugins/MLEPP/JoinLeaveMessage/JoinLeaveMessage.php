@@ -6,7 +6,7 @@
  * -- MLEPP Plugin --
  * @name Join/Leave Message
  * @date 27-05-2012
- * @version 0.1.0
+ * @version 0.2.0
  * @website mlepp.com
  * @package MLEPP
  *
@@ -52,7 +52,7 @@ class JoinLeaveMessage extends \ManiaLive\PluginHandler\Plugin {
 	 */
 
 	function onInit() {
-		$this->setVersion('0.1.0');
+		$this->setVersion('0.2.0');
 		$this->setPublicMethod('getVersion');
 	}
 

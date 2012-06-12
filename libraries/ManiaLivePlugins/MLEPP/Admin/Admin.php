@@ -6,7 +6,7 @@
  * -- MLEPP Plugin --
  * @name Admin
  * @date 29-05-2012
- * @version 0.1.0
+ * @version 0.2.0
  * @website mlepp.com
  * @package MLEPP
  *
@@ -67,7 +67,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
      * @return void
      */
     function onInit() {
-        $this->setVersion('0.1.0');
+        $this->setVersion('0.2.0');
 
         $this->setPublicMethod('getVersion');
         $this->setPublicMethod('addAdminCommand');

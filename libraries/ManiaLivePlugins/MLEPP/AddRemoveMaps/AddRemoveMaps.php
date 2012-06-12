@@ -5,8 +5,8 @@
  *
  * -- MLEPP Plugin --
  * @name Add/Remove Maps
- * @date 26-06-2011
- * @version 0.1.0
+ * @date 27-05-2012
+ * @version 0.2.0
  * @website mlepp.trackmania.nl
  * @package MLEPP
  *
@@ -61,7 +61,7 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
      * @return void
      */
     function onInit() {
-        $this->setVersion('0.1.0');
+        $this->setVersion('0.2.0');
         $this->setPublicMethod('getVersion');
     }
 

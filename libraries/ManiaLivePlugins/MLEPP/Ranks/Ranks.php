@@ -6,7 +6,7 @@
  * -- MLEPP Plugin --
  * @name Ranks
  * @date 27-05-2012
- * @version 0.1.0
+ * @version 0.2.0
  * @website mlepp.com
  * @package MLEPP
  *
@@ -80,7 +80,7 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 	 */
 
 	function onInit() {
-		$this->setVersion('0.1.0');
+		$this->setVersion('0.2.0');
 		$this->setPublicMethod('getVersion');
 		$this->setPublicMethod('getRank');
 	}
@@ -168,13 +168,11 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 					}
 				}
 
-				$player = array('score' => $this->players[$arrayplayer[0]]['score'] + $arrayplayer[1],
-								'rank' => $this->ranks[$this->closest($points, ($this->players[$arrayplayer[0]]['score'] + $arrayplayer[1]))]);
-				unset($this->players[$arrayplayer[0]]);
-				$this->players[$arrayplayer[0]] = $player;
-
 				$q = "UPDATE `players` SET `player_points` = '".($this->players[$arrayplayer[0]]['score'] + $arrayplayer[1])."' WHERE `player_login` = '".$arrayplayer[0]."'";
 				$this->db->query($q);
+
+				$this->players[$arrayplayer[0]] = array('score' => ($this->players[$arrayplayer[0]]['score'] + $arrayplayer[1]),
+					'rank' => $this->ranks[$this->closest($points, ($this->players[$arrayplayer[0]]['score'] + $arrayplayer[1]))]);
 			}
 		}
 	}

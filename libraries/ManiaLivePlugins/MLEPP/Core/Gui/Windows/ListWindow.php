@@ -82,7 +82,7 @@ class ListWindow extends \ManiaLive\Gui\ManagedWindow
 		$texte->setPosition(113, $posy, 2);
 		$texte->setTextColor("000");
 		$texte->setTextSize(2);
-		$texte->setText("\$oTime played");
+		$texte->setText("\$oTime on the server");
 		$this->addComponent($texte);
 	}
 

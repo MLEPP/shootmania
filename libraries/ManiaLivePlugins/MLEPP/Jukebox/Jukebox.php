@@ -5,8 +5,8 @@
  *
  * -- MLEPP Plugin --
  * @name Jukebox
- * @date 25-10-2011
- * @version v0.1.0
+ * @date 10-06-2012
+ * @version v0.2.0
  * @website mlepp.com
  * @package MLEPP
  *
@@ -51,7 +51,7 @@ class Jukebox extends \ManiaLive\PluginHandler\Plugin {
 	private $mlepp;
 
 	function onInit() {
-		$this->setVersion('0.1.0');
+		$this->setVersion('0.2.0');
 	}
 	
 	function onLoad() {
