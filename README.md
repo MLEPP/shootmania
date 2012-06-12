@@ -6,9 +6,7 @@ Tested with [ManiaLive](http://code.google.com/p/manialive/) r380
 
 Currently MLEPP for ShootMania is under development. You can always download the latest commit [here](https://github.com/MLEPP/shootmania/downloads/) (click "Download as zip" or "Download as tar.gz")!
 
-Current release: v0.1.0 (bèta), 08-06-2012
-
-Next **expected** release: v0.2.0 (bèta), 12-06-2012 (including statistics (kills/deaths) and ranks)
+Current release: v0.2.0 (bèta), 12-06-2012 (including statistics (kills/deaths) and ranks)
 
 ##Requirements
 - PHP 5.3 (for ManiaLive)
