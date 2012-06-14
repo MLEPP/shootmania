@@ -49,6 +49,7 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 	function onInit() {
 		$this->setVersion('0.2.0');
 		$this->setPublicMethod('registerPlugin');
+		$this->setPublicMethod('sendCallbacks');
 		$this->setPublicMethod('getPlayerInfo');
 	}
 
@@ -127,23 +128,23 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 		Console::println('[' . date('H:i:s') . '] Script callback: '.$param1.', with parameter: '.$param2);
 		switch($param1) {
 			case 'beginMap':
-				$this->callMethods('mode_onBeginMap', $param2);
+				$this->sendCallbacks('mode_onBeginMap', $param2);
 				return;
 			case 'endMap':
 				$scores = explode(';', $param2);
-				$this->callMethods('mode_onEndMap', $scores);
+				$this->sendCallbacks('mode_onEndMap', $scores);
 				return;
 			case 'beginRound':
-				$this->callMethods('mode_onBeginRound', $param2);
+				$this->sendCallbacks('mode_onBeginRound', $param2);
 				return;
 			case 'endRound':
-				$this->callMethods('mode_onEndRound', $param2);
+				$this->sendCallbacks('mode_onEndRound', $param2);
 				return;
 			case 'poleCapture':
-				$this->callMethods('mode_onPoleCapture', $param2);
+				$this->sendCallbacks('mode_onPoleCapture', $param2);
 				return;
 			case 'playerRespawn':
-				$this->callMethods('mode_onPlayerRespawn', $param2);
+				$this->sendCallbacks('mode_onPlayerRespawn', $param2);
 				return;
 			case 'playerDeath':
 				$this->mode_onPlayerDeath($param2);
@@ -164,7 +165,7 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 		$this->lastHit[$victim] = array('shooter' => $shooter,
 									    'time' => time());
 
-		$this->callMethods('mode_onPlayerHit', $victim, $shooter);
+		$this->sendCallbacks('mode_onPlayerHit', $victim, $shooter);
 	}
 
 	function mode_onPlayerDeath($param) {
@@ -173,18 +174,18 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 		if(in_array($victim, array_keys($this->lastHit))) {
 			$hit = $this->lastHit[$victim];
 			if($hit['time'] == time() || $hit['time'] == (time()+1)) {
-				$this->callMethods('mode_onPlayerDeath', $param, $hit['shooter']);
+				$this->sendCallbacks('mode_onPlayerDeath', $param, $hit['shooter']);
 			} else {
 				// just died, probably by offzone
-				$this->callMethods('mode_onPlayerDeath', $param);
+				$this->sendCallbacks('mode_onPlayerDeath', $param);
 			}
 		} else {
 			// just died, probably by offzone
-			$this->callMethods('mode_onPlayerDeath', $param);
+			$this->sendCallbacks('mode_onPlayerDeath', $param);
 		}
 	}
 
-	function callMethods($callback, $param = null, $param2 = null, $param3 = null) {
+	function sendCallbacks($callback, $param = null, $param2 = null, $param3 = null) {
 		foreach($this->plugins as $plugin) {
 			if(method_exists($plugin, $callback)) {
 				if(is_null($param)) {
