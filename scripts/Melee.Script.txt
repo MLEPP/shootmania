@@ -6,7 +6,8 @@
 #Include "MathLib" as MathLib
 #Include "TextLib" as TextLib
 
-#Const CompatibleChallengeTypes "MeleeArena"
+#Const CompatibleMapTypes "MeleeArena"
+#Const	Version		  "2012-06-13"
 #Const C_UITickInterval 200
 
 #Setting TimeLimit	600 as "Time limit"
@@ -19,7 +20,7 @@ Void FillSpawnsList() {
 	foreach (BlockSpawn in BlockSpawns) { SpawnsList.add(BlockSpawn.Id); }
 }
 
-Void SpawnPlayers(CPlayer _Player) {
+Void SpawnPlayers(CSmPlayer _Player) {
 	if (SpawnsList.count == 0) FillSpawnsList();
 	declare SpawnId = NullId;
 	while (True) {
@@ -32,7 +33,7 @@ Void SpawnPlayers(CPlayer _Player) {
 	declare Tmp = SpawnsList.remove(SpawnId);
 }
 
-Text UpdateLayerInfos(CPlayer _Player) {
+Text UpdateLayerInfos(CSmPlayer _Player) {
 	if (_Player.Score == Null) return "";
 	
 	return """
@@ -74,12 +75,12 @@ Text UpdateLayerSpawnScreen() {
 					// process events.
 					foreach (Event in PendingEvents) {
 						switch (Event.Type) {
-							case CGameManialinkScriptEvent::Type::MouseClick :
+							case CMlEvent::Type::MouseClick :
 							{		
 								if (Event.ControlId == "FrameRules") ShowRules = !ShowRules;
 							}
 					
-							case CGameManialinkScriptEvent::Type::KeyPress:
+							case CMlEvent::Type::KeyPress:
 							{
 								if (Event.CharPressed == "2424832") ShowRules = !ShowRules;	// F1
 							}
@@ -173,7 +174,7 @@ main() {
 				
 			foreach (Player in Players) {
 				// Spawn 
-				if (Player.SpawnStatus == CPlayer::ESpawnStatus::NotSpawned && !Player.RequestsSpectate) {
+				if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::NotSpawned && !Player.RequestsSpectate) {
 					SpawnPlayers(Player);
 				}
 			}
@@ -263,14 +264,14 @@ main() {
 		UIManager.UIAll.BigMessage = "";	
 		
 		declare PlayerList = "";
-        foreach (Player in Players) {
-        	PlayerList = PlayerList^(Player.Login^":"^Player.Score.Points^";");
-        }
-        foreach (Player in Spectators) {
-        	PlayerList = PlayerList^(Player.Login^":"^Player.Score.Points^";");
-        }
+        	foreach (Player in Players) {
+        		PlayerList = PlayerList^(Player.Login^":"^Player.Score.Points^";");
+	        }
+        	foreach (Player in Spectators) {
+        		PlayerList = PlayerList^(Player.Login^":"^Player.Score.Points^";");
+	        }
 
-        XmlRpc.SendCallback("endMap",PlayerList);
+        	XmlRpc.SendCallback("endMap",PlayerList);
 		UnloadMap();		
 	}
 	

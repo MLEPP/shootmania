@@ -123,7 +123,7 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 		} catch(\Exception $e) {}
 	}
 
-	function onRulesScriptCallback($param1, $param2) {
+	function onModeScriptCallback($param1, $param2) {
 		Console::println('[' . date('H:i:s') . '] Script callback: '.$param1.', with parameter: '.$param2);
 		switch($param1) {
 			case 'beginMap':

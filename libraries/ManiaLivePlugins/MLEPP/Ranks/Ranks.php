@@ -95,7 +95,6 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 	function onLoad() {
 		$this->enableDatabase();
 		$this->enableDedicatedEvents();
-		$this->enableTickerEvent();
 
 		Console::println('['.date('H:i:s').'] [MLEPP] Plugin: Ranks v'.$this->getVersion() );
 		$this->callPublicMethod('MLEPP\Core', 'registerPlugin', 'Ranks', $this);
@@ -147,8 +146,6 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 
 	function onPlayerConnect($login, $isSpectator) {
 		$player = $this->storage->getPlayerObject($login);
-		$points = array_keys($this->ranks);
-
 		$this->players[$player->login] = $this->getRank($player->login);
 	}
 

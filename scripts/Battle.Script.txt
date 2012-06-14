@@ -12,6 +12,8 @@
 
 #Setting	RespawnTime					6001
 
+#Setting	AutoBalance					True
+
 #Setting	RoundsToWin					3
 #Setting	RoundGapToWin				2
 #Setting	RoundsLimit					5
@@ -21,6 +23,7 @@
 #Setting	CaptureMaxValue				30000// Valeur en milisecondes, par poteau
 
 #Const		CompatibleMapTypes			"BattleArena" 
+#Const		Version					"2012-06-13"
 #Const		UITickPeriod				200
 
 ***UIPlayer***
@@ -79,12 +82,12 @@ Text UpdateLayerSpawnScreen() {
 					// process events.
 					foreach (Event in PendingEvents) {
 						switch (Event.Type) {
-							case CGameManialinkScriptEvent::Type::MouseClick :
+							case CMlEvent::Type::MouseClick :
 							{		
 								if (Event.ControlId == "FrameRules") ShowRules = !ShowRules;
 							}
 					
-							case CGameManialinkScriptEvent::Type::KeyPress:
+							case CMlEvent::Type::KeyPress:
 							{
 								if (Event.CharPressed == "2424832") ShowRules = !ShowRules;	// F1
 							}
@@ -132,7 +135,7 @@ main() {
 		Airshot::MatchBegin();
 		BalancedWeapons::MatchBegin();
 		Victory::MatchBegin();
-		
+		if(AutoBalance) AutoTeamBalance();
 		Ladder_OpenMatch_All();
 		+++MatchBegin+++
 		
@@ -168,13 +171,13 @@ main() {
 			---EndTime---
 			
 			declare MapSidesIndices = [1=>(Round % 2)+1, 2=>2-(Round % 2)];
-			declare CBlockSpawn[Integer] ClanSpawnAnchors = [1=>SM::GetSpawn("Spawn", MapSidesIndices[1]), 2=>SM::GetSpawn("Spawn", MapSidesIndices[2])];
+			declare CSmBlockSpawn[Integer] ClanSpawnAnchors = [1=>SM::GetSpawn("Spawn", MapSidesIndices[1]), 2=>SM::GetSpawn("Spawn", MapSidesIndices[2])];
 			foreach (Clan=>Spawn in ClanSpawnAnchors) {
 				Spawn.Base.Clan = Clan;
 				Spawn.Base.IsActive = True;
 			}
 			
-			declare ClanPoles = [1=>CBlockPole[], 2=>CBlockPole[]];
+			declare ClanPoles = [1=>CSmBlockPole[], 2=>CSmBlockPole[]];
 			for(Clan, 1, 2) {			
 				foreach(Pole in BlockPoles) {
 					assert(Pole.Tag == "Goal");
@@ -200,7 +203,7 @@ main() {
 							Discard(Event);			
 						} else {			
 							if(Event.Damage > 0) {
-							    XmlRpc.SendCallback("playerHit", "Victim:"^Event.Victim.Login^";Shooter:"^Event.Shooter.Login^";"^Points);
+							    	XmlRpc.SendCallback("playerHit", "Victim:"^Event.Victim.Login^";Shooter:"^Event.Shooter.Login^";"^Points);
 								Score::AddPoints( Event.Shooter, 1);									
 								Top::IncrementPlayerPoints("Damages", Event.Shooter, 1);
 								Airshot::OnHit(Event.Shooter, Event.Victim);
@@ -230,7 +233,7 @@ main() {
 				///////////////////////////////////////////////////
 				// Spawning players 		
 				foreach(Player in Players) {
-					if (Player.SpawnStatus != CPlayer::ESpawnStatus::NotSpawned) continue;														
+					if (Player.SpawnStatus != CSmPlayer::ESpawnStatus::NotSpawned) continue;														
 					BalancedWeapons::SetPlayerWeapon(Player, True);								
 					SM::SpawnPlayer(Player, Player.RequestedClan, ClanSpawnAnchors[Player.RequestedClan], Now + RespawnTime);							
 				}				
@@ -537,14 +540,14 @@ main() {
 		MatchEndRequested = False;
 		
 		declare PlayerList = "";
-        foreach (Player in Players) {
-        	PlayerList = PlayerList^(Player.Login^":"^Player.Score.Points^";");
-        }
-        foreach (Player in Spectators) {
-        	PlayerList = PlayerList^(Player.Login^":"^Player.Score.Points^";");
-        }
+        	foreach (Player in Players) {
+        		PlayerList = PlayerList^(Player.Login^":"^Player.Score.Points^";");
+        	}
+	        foreach (Player in Spectators) {
+        		PlayerList = PlayerList^(Player.Login^":"^Player.Score.Points^";");
+	        }
 
-        XmlRpc.SendCallback("endMap",PlayerList);
+        	XmlRpc.SendCallback("endMap",PlayerList);
 		UnloadMap();
 	}
 	
