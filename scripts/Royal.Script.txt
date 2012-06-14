@@ -421,7 +421,6 @@ main() {
 			OffZoneRadiusSpeed = 0.;
 			OffZoneCenterBlockId = Goal.Id;	
 			
-			SetNbFakePlayers(50, 0); ///< Debug
 			WaitForPlayers(1);
 			
 			/* ------------------------------------- */
