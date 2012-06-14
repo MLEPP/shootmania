@@ -7,7 +7,9 @@
 #Include "Libs/Nadeo/ShootMania/SM.Script.txt" as SM
 #Include "Libs/Nadeo/ShootMania/Score.Script.txt" as Score
 
-#Const CompatibleChallengeTypes "RoyalArena"
+#Const	CompatibleMapTypes	"RoyalArena"
+#Const	Version				"2012-06-13"
+
 
 /* ------------------------------------- */
 // Settings
@@ -104,6 +106,43 @@ Void SpawnPlayers() {
 }
 
 /* ------------------------------------- */
+/** Update survival score
+ *
+ * @param _PlayerId		The player who just have been eliminated
+ */
+Void UpdateSurvivalScore(Ident _PlayerId) {
+	/// When more than 3 players was spawned
+	if (PlayersNbAlive > 1 && TotalPlayersSpawned > 2) {
+		foreach (Player in Players) {
+			if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned && Player.Id != _PlayerId) {
+				Score::AddPoints(Player, 1);
+				if (PlayersNbAlive == 2) Score::AddPoints(Player, (TotalPlayersSpawned / 2) + (TotalPlayersSpawned % 2));
+				if (PlayersNbAlive == 3) Score::AddPoints(Player, TotalPlayersSpawned / 2);
+			}
+		}
+	} else if (TotalPlayersSpawned <= 2 && PlayersNbAlive > 1) {	///< Special case when there was less than 3 players spawned
+		foreach (Player in Players) {
+			if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned) {
+				if (Player.Id == _PlayerId) {
+					Score::AddPoints(Player, 1);
+				} else {
+					Score::AddPoints(Player, 3);
+				}
+			}
+		}
+	}
+	
+	if (!Players.existskey(_PlayerId)) return;	
+	if (Players[_PlayerId].Score != Null) {
+		declare SurvivalBonus for Players[_PlayerId].Score = 0;
+		SurvivalBonus = TotalPlayersSpawned - PlayersNbAlive + 1;
+		if (PlayersNbAlive == 1) SurvivalBonus = SurvivalBonus + TotalPlayersSpawned;
+		if (PlayersNbAlive == 2) SurvivalBonus = SurvivalBonus + (TotalPlayersSpawned / 2);
+		Top::IncrementPlayerPoints("Survival", Players[_PlayerId], SurvivalBonus);
+	}
+}
+
+/* ------------------------------------- */
 /** Generate the player spawn queue manialink
  *
  * @return	The manialink Text
@@ -160,7 +199,7 @@ Text UpdateLayerScoreTable() {
 	foreach (Score in Scores) {
 		declare PoleBonus for Score = 0;
 		declare SurvivalBonus for Score = 0;
-		declare HitBonus = Score.RoundPoints - PoleBonus - SurvivalBonus;
+		declare HitBonus for Score = 0;
 		if (HitBonus > 0) RankingHit[Score.User.Name] = HitBonus * -1;
 		if (SurvivalBonus > 0) RankingSurvival[Score.User.Name] = SurvivalBonus * -1;
 		if (PoleBonus > 0) RankingPole[Score.User.Name] = PoleBonus;
@@ -189,7 +228,7 @@ Text UpdateLayerScoreTable() {
 	
 	foreach (Pseudo => Points in RankingSurvival) {
 		RankingSurvivalList ^= """
-			<label posn="0 {{{ I * -5 }}}" sizen="4 5" style="TextCardSmallScores2" text="{{{ PlayersNbAlive + I + 1 }}}: " />
+			<label posn="0 {{{ I * -5 }}}" sizen="4 5" style="TextCardSmallScores2" text="{{{ PlayersNbAlive + I }}}: " />
 			<label posn="4 {{{ I * -5 }}}" sizen="21 5" style="TextCardSmallScores2" text="{{{ Pseudo }}}" />
 			<label posn="28 {{{ I * -5 }}}" sizen="4 5" style="TextCardSmallScores2" text="+{{{ Points * -1 }}}" />
 		""";
@@ -238,7 +277,7 @@ Text UpdateLayerInfos() {
 	
 	ML = """
 		<frame posn="156 -85 0">
-			<label posn="0 0 1" scale="1.1" halign="right" style="TextButtonNav" text="Remaining players: {{{PlayerSpawnQueue.count + PlayersNbAlive}}}" />		
+			<label posn="0 0 1" scale="1.1" halign="right" style="TextButtonNav" text="Remaining players: {{{ PlayerSpawnQueue.count + PlayersNbAlive }}}" />		
 		</frame>
 	""";
 	
@@ -277,12 +316,12 @@ Text UpdateLayerSpawnScreen() {
 					// process events.
 					foreach (Event in PendingEvents) {
 						switch (Event.Type) {
-							case CGameManialinkScriptEvent::Type::MouseClick :
+							case CMlEvent::Type::MouseClick :
 							{		
 								if (Event.ControlId == "FrameRules") ShowRules = !ShowRules;
 							}
 					
-							case CGameManialinkScriptEvent::Type::KeyPress:
+							case CMlEvent::Type::KeyPress:
 							{
 								if (Event.CharPressed == "2424832") ShowRules = !ShowRules;	// F1
 							}
@@ -339,7 +378,7 @@ main() {
 // Map start
 /* ------------------------------------- */
 		LoadMap();
-		
+				
 		XmlRpc.SendCallback("beginMap",MapName);
 		
 		Score::MatchBegin();
@@ -352,7 +391,7 @@ main() {
 		UIManager.UIAll.UISequence = CUIConfig::EUISequence::Intro;
 		UIManager.UIAll.BigMessage = _("New match");
 		UIManager.UIAll.StatusMessage = _("Points limit: ")^MapPointsLimit;
-		wait (UIManager.UIAll.UISequenceIsCompleted);
+		wait(UIManager.UIAll.UISequenceIsCompleted);
 		UIManager.UIAll.BigMessage = "";
 		UIManager.UIAll.StatusMessage = "";
 		
@@ -360,9 +399,10 @@ main() {
 /* ------------------------------------- */
 // Round Start
 /* ------------------------------------- */		
-			UIManager.ResetAll();		
+			UIManager.ResetAll();	
+			
 			SM::SetupDefaultVisibility();
-			UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
+			UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;	
 			
 			XmlRpc.SendCallback("beginRound",MapName);
 			
@@ -382,20 +422,23 @@ main() {
 			OffZoneRadiusSpeed = 0.;
 			OffZoneCenterBlockId = Goal.Id;	
 			
-			SetNbFakePlayers(50, 0); ///< Debug
 			WaitForPlayers(1);
 			
 			/* ------------------------------------- */
 			// Init the players and their scores
-			foreach (Player in Players) {
-				declare Integer RoundHits for Player;
-				RoundHits = 0;
-			}
 			foreach (Score in Scores) {
 				declare Integer PoleBonus for Score;
 				declare Integer SurvivalBonus for Score;
+				declare Integer HitBonus for Score;
 				PoleBonus = 0;
 				SurvivalBonus = 0;
+				HitBonus = 0;
+				Score.RoundPoints = 0;
+			}
+			foreach (Player in Players) {
+				declare Integer RoundHits for Player;
+				RoundHits = 0;
+				if (Player.Score != Null) Player.Score.RoundPoints = 1;
 			}
 			
 			UIManager.UIAll.UILayers.clear();
@@ -422,7 +465,6 @@ main() {
 // Play loop
 /* ------------------------------------- */
 				yield;
-				
 				
 				if (PlayerSpawnQueue.count > 0 && LastSpawnTime + (SpawnInterval * 1000) < Now) {
 					/* ------------------------------------- */
@@ -456,20 +498,13 @@ main() {
 					UIManager.UIAll.CountdownEndTime = -1;
 				}
 					
-				foreach (Event, PendingEvents) {	
+				foreach (Event in PendingEvents) {
 					if (Event.Type == CSmModeEvent::EType::OnArmorEmpty) {
 						declare Integer SpawnTime for Event.Victim;
 						SpawnTime = Now;
-						
-						if (Event.Victim.Score != Null) {
-							declare SurvivalBonus for Event.Victim.Score = 0;
-							SurvivalBonus = TotalPlayersSpawned - PlayersNbAlive + 1;
-							if (PlayersNbAlive == 1) SurvivalBonus = SurvivalBonus + TotalPlayersSpawned;
-							if (PlayersNbAlive == 2) SurvivalBonus = SurvivalBonus + (TotalPlayersSpawned / 2);
-							XmlRpc.SendCallback("playerDeath", Event.Victim.Login);
-							Score::AddPoints(Event.Victim, SurvivalBonus);
-							Top::IncrementPlayerPoints("Survival", Event.Victim, SurvivalBonus);
-						}
+						UpdateSurvivalScore(Event.Victim.Id);
+						LayerScoresTable.ManialinkPage = UpdateLayerScoreTable();
+						XmlRpc.SendCallback("playerDeath", Event.Victim.Login);						
 						PassOn(Event);
 					} else if (Event.Type == CSmModeEvent::EType::OnCapture ) {
 						if( OffZoneRadiusSpeed == 0. && OffZoneRadius == -1) {
@@ -480,38 +515,15 @@ main() {
 							Goal.Gauge.Max = OffZoneTimeLimit * 1000;
 							Goal.Gauge.Value = Goal.Gauge.Max;
 							Goal.Gauge.Speed = -1;
-							if (Goal.Sector.PlayersIds.count > 0) {
-								declare Bonus = OffZoneBonus / Goal.Sector.PlayersIds.count;
-								foreach (PlayerId in Goal.Sector.PlayersIds) {
-									if (Players.existskey(PlayerId) && Players[PlayerId].Score != Null) {
-										declare PoleBonus for Players[PlayerId].Score = 0;
-										PoleBonus = Bonus;
-										Score::AddPoints(Players[PlayerId], PoleBonus);
-										Top::IncrementPlayerPoints("Pole", Players[PlayerId], PoleBonus);
-										XmlRpc.SendCallback("poleCapture", Players[PlayerId].Login);
-										UIManager.UIAll.SendNotice(TextLib::Compose(_("$<%1$> activated the OffZone"), Players[PlayerId].Name), 
-												CUIConfig::ENoticeLevel::MatchInfo, Null, 
-												CUIConfig::EAvatarVariant::Default, 
-												CUIConfig::EUISound::Start, 0);
-									}
-								}
-							}
 						}
+						LayerScoresTable.ManialinkPage = UpdateLayerScoreTable();
 						PassOn(Event);
 					} else if (Event.Type == CSmModeEvent::EType::OnPlayerRequestRespawn) {
 						declare Integer SpawnTime for Event.Player;
 						SpawnTime = Now;
-						
+						UpdateSurvivalScore(Event.Player.Id);
 						XmlRpc.SendCallback("playerRespawn", Event.Player.Login);
-						
-						if (Event.Player.Score != Null) {
-							declare SurvivalBonus for Event.Player.Score = 0;
-							SurvivalBonus = TotalPlayersSpawned - PlayersNbAlive + 1;
-							if (PlayersNbAlive == 1) SurvivalBonus = SurvivalBonus + TotalPlayersSpawned;
-							if (PlayersNbAlive == 2) SurvivalBonus = SurvivalBonus + (TotalPlayersSpawned / 2);
-							Score::AddPoints(Event.Player, SurvivalBonus);
-							Top::IncrementPlayerPoints("Survival", Event.Player, SurvivalBonus);
-						}
+						LayerScoresTable.ManialinkPage = UpdateLayerScoreTable();
 						PassOn(Event);
 					} else if (Event.Type == CSmModeEvent::EType::OnHit) {
 						if (Event.Victim != Null && Event.Shooter != Null && Event.Victim != Event.Shooter && Event.Damage > 0) {
@@ -529,6 +541,11 @@ main() {
 								CumulPoints += Points;
 							}
 							Event.ShooterPoints = CumulPoints;
+							if (Event.Shooter.Score != Null) {
+								declare HitBonus for Event.Shooter.Score = 0;
+								HitBonus += CumulPoints;
+							}
+							LayerScoresTable.ManialinkPage = UpdateLayerScoreTable();
 							PassOn(Event);
 						} else {
 							Discard(Event);
@@ -543,6 +560,24 @@ main() {
 				if (PlayerSpawnQueue.count <= 0 && OffZoneRadiusSpeed == 0. && OffZoneRadius == -1) {
 					if (Goal.Sector.PlayersIds.count > 0) Goal.Gauge.Speed = 1;
 					else Goal.Gauge.Speed = 0;
+					
+					// Give points
+					if (Goal.Sector.PlayersIds.count > 0 && Goal.Gauge.Value >= Goal.Gauge.Max) {
+						declare Bonus = OffZoneBonus / Goal.Sector.PlayersIds.count;
+						foreach (PlayerId in Goal.Sector.PlayersIds) {
+							if (Players.existskey(PlayerId) && Players[PlayerId].Score != Null) {
+								declare PoleBonus for Players[PlayerId].Score = 0;
+								PoleBonus = Bonus;
+								Score::AddPoints(Players[PlayerId], PoleBonus);
+								Top::IncrementPlayerPoints("Pole", Players[PlayerId], PoleBonus);
+								XmlRpc.SendCallback("poleCapture", Players[PlayerId].Login);
+								UIManager.UIAll.SendNotice(TextLib::Compose(_("$<%1$> activated the OffZone"), Players[PlayerId].Name), 
+										CUIConfig::ENoticeLevel::MatchInfo, Null, 
+										CUIConfig::EAvatarVariant::Default, 
+										CUIConfig::EUISound::StartRound, 0);
+							}
+						}
+					}
 				}
 				/* ------------------------------------- */
 				// Stop OffZone at MinSize
@@ -558,7 +593,7 @@ main() {
 				}
 				if (LastUIUpdateTime + C_UITickPeriod < Now) {
 					LayerInfos.ManialinkPage = UpdateLayerInfos();
-					LayerScoresTable.ManialinkPage = UpdateLayerScoreTable();						
+					//LayerScoresTable.ManialinkPage = UpdateLayerScoreTable();
 					LastUIUpdateTime = Now;
 					
 					declare UsedLayers = Ident[];
@@ -568,6 +603,7 @@ main() {
 						
 						declare CUILayer LayerSpawnScreen;
 						if (UI.UILayers.count != 1) {
+							UI.UILayers.clear();
 							LayerSpawnScreen <=> UIManager.UILayerCreate();
 							LayerSpawnScreen.Type = CUILayer::EUILayerType::ScreenIn3d;
 							UI.UILayers.add(LayerSpawnScreen);
@@ -590,7 +626,6 @@ main() {
 					foreach (LayerId in LayersToRemove) {
 						UIManager.UILayerDestroy(UIManager.UILayers[LayerId]);
 					}
-					
 				}
 				
 				/* ------------------------------------- */
@@ -598,16 +633,11 @@ main() {
 				if ((Players.count > 1 && PlayerSpawnQueue.count <= 0 && PlayersNbAlive <= 1)
 					|| (Players.count == 1 && PlayerSpawnQueue.count <= 0 && PlayersNbAlive <= 0)) { // Allow solo playing
 					foreach (Player in Players) {
-						if (Player.SpawnStatus == CPlayer::ESpawnStatus::Spawned) {
+						if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned) {
 							declare Integer SpawnTime for Player;
 							SpawnTime = Now + 1;
 							RoundWinnerId = Player.Id;
-							if (Player.Score != Null) {
-								declare SurvivalBonus for Player.Score = 0;
-								SurvivalBonus = TotalPlayersSpawned - PlayersNbAlive + 1 + TotalPlayersSpawned;
-								Score::AddPoints(Player, SurvivalBonus);
-								Top::IncrementPlayerPoints("Survival", Player, SurvivalBonus);
-							}
+							UpdateSurvivalScore(Player.Id);
 						}
 						if (Players.count == 1) RoundWinnerId = Player.Id;
 					}
@@ -644,7 +674,7 @@ main() {
 				UIManager.UIAll.BigMessage = _("|Match|Draw");
 			}
 			
-			sleep(3000);
+			sleep(1000);
 			
 			OffZoneRadius = -1.;
 			StartTime = -1;
@@ -652,11 +682,12 @@ main() {
 			SM::UnspawnAllPlayers();
 			UIManager.UIAll.UISequence = CUIConfig::EUISequence::EndRound;
 			UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
-			sleep(6000);
+			sleep(5000);
+			Score::RoundEnd();
+			sleep(3000);
 			UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 			UIManager.UIAll.BigMessage = "";
 			
-			Score::RoundEnd();
 			
 			/* ------------------------------------- */
 			// Map end conditions
@@ -679,8 +710,8 @@ main() {
 /* ------------------------------------- */	
 		Score::MatchEnd(True);	
 		Top::RoundEnd();
-		Top::MatchEnd();
-		
+		Top::MatchEnd();	
+
 		declare PlayerList = "";
 		foreach (Player in Players) {
 			PlayerList = PlayerList^(Player.Login^":"^Player.Score.Points^";");
@@ -689,8 +720,8 @@ main() {
 			PlayerList = PlayerList^(Player.Login^":"^Player.Score.Points^";");
 		}
 
-		XmlRpc.SendCallback("endMap",PlayerList);
-
+		XmlRpc.SendCallback("endMap",PlayerList);		
+		
 		UIManager.UIAll.UILayers.clear();
 
 		UIManager.UIAll.UISequence = CUIConfig::EUISequence::Outro;	
@@ -703,6 +734,7 @@ main() {
 		UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;	
 		UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;	
 		UIManager.UIAll.UILayers.add(LayerTops); 
+		wait(UIManager.UIAll.UISequenceIsCompleted);
 		UIManager.UIAll.BigMessage = "";	
 		UnloadMap();		
 	}
