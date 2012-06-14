@@ -294,12 +294,22 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 		if(in_array($login, $players)) {
 			return $this->players[$login];
 		} else {
-			$q = "SELECT `player_points` FROM `players` WHERE `player_login` = '".$login."'";
+			$q = "SELECT `player_captures`, `player_kills`, `player_deaths`, `player_points` FROM `players` WHERE `player_login` = '".$login."'";
 			$query = $this->db->query($q);
 			$info = $query->fetchStdObject();
 
+			if($info->player_deaths != 0) {
+				$kd = ($info->player_kills/$info->player_deaths);
+			} else {
+				$kd = $info->player_kills;
+			}
+
 			return array('score' => $info->player_points,
-						 'rank' => $this->ranks[$this->closest($points, $info->player_points)]);
+						 'rank' => $this->ranks[$this->closest($points, $info->player_points)],
+						 'kills' => $info->player_kills,
+						 'deaths' => $info->player_deaths,
+						 'killdeath' => number_format($kd, 2, ',', ''),
+						 'captures' => $info->player_captures);
 		}
 	}
 
