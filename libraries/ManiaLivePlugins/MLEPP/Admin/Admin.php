@@ -1527,10 +1527,10 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
                 $this->callPublicMethod('Standard\PluginManager', 'openWindow', $login);
                 break;
             case 'addtrack':
-                $this->callPublicMethod('MLEPP\AddRemoveTracks', 'addLocalWin', $login, false);
+                $this->callPublicMethod('MLEPP\AddRemoveMaps', 'addLocalWin', $login, false);
                 break;
             case 'removetrack':
-                $this->callPublicMethod('MLEPP\AddRemoveTracks', 'RemoveWindow', $login, false);
+                $this->callPublicMethod('MLEPP\AddRemoveMaps', 'RemoveWindow', $login, false);
                 break;
         }
     }

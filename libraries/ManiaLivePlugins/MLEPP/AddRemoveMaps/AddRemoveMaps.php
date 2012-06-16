@@ -46,7 +46,7 @@ use ManiaLive\Gui\Windowing\WindowHandler;
 use ManiaLive\Gui\Windowing\Windows\Info;
 use ManiaLivePlugins\MLEPP\AddRemoveMaps\Events\onTrackAdded;
 use ManiaLivePlugins\MLEPP\AddRemoveMaps\Events\onTrackRemoved;
-//use ManiaLivePlugins\MLEPP\AddRemoveMaps\Gui\Windows\AddLocalWindow;
+use ManiaLivePlugins\MLEPP\AddRemoveMaps\Gui\Windows\AddLocalWindow;
 //use ManiaLivePlugins\MLEPP\AddRemoveMaps\Gui\Windows\RemoveWindow;
 
 class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
@@ -63,6 +63,7 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
     function onInit() {
         $this->setVersion('0.2.0');
         $this->setPublicMethod('getVersion');
+		$this->setPublicMethod('addLocalWin');
     }
 
     /**
@@ -271,8 +272,8 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
      * @return void
      */
     function removethis($fromLogin, $param1 = NULL, $param2 = NULL, $param3 = NULL) {
-        if (!$this->mlepp->AdminGroup->hasPermission($fromLogin, 'removeTrack')) {
-            $this->mlepp->sendChat($this->mlepp->AdminGroups->noPermissionMsg, $fromLogin);
+		if (!AdminGroup::contains($login)) {
+            $this->connection->chatSendServerMessage('$fff» $f00$iYou don\'t have the permission to do that!', $login);
             return;
         }
         $admin = Storage::GetInstance()->getPlayerObject($fromLogin);
@@ -301,8 +302,8 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
      * @return
      */
     function remove($fromLogin, $param1 = NULL, $param2 = NULL, $param3 = NULL) {
-        if (!$this->mlepp->AdminGroup->hasPermission($fromLogin, 'removeTrack')) {
-            $this->mlepp->sendChat($this->mlepp->AdminGroups->noPermissionMsg, $fromLogin);
+		if (!AdminGroup::contains($login)) {
+            $this->connection->chatSendServerMessage('$fff» $f00$iYou don\'t have the permission to do that!', $login);
             return;
         }
         if ($param1 == 'this') {
@@ -396,6 +397,81 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
             $output .= "_";
         }
         return utf8_encode($output);
+    }
+	
+	function addLocalWin($login, $overrideDir = false) {
+		if (!AdminGroup::contains($login)) {
+            $this->connection->chatSendServerMessage('$fff» $f00$iYou don\'t have the permission to do that!', $login);
+            return;
+        }
+       	$window = AddLocalWindow::Create($login);
+		$window->setSize(220, 120);
+
+        $dataDir = $this->connection->gameDataDirectory();
+        $dataDir = str_replace('\\', '/', $dataDir);
+        $challengeDir = $dataDir . "Maps/";
+
+        if ($overrideDir == false || empty($overrideDir)) {
+            $overrideDir = $challengeDir;
+        } else {
+            if (!is_array($overrideDir) && $overrideDir !== false) {
+                $this->addlocal($login, $overrideDir);
+            } else {
+                $overrideDir = $overrideDir[0];
+            }
+        }
+
+
+        $localFiles = scandir($overrideDir);
+        $arrayDirs = array();
+        $arrayFiles = array();
+        
+        foreach ($localFiles as $file) {
+            if (is_dir($overrideDir . $file)) {
+                if ($file == "." || $file == "MatchSettings")
+                    continue;
+                if ($file == "..") {
+                    if (strcmp($overrideDir, $challengeDir) == 0)
+                        continue;
+                    $tempdir = explode('/', $overrideDir);
+                    $newDir = "";
+                    for ($x = 0; $x < count($tempdir) - 2; $x++) {
+                        $newDir .= $tempdir[$x] . "/";
+                    }
+                    $file = "";
+                    $label = "..";
+                } else {
+                    $file.="/";
+                    $newDir = $overrideDir;
+                    $label = $file;
+                }
+                $arrayDirs[] = array
+                    (
+                    'Filename' => array(utf8_encode($label), array("changeDir", $newDir . $file), true),
+                    'Action' => array("", NULL, false)
+                );
+            } else {
+                if (!stristr($file, ".map.gbx") && !stristr($file, ".challenge.gbx"))
+                    continue;
+
+                $newDir = $overrideDir;
+                $arrayFiles[] = array
+                    (
+                    'Filename' => array(utf8_encode($file), NULL, false),
+                    'Action' => array("Add", array(($newDir . "/" . $file), $file), false)
+                );
+            }
+         }
+         
+         // add directories and files to window, directories first!
+         foreach ($arrayDirs as $entry) {
+		 $window->setInfos($entry);
+         }
+         
+         foreach ($arrayFiles as $entry) {
+         }
+		$window->centerOnScreen();
+		$window->show();
     }
 }
 ?>
