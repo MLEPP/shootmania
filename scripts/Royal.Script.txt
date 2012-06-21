@@ -7,15 +7,15 @@
 #Include "Libs/Nadeo/ShootMania/SM.Script.txt" as SM
 #Include "Libs/Nadeo/ShootMania/Score.Script.txt" as Score
 
-#Const CompatibleMapTypes "RoyalArena"
-#Const	Version		  "2012-06-13"
+#Const	CompatibleMapTypes	"RoyalArena"
+#Const	Version				"2012-06-19"
 
 
 /* ------------------------------------- */
 // Settings
 /* ------------------------------------- */
 
-#Setting MapPointsLimit			111	as "Points to win a map"
+#Setting MapPointsLimit			200	as "Points to win a map"
 #Setting OffZoneTimeLimit		50	as "OffZone shrink time"
 #Setting OffZoneActivationTime	4	as "OffZone activation time"
 #Setting SpawnInterval			5	as "Time between waves of spawns"
@@ -378,9 +378,7 @@ main() {
 // Map start
 /* ------------------------------------- */
 		LoadMap();
-		
 		XmlRpc.SendCallback("beginMap",MapName);
-		
 		Score::MatchBegin();
 		Top::MatchBegin();
 		Top::RoundBegin();	///< Want global tops for the match
@@ -391,7 +389,7 @@ main() {
 		UIManager.UIAll.UISequence = CUIConfig::EUISequence::Intro;
 		UIManager.UIAll.BigMessage = _("New match");
 		UIManager.UIAll.StatusMessage = _("Points limit: ")^MapPointsLimit;
-
+		wait(UIManager.UIAll.UISequenceIsCompleted);
 		UIManager.UIAll.BigMessage = "";
 		UIManager.UIAll.StatusMessage = "";
 		
@@ -519,9 +517,7 @@ main() {
 					} else if (Event.Type == CSmModeEvent::EType::OnPlayerRequestRespawn) {
 						declare Integer SpawnTime for Event.Player;
 						SpawnTime = Now;
-						
 						XmlRpc.SendCallback("playerRespawn", Event.Player.Login);
-						
 						UpdateSurvivalScore(Event.Player.Id);
 						LayerScoresTable.ManialinkPage = UpdateLayerScoreTable();
 						PassOn(Event);
@@ -569,8 +565,8 @@ main() {
 								declare PoleBonus for Players[PlayerId].Score = 0;
 								PoleBonus = Bonus;
 								Score::AddPoints(Players[PlayerId], PoleBonus);
-								Top::IncrementPlayerPoints("Pole", Players[PlayerId], PoleBonus);
 								XmlRpc.SendCallback("poleCapture", Players[PlayerId].Login);
+								Top::IncrementPlayerPoints("Pole", Players[PlayerId], PoleBonus);
 								UIManager.UIAll.SendNotice(TextLib::Compose(_("$<%1$> activated the OffZone"), Players[PlayerId].Name), 
 										CUIConfig::ENoticeLevel::MatchInfo, Null, 
 										CUIConfig::EAvatarVariant::Default, 
@@ -655,9 +651,7 @@ main() {
 					Top::SetPlayerPoints("Round", Player, Player.Score.RoundPoints);
 				}
 			}
-			
 			XmlRpc.SendCallback("endRound",MapName);
-			
 			UIManager.UIAll.UILayers.clear();
 			UIManager.UIAll.UILayers.add(LayerScoresTable);
 			UIManager.UIAll.UILayers.add(LayerTops); 
@@ -710,8 +704,8 @@ main() {
 /* ------------------------------------- */	
 		Score::MatchEnd(True);	
 		Top::RoundEnd();
-		Top::MatchEnd();
-		
+		Top::MatchEnd();	
+
 		declare PlayerList = "";
 		foreach (Player in Players) {
 			PlayerList = PlayerList^(Player.Login^":"^Player.Score.Points^";");
@@ -721,7 +715,7 @@ main() {
 		}
 
 		XmlRpc.SendCallback("endMap",PlayerList);
-
+		
 		UIManager.UIAll.UILayers.clear();
 
 		UIManager.UIAll.UISequence = CUIConfig::EUISequence::Outro;	
@@ -734,6 +728,7 @@ main() {
 		UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;	
 		UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;	
 		UIManager.UIAll.UILayers.add(LayerTops); 
+		wait(UIManager.UIAll.UISequenceIsCompleted);
 		UIManager.UIAll.BigMessage = "";	
 		UnloadMap();		
 	}
