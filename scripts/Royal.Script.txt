@@ -364,7 +364,6 @@ main() {
 	Top::AddTop("Survival", 5);
 	Top::AddTop("Round", 5);
 	
-	
 	/* ------------------------------------- */
 	// Init UI
 	declare LayerSpawnQueue		<=> UIManager.UILayerCreate();
@@ -500,7 +499,8 @@ main() {
 						declare Integer SpawnTime for Event.Victim;
 						SpawnTime = Now;
 						UpdateSurvivalScore(Event.Victim.Id);
-						LayerScoresTable.ManialinkPage = UpdateLayerScoreTable();					
+						LayerScoresTable.ManialinkPage = UpdateLayerScoreTable();
+						XmlRpc.SendCallback("playerDeath", Event.Victim.Login);						
 						PassOn(Event);
 					} else if (Event.Type == CSmModeEvent::EType::OnCapture ) {
 						if( OffZoneRadiusSpeed == 0. && OffZoneRadius == -1) {
