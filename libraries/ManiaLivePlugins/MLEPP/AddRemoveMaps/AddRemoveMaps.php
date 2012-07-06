@@ -5,13 +5,13 @@
  *
  * -- MLEPP Plugin --
  * @name Add/Remove Maps
- * @date 27-05-2012
- * @version 0.2.0
+ * @date 06-07-2012
+ * @version 0.2.2
  * @website mlepp.trackmania.nl
  * @package MLEPP
  *
  * @author The MLEPP team
- * @copyright 2010 - 2011
+ * @copyright 2010 - 2012
  *
  * ---------------------------------------------------------------------
  * This program is free software: you can redistribute it and/or modify

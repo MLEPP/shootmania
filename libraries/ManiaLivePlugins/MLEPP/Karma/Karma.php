@@ -5,9 +5,9 @@
  *
  * -- MLEPP Plugin --
  * @name Karma
- * @date 03-06-2012
- * @version 0.2.0
- * @website mlepp.com
+ * @date 06-07-2012
+ * @version 0.2.2
+ * @website mlepp.trackmania.nl
  * @package MLEPP
  *
  * @author The MLEPP team

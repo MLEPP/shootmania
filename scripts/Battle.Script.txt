@@ -23,7 +23,7 @@
 #Setting	CaptureMaxValue				30000// Valeur en milisecondes, par poteau
 
 #Const		CompatibleMapTypes			"BattleArena" 
-#Const		Version					"2012-06-13"
+#Const		Version					"2012-06-15"
 #Const		UITickPeriod				200
 
 ***UIPlayer***
@@ -315,13 +315,32 @@ main() {
 				// UI				
 				if ( Now > LatestUITick + UITickPeriod){
 					LatestUITick = Now;	
+					
 					declare ClanTotalRatios = [1=>0, 2=>0];
 					ClanTotalRatios[1] = 100 * TotalCaptureValue[1] / (CaptureMaxValue * ClanPoles[1].count);
 					ClanTotalRatios[2] = 100 * TotalCaptureValue[2] / (CaptureMaxValue * ClanPoles[2].count);					
+					declare Text ScoreTeam1 = Teams[0].ColorText^ClanTotalRatios[1]^"%";
+					declare Text ScoreTeam2 = Teams[1].ColorText^ClanTotalRatios[2]^"%";
 					LayerRoundInfo.ManialinkPage = """
-					<label posn="-35 66" halign="center" scale="2" text="$<{{{Teams[0].ColorText^ClanTotalRatios[1]}}}%$>"/>
-					<label posn=" 35 66" halign="center" scale="2" text="$<{{{Teams[1].ColorText^ClanTotalRatios[2]}}}%$>"/>""";
+					<label posn="-27 66" halign="right" scale="2" text="$<{{{ScoreTeam1}}}$>"/>
+					<label posn=" 27 66" halign="left" scale="2" text="$<{{{ScoreTeam2}}}$>"/>""";
 
+					for(I, 0, ClanPoles[1].count-1){
+						declare Gauges = [1=>ClanPoles[1][I].Gauge, 2=>ClanPoles[2][I].Gauge];
+						declare Substyle = [1=>"BgWindow3", 2=>"BgWindow3"];
+						if(Gauges[1].Value == Gauges[1].Max) Substyle[1] = "BgWindow2";
+						if(Gauges[2].Value == Gauges[2].Max) Substyle[2] = "BgWindow2";
+						declare CommonAttribs = """ valign="bottom" halign="center" style="Bgs1InRace" """;
+						
+						LayerRoundInfo.ManialinkPage ^= 
+"""
+<quad sizen="4 10" posn="{{{ 50 + I*5 }}} 57 -1" {{{CommonAttribs}}} substyle="BgWindow1" />
+<quad sizen="4 10" posn="{{{-50 - I*5 }}} 57 -1" {{{CommonAttribs}}} substyle="BgWindow1" />
+<quad sizen="4 {{{MathLib::NearestInteger(Gauges[1].ValueReal * 10)}}}" posn="{{{ 50 + I*5 }}} 57" {{{CommonAttribs}}} substyle="{{{Substyle[1]}}}"/>
+<quad sizen="4 {{{MathLib::NearestInteger(Gauges[2].ValueReal * 10)}}}" posn="{{{-50 - I*5 }}} 57" {{{CommonAttribs}}} substyle="{{{Substyle[2]}}}"/>
+""";
+					}		
+					
 					if(((Now - StartTime) / 8000) % 2 == 0) 
 						LayerTops.ManialinkPage = Top::GetFrameTop("Capture", "Top 5 Captures", "130 -30", "Percent");
 					else 
@@ -329,8 +348,8 @@ main() {
 					
 					UIManager.UIAll.UILayers.clear();
 					UIManager.UIAll.UILayers.add(LayerTops);
-					UIManager.UIAll.UILayers.add(LayerRoundInfo);
-						
+					UIManager.UIAll.UILayers.add(LayerRoundInfo);  
+								
 					declare PlayerClan1Id = NullId;
 					declare PlayerClan2Id = NullId;
 					foreach(Player in Players) {

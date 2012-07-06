@@ -5,8 +5,8 @@
  *
  * -- MLEPP Plugin --
  * @name IRC
- * @date 06-09-2011
- * @version v0.2.0
+ * @date 06-07-2012
+ * @version 0.2.2
  * @website mlepp.trackmania.nl
  * @package MLEPP
  *

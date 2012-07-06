@@ -7,7 +7,7 @@
 #Include "TextLib" as TextLib
 
 #Const CompatibleMapTypes "MeleeArena"
-#Const	Version		  "2012-06-13"
+#Const	Version		  "2012-06-29"
 #Const C_UITickInterval 200
 
 #Setting TimeLimit	600 as "Time limit"
@@ -135,7 +135,10 @@ main() {
 		UIManager.UIAll.UILayers.add(LayerSpawnScreen);
 		
 		UIManager.UIAll.UISequence = CUIConfig::EUISequence::Intro;
+		UIManager.UIAll.BigMessageSound = CUIConfig::EUISound::PhaseChange;
+		UIManager.UIAll.BigMessageSoundVariant = 0;
 		UIManager.UIAll.BigMessage = _("New match");
+		wait(UIManager.UIAll.UISequenceIsCompleted);
 		UIManager.UIAll.BigMessage = "";
 
 		UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
@@ -250,6 +253,8 @@ main() {
 				UnspawnPlayer(Player);
 		}
 		
+		UIManager.UIAll.BigMessageSound = CUIConfig::EUISound::EndRound;
+		UIManager.UIAll.BigMessageSoundVariant = 0;
 		if (Winner != Null) {
 			UIManager.UIAll.BigMessage = TextLib::Compose(_("$<%1$> wins the match!"), Winner.Name);
 		} else {
@@ -259,6 +264,7 @@ main() {
 		
 		UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;	
 		UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;		
+		wait(UIManager.UIAll.UISequenceIsCompleted);
 		
 		UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;		
 		UIManager.UIAll.BigMessage = "";	
