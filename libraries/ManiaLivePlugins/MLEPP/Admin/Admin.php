@@ -621,7 +621,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 
 		$matchsettings = $dataDir . "Maps/MatchSettings/";
 
-		$tracklist = $this->matchsettings;
+		$tracklist = 'maplist.txt';
 		/*if (empty($tracklist)) {
 			$this->selectTracklist($fromLogin);
 			return;
