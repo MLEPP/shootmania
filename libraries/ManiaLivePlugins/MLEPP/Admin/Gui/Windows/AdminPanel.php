@@ -15,7 +15,7 @@ class AdminPanel extends \ManiaLive\Gui\Window {
     
     function onConstruct() {
         $this->setPosition(158, 60);
-        $this->setSize(70, 8);
+        $this->setSize(35, 8);
         $this->setHalign("right");
         $this->background = new Quad();
         $this->background->setSubStyle(Bgs1InRace::BgHealthBar);

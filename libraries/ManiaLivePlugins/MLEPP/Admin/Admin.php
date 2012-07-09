@@ -196,17 +196,17 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
         $item->addCall(array($this, 'panelCommand'));
         $panel->addItem($item);
         //empty
-        $item = new Button("empty", "empty", "empty");
+        /*$item = new Button("empty", "empty", "empty");
         $item->addCall(array($this, 'panelCommand'));
-        $panel->addItem($item);
+        $panel->addItem($item);*/
         //addtrack
-        $item = new Button("Icons64x64_1", "Add", "addtrack");
+        /*$item = new Button("Icons64x64_1", "Add", "addtrack");
         $item->addCall(array($this, 'panelCommand'));
-        $panel->addItem($item);
+        $panel->addItem($item);*/
         //removetrack
-        $item = new Button("Icons64x64_1", "MediaAudioDownloading", "removetrack");
+        /*$item = new Button("Icons64x64_1", "MediaAudioDownloading", "removetrack");
         $item->addCall(array($this, 'panelCommand'));
-        $panel->addItem($item);
+        $panel->addItem($item);*/
         //empty
         $item = new Button("empty", "empty", "empty");
         $item->addCall(array($this, 'panelCommand'));
