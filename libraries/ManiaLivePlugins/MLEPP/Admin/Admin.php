@@ -91,7 +91,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 
         $this->addAdminCommand(array($this, 'GetRulesScriptInfo'), array('get', 'rules', 'info'), false, false, false);
 		$this->addAdminCommand(array($this, 'GetRulesScriptParams'), array('get', 'rules', 'param'), false, false, false);
-		$this->addAdminCommand(array($this, 'skip'), array('skip'), false, false, false);
+		$this->addAdminCommand(array($this, 'skipTrack'), array('skip'), false, false, false);
 		$this->addAdminCommand(array($this, 'kick'), array('kick'), false, false, false);
 		$this->addAdminCommand(array($this, 'cancel'), array('cancel'), false, false, false);
 		$this->addAdminCommand(array($this, 'enableCallvotes'), array('enablevotes'), false, false, false);
