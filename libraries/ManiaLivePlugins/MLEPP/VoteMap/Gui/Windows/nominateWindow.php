@@ -1,6 +1,6 @@
 <?php
 
-namespace ManiaLivePlugins\MLEPP\Jukebox\Gui\Windows;
+namespace ManiaLivePlugins\MLEPP\VoteMap\Gui\Windows;
 
 use ManiaLib\Gui\Elements\Label;
 use ManiaLib\Gui\Elements\Bgs1InRace;
@@ -12,11 +12,10 @@ use ManiaLive\DedicatedApi\Connection;
 use ManiaLive\Gui\Controls\Frame;
 use ManiaLive\Gui\Controls\PageNavigator;
 
-class trackList extends \ManiaLive\Gui\ManagedWindow
+class nominateWindow extends \ManiaLive\Gui\ManagedWindow
 {	
 	private $tableau = array();
 	private $navigator;
-	private $bgresume;
 	private $textInfos;
 	private $showInfos = false;
 	
@@ -25,23 +24,16 @@ class trackList extends \ManiaLive\Gui\ManagedWindow
 	private $currentChallengeindex;
 
 	private $challengesList = array();
-	private $serverName;
+	private $windowTitle;
 	private $action;
 	private $nbChallengesPlayed;
 	
 	function onConstruct()
 	{
 		parent::onConstruct();
-		// disabled the default behaviour due bug at beta0 
-		// 
-		// $this->setSize(180, 120);
-		// $this->centerOnScreen();
-		
 		$this->setSize(90, 120);
-		$this->centerOnScreen(); 
+		$this->centerOnScreen();
 		$this->setPositionX(-160 + $this->sizeX/2);
-		// end of fix - reaby
-		
 		$this->tableau = new Frame();
 		$this->tableau->setPosition(0, -10);
 		$this->addComponent($this->tableau);
@@ -61,10 +53,10 @@ class trackList extends \ManiaLive\Gui\ManagedWindow
 		$this->nbpage = 1;
 	}
 	
-	function setInfos($challengesList = array(), $serverName)
+	function setInfos($challengesList = array(), $windowTitle = '')
 	{
 		$this->challengesList = $challengesList;
-		$this->serverName = $serverName;
+		$this->windowTitle = $windowTitle;
 		$this->connection =  Connection::getInstance();
 	}
 	
@@ -83,46 +75,21 @@ class trackList extends \ManiaLive\Gui\ManagedWindow
 		$texte->setTextColor("000");
 		$texte->setTextSize(2);
 		$texte->setText("\$oName");
-		$this->addComponent($texte);
-		$texte = new Label();
-		$texte->setSize(37.5, 4);
-		$texte->setPosition(80, $posy, 2);
-		$texte->setTextColor("000");
-		$texte->setTextSize(2);
-		$texte->setText("\$oAuthor");
-		
-		/* disabled due bug @ beta0 
-		$this->addComponent($texte);
-		$texte = new Label();
-		$texte->setSize(10, 4);
-		$texte->setPosition(112, $posy, 2);
-		$texte->setTextColor("000");
-		$texte->setTextSize(2);
-		$texte->setText("\$oMood");
-		$this->addComponent($texte);
-		$texte = new Label();
-		$texte->setSize(15, 4);
-		$texte->setPosition(131, $posy, 2);
-		$texte->setTextColor("000");
-		$texte->setTextSize(2);
-		$texte->setText("\$oCoppers");
-		$this->addComponent($texte);		  
-		 */
+		$this->addComponent($texte);				
 	}
 	
 	function onDraw()
 	{
 		$this->tableau->clearComponents();
 		$posy = 0;
-		$num = 1;
-		//print_r($this->challengesList);
-		$this->setTitle(count($this->challengesList).' tracks on $z'.$this->serverName);
+		$num = 1;		
+		$this->setTitle($this->windowTitle);
 		$this->currentChallengeindex = $this->connection->getCurrentMapIndex();
 
 		if(count($this->challengesList) > 0)
 		{
 			$posy -= 10;
-			for($i=($this->page-1)*15; $i<=($this->page)*15-1; ++$i)
+			for($i=($this->page-1)*10; $i<=($this->page)*10-1; ++$i)
 			{
 				if(!isset($this->challengesList[$i]))break;
 				$this->setLineBgs($posy, $i, $this->challengesList[$i]->name, $this->challengesList[$i]->fileName);
@@ -140,37 +107,12 @@ class trackList extends \ManiaLive\Gui\ManagedWindow
 				$texte->setTextColor("000");
 				$texte->setTextSize(2);
 				$texte->setText($this->challengesList[$i]->name);
-				$this->tableau->addComponent($texte);
-				
-				/* disabled due bug @ beta0 
-				$texte = new Label();				 
-				$texte->setSize(30, 3);
-				$texte->setPosition(80.5, $posy-0.5, 3);
-				$texte->setTextColor("000");
-				$texte->setTextSize(2);
-				$texte->setText($this->challengesList[$i]->author);
-				$this->tableau->addComponent($texte);
-				$texte = new Label();
-				$texte->setSize(15.5, 3);
-				$texte->setPosition(114, $posy-0.5, 3);
-				$texte->setTextColor("000");
-				$texte->setTextSize(2);
-				$texte->setText($this->challengesList[$i]->environnement);
-				$this->tableau->addComponent($texte);
-				$texte = new Label();
-				$texte->setSize(12, 3);
-				$texte->setPosition(137, $posy-1, 3);
-				$texte->setTextColor("000");
-				$texte->setTextSize(1.75);
-				$texte->setHalign('center');
-				$texte->setText($this->challengesList[$i]->copperPrice);
 				$this->tableau->addComponent($texte);				
-				 */
 				$posy -= 6;
 			}
 		}
 		
-		$this->nbpage = intval((count($this->challengesList)-1)/15)+1;
+		$this->nbpage = intval((count($this->challengesList)-1)/10)+1;
 		
 		$this->navigator->setPositionX($this->getSizeX() / 2);
 		$this->navigator->setPositionY(-($this->getSizeY() - 6));
@@ -251,18 +193,18 @@ class trackList extends \ManiaLive\Gui\ManagedWindow
 		{
 			$bg = new BgsPlayerCard();
 			$bg->setSubStyle(BgsPlayerCard::BgCardSystem);
-			$bg->setAction($this->createAction(array($this, 'imposeChallenge'), $i, $challengeName, $fileName));
+			$bg->setAction($this->createAction(array($this, 'nominateChallenge'), $i, $challengeName, $fileName));
 			$bg->setPosition(14.5, $posy+0.5, 2);
 			$bg->setSize(64.5,5);
 			$this->tableau->addComponent($bg);
 		}
-		/* disabled due bug @ beta0
-		$bg = new BgsPlayerCard();
+/*		$bg = new BgsPlayerCard();
 		$bg->setSubStyle(BgsPlayerCard::BgCardSystem);
 		$bg->setPosition(79.5, $posy+0.5, 2);
 		$bg->setSize(32,5);
 		$this->tableau->addComponent($bg);
-		$bg = new BgsPlayerCard();
+ */
+	/*	$bg = new BgsPlayerCard();
 		$bg->setSubStyle(BgsPlayerCard::BgCardSystem);
 		$bg->setPosition(112, $posy+0.5, 3);
 		$bg->setSize(17.5, 5);
@@ -271,11 +213,12 @@ class trackList extends \ManiaLive\Gui\ManagedWindow
 		$bg->setSubStyle(BgsPlayerCard::BgCardSystem);
 		$bg->setPosition(130, $posy+0.5, 3);
 		$bg->setSize(14.5, 5);
-		$this->tableau->addComponent($bg);		 
-		 */
+		$this->tableau->addComponent($bg); 	
+	 */
+		
 	}
 	
-	function imposeChallenge($login, $i, $challengeName, $fileName)
+	function nominateChallenge($login, $i, $challengeName, $fileName)
 	{
 		call_user_func($this->action, $login, $i, $challengeName, $fileName);
 		$this->hide();

@@ -265,19 +265,18 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
      * removethis()
      * Function removes current track from tracklist.
      *
-     * @param mixed $fromLogin
+     * @param mixed $login
      * @param mixed $param1
      * @param mixed $param2
      * @param mixed $param3
      * @return void
      */
-    function removethis($fromLogin, $param1 = NULL, $param2 = NULL, $param3 = NULL) {
+    function removethis($login, $param1 = NULL, $param2 = NULL, $param3 = NULL) {
 		if (!AdminGroup::contains($login)) {
             $this->connection->chatSendServerMessage('$fff» $f00$iYou don\'t have the permission to do that!', $login);
             return;
         }
-        $admin = Storage::GetInstance()->getPlayerObject($fromLogin);
-        $login = $admin->login;
+        $admin = Storage::GetInstance()->getPlayerObject($login);
         $challenge = $this->connection->getCurrentMapInfo();
         $dataDir = $this->connection->gameDataDirectory();
         $dataDir = str_replace('\\', '/', $dataDir);
@@ -302,7 +301,7 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
      * @return
      */
     function remove($fromLogin, $param1 = NULL, $param2 = NULL, $param3 = NULL) {
-		if (!AdminGroup::contains($login)) {
+		if (!AdminGroup::contains($fromLogin)) {
             $this->connection->chatSendServerMessage('$fff» $f00$iYou don\'t have the permission to do that!', $login);
             return;
         }
