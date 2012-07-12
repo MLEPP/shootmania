@@ -1,38 +1,63 @@
 #RequireContext CSmMode
 
-#Include "Libs/Nadeo/Mode.Script.txt"
-#Include "Libs/Nadeo/ShootMania/SM.Script.txt" as SM
-#Include "Libs/Nadeo/ShootMania/Score.Script.txt" as Score
 #Include "MathLib" as MathLib
 #Include "TextLib" as TextLib
+#Include "Libs/Nadeo/Mode.Script.txt" as Mode
+#Include "Libs/Nadeo/ShootMania/SM.Script.txt" as SM
+#Include "Libs/Nadeo/ShootMania/Score.Script.txt" as Score
 
-#Const CompatibleMapTypes "MeleeArena"
-#Const	Version		  "2012-06-29"
-#Const C_UITickInterval 200
+#Const	CompatibleMapTypes	"MeleeArena"
+#Const	Version				"2012-07-06"
 
-#Setting TimeLimit	600 as "Time limit"
-#Setting PointLimit	25	as "Point limit"
+/* -------------------------------------- */
+// Settings
+/* -------------------------------------- */
+#Setting S_TimeLimit	600 as _("Time limit")	///< Time limit on a map
+#Setting S_PointLimit	25	as _("Point limit")	///< Point limit on a map
 
-declare Ident[] SpawnsList;
-declare Ident LatestSpawnId;
+#Const	C_UITickInterval	200	///< Time interval between UI update
 
+/* -------------------------------------- */
+// Globales variables
+/* -------------------------------------- */
+declare Ident[]	G_SpawnsList;		///< Id of all the BlockSpawns of the map
+declare Ident	G_LatestSpawnId;	///< Id of the last BlockSpawn used
+
+/* -------------------------------------- */
+// Functions
+/* -------------------------------------- */
+
+/* -------------------------------------- */
+/// Fill the SpawnsList with all the BlockSpanws of the map
 Void FillSpawnsList() {
-	foreach (BlockSpawn in BlockSpawns) { SpawnsList.add(BlockSpawn.Id); }
+	foreach (BlockSpawn in BlockSpawns) { G_SpawnsList.add(BlockSpawn.Id); }
 }
 
+/* ------------------------------------- */
+/** Spawn a player
+ *
+ * @param	_Player		The player to spawn
+ */
 Void SpawnPlayers(CSmPlayer _Player) {
-	if (SpawnsList.count == 0) FillSpawnsList();
+	if (G_SpawnsList.count == 0) FillSpawnsList();
 	declare SpawnId = NullId;
 	while (True) {
-		SpawnId = SpawnsList[MathLib::Rand(0, SpawnsList.count - 1)];
-		if (SpawnId != LatestSpawnId) break;
-		if (SpawnsList.count == 1) break;
+		SpawnId = G_SpawnsList[MathLib::Rand(0, G_SpawnsList.count - 1)];
+		if (SpawnId != G_LatestSpawnId) break;
+		if (G_SpawnsList.count == 1) break;
 	}
 	SM::SpawnPlayer(_Player, 0, BlockSpawns[SpawnId]);
-	LatestSpawnId = SpawnId;
-	declare Tmp = SpawnsList.remove(SpawnId);
+	G_LatestSpawnId = SpawnId;
+	declare Tmp = G_SpawnsList.remove(SpawnId);
 }
 
+/* ------------------------------------- */
+/** Update the infos UI of a player
+ *
+ * @param	_Player		The player to update
+ *
+ * @return		The ManiaLink string
+ */
 Text UpdateLayerInfos(CSmPlayer _Player) {
 	if (_Player.Score == Null) return "";
 	
@@ -52,7 +77,8 @@ Text UpdateLayerInfos(CSmPlayer _Player) {
 Text UpdateLayerSpawnScreen() {
 	declare Text ML;
 	
-	declare TempForI18n = _("Free for all\n- Survive as long as possible to score a maximum of points.\n- Bonus points are awarded for the pole capture and for each player hit.\n- If the pole is captured then the playing area will start to shrink. If a player leaves this area he is eliminated.\n- The first player to reach %1 points wins.");
+	declare RulesText = _("Free for all\n\n- Hit an opponent to score a point.\n- The player with the most points wins.");
+	declare RulesTip  = _("Press F1 to show rules");
 	
 	ML = """
 		<script><!--
@@ -60,7 +86,7 @@ Text UpdateLayerSpawnScreen() {
 				declare FrameRules	<=> Page.GetFirstChild("FrameRules");
 				declare FrameShow	<=> Page.GetFirstChild("FrameShow");
 				declare ShowRules = False;
-					
+				
 				while(True) {
 					if (ShowRules) {
 						FrameRules.Show();
@@ -69,17 +95,17 @@ Text UpdateLayerSpawnScreen() {
 						FrameRules.Hide();
 						FrameShow.Show();
 					}
-
+					
 					yield;
-
+					
 					// process events.
 					foreach (Event in PendingEvents) {
 						switch (Event.Type) {
 							case CMlEvent::Type::MouseClick :
-							{		
+							{
 								if (Event.ControlId == "FrameRules") ShowRules = !ShowRules;
 							}
-					
+							
 							case CMlEvent::Type::KeyPress:
 							{
 								if (Event.CharPressed == "2424832") ShowRules = !ShowRules;	// F1
@@ -91,7 +117,7 @@ Text UpdateLayerSpawnScreen() {
 		--></script>
 		<frame posn="0 -70 0" id="FrameShow">
 			<quad posn="0 0 10" sizen="140 20" halign="center" valign="center" style="Bgs1InRace" substyle="BgTitle3_5" />
-			<label posn="0 0 11" scale="2" halign="center" valign="center" style="TextTitle3" text="{{{ _("Press F1 to show rules") }}}" />
+			<label posn="0 0 11" scale="2" halign="center" valign="center" style="TextTitle3" text="{{{ RulesTip }}}" />
 		</frame>
 		<frame posn="0 50 1" id="FrameRules">
 			<frame posn="0 0 5">
@@ -100,7 +126,7 @@ Text UpdateLayerSpawnScreen() {
 			</frame>
 			<frame posn="0 -10 5">
 				<quad posn="0 0 10" sizen="300 120" halign="center" bgcolor="222c" />
-				<label posn="-145 -5 11" sizen="145 5" scale="2" autonewline="1" style="TextCardSmallScores2" text="{{{ _("Free for all\n\n- Hit an opponent to score a point. \n- The player with the most points wins. ") }}}" />
+				<label posn="-145 -5 11" sizen="145 5" scale="2" autonewline="1" style="TextCardSmallScores2" text="{{{ RulesText }}}" />
 			</frame>
 		</frame>
 	""";
@@ -108,48 +134,67 @@ Text UpdateLayerSpawnScreen() {
 	return ML;
 }
 
+/* ------------------------------------- */
+// Main
+/* ------------------------------------- */
 main() {
-	UseClans = False;	
+	UseClans = False;
 	
 	declare LayerSpawnScreen <=> UIManager.UILayerCreate();
+	declare LayerScoresTable <=> UIManager.UILayerCreate();
 	LayerSpawnScreen.Type = CUILayer::EUILayerType::ScreenIn3d;
+	LayerScoresTable.Type = CUILayer::EUILayerType::ScoresTable;
 	
 	while (!ServerShutdownRequested) {
-		LoadMap();
+/* ------------------------------------- */
+// Map/Round begin
+/* ------------------------------------- */
+		Mode::LoadMap();
+		
 		XmlRpc.SendCallback("beginMap",MapName);
 		
-		SpawnsList.clear();
-		LatestSpawnId = NullId;
+		G_SpawnsList.clear();
+		G_LatestSpawnId = NullId;
 		
 		XmlRpc.SendCallback("beginMatch",MapName);
 		Score::MatchBegin();
 		
 		XmlRpc.SendCallback("beginRound",MapName);
 		Score::RoundBegin();
-			
-		MatchEndRequested = False;	
+		
+		MatchEndRequested = False;
 		
 		UIManager.ResetAll();
 		SM::SetupDefaultVisibility();
 		LayerSpawnScreen.ManialinkPage = UpdateLayerSpawnScreen();
 		UIManager.UIAll.UILayers.add(LayerSpawnScreen);
 		
+		LayerScoresTable.ManialinkPage = """
+			<frame posn="0 -47">
+				<quad posn="0 0 1" sizen="40 8" style="Bgs1InRace" halign="center" substyle="BgList"/>
+				<label posn="0 -2 2" sizen="40 8" halign="center" text="{{{_("Point limit")}}}: {{{ S_PointLimit }}}" />
+			</frame>
+		""";
+		UIManager.UIAll.UILayers.add(LayerScoresTable);
+		
 		UIManager.UIAll.UISequence = CUIConfig::EUISequence::Intro;
-		UIManager.UIAll.BigMessageSound = CUIConfig::EUISound::PhaseChange;
+		UIManager.UIAll.BigMessageSound = CUIConfig::EUISound::StartRound;
 		UIManager.UIAll.BigMessageSoundVariant = 0;
 		UIManager.UIAll.BigMessage = _("New match");
 		wait(UIManager.UIAll.UISequenceIsCompleted);
 		UIManager.UIAll.BigMessage = "";
-
+		
 		UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
 		declare LastUITick = 0;
 		StartTime = Now;
-		EndTime = StartTime + (TimeLimit * 1000);
-		while (!MatchEndRequested && !ServerShutdownRequested)
-		{		
+		EndTime = StartTime + (S_TimeLimit * 1000);
+		while (!MatchEndRequested && !ServerShutdownRequested) {
+/* ------------------------------------- */
+// Play loop
+/* ------------------------------------- */
 			yield;
 			
-			foreach (Event, PendingEvents) {	
+			foreach (Event, PendingEvents) {
 				if (Event.Type == CSmModeEvent::EType::OnArmorEmpty) {
 					if (Event.Shooter == Event.Victim || Event.Shooter == Null) {
 						Score::RemovePoints(Event.Victim, 1);
@@ -158,15 +203,41 @@ main() {
 					PassOn(Event);
 				} else if (Event.Type == CSmModeEvent::EType::OnHit) {
 					if (Event.Shooter == Event.Victim) {
-						Discard(Event);					
+						Discard(Event);
 					} else {
 						declare Points = Event.Damage / 100;
 						Score::AddPoints(Event.Shooter, Points);
 						Event.ShooterPoints = Points;
 						XmlRpc.SendCallback("playerHit", "Victim:"^Event.Victim.Login^";Shooter:"^Event.Shooter.Login^";"^Points);
+						// Play sound and notice if someone is close to win
+						if (Event.Shooter != Null && Event.Shooter.Score != Null) {
+							declare Gap = S_PointLimit - Event.Shooter.Score.RoundPoints;
+							if (Gap <= 3 && Gap > 0) {
+								declare Variant = 3 - Gap;
+								declare Msg = "";
+								if (Gap > 1)
+									Msg = TextLib::Compose(_("$<%1$> is %2 points from victory!"), Event.Shooter.Name, TextLib::ToText(Gap));
+								else 
+									Msg = TextLib::Compose(_("$<%1$> is 1 point from victory!"), Event.Shooter.Name);
+								UIManager.UIAll.SendNotice(
+									Msg, 
+									CUIConfig::ENoticeLevel::PlayerInfo, 
+									Null, CUIConfig::EAvatarVariant::Default, 
+									CUIConfig::EUISound::TieBreakPoint, Variant
+								);
+							} else if (Gap <= 0) {
+								UIManager.UIAll.SendNotice(
+									TextLib::Compose(_("$<%1$> gets the final hit!"), Event.Shooter.Name), 
+									CUIConfig::ENoticeLevel::PlayerInfo, 
+									Null, CUIConfig::EAvatarVariant::Default, 
+									CUIConfig::EUISound::VictoryPoint, 0
+								);
+								
+							}
+						}
 						PassOn(Event);
 					}
-				} else if (Event.Type == CSmModeEvent::EType::OnPlayerRequestRespawn) {				
+				} else if (Event.Type == CSmModeEvent::EType::OnPlayerRequestRespawn) {
 					Score::RemovePoints(Event.Player, 1);
 					XmlRpc.SendCallback("playerRespawn", Event.Player.Login);
 					PassOn(Event);
@@ -204,8 +275,9 @@ main() {
 				}
 				// Remove layers
 				declare LayersToRemove = Ident[];
+				foreach (Layer in UIManager.UIAll.UILayers) { UsedLayers.add(Layer.Id); }
 				foreach (Layer in UIManager.UILayers) {
-					if (!UsedLayers.exists(Layer.Id) && Layer != LayerSpawnScreen) {
+					if (!UsedLayers.exists(Layer.Id)) {
 						LayersToRemove.add(Layer.Id);
 					}
 				}
@@ -216,28 +288,29 @@ main() {
 				LastUITick = Now;
 			}
 			
-			////////////////////////////////////
+			/* -------------------------------------- */
 			// victory conditions
 			declare IsMatchOver = False;
-			if (Now > StartTime + (TimeLimit * 1000)) 
+			if (Now > StartTime + (S_TimeLimit * 1000)) 
 				IsMatchOver = True;
 			foreach (Player in Players) {
-				if (Player.Score != Null && Player.Score.RoundPoints >= PointLimit) 
-					IsMatchOver = True;
+				if (Player.Score != Null && Player.Score.RoundPoints >= S_PointLimit) IsMatchOver = True;
 			}
-		
-			if (IsMatchOver)
-				break;
+			
+			if (IsMatchOver) break;
 		}
 		
+/* ------------------------------------- */
+// Map/Round end
+/* ------------------------------------- */
 		XmlRpc.SendCallback("endRound",MapName);
 		Score::RoundEnd();
 		
 		XmlRpc.SendCallback("endMatch",MapName);
-		Score::MatchEnd(True);	
+		Score::MatchEnd(True);
 		
-		////////////////////////////////////
-		// End match sequence.
+		/* -------------------------------------- */
+		// End match sequence
 		declare CUser Winner <=> Null;
 		declare MaxPoints = 0;
 		foreach (Score in Scores) {
@@ -249,8 +322,7 @@ main() {
 			}
 		}
 		foreach (Player in Players) {
-			if (Player.User != Winner)
-				UnspawnPlayer(Player);
+			if (Player.User != Winner) UnspawnPlayer(Player);
 		}
 		
 		UIManager.UIAll.BigMessageSound = CUIConfig::EUISound::EndRound;
@@ -260,14 +332,16 @@ main() {
 		} else {
 			UIManager.UIAll.BigMessage = _("|Match|Draw");
 		}
+		sleep(2000);
+		UIManager.UIAll.UISequence = CUIConfig::EUISequence::EndRound;
+		UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
 		sleep(5000);
 		
-		UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;	
-		UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;		
+		UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;
 		wait(UIManager.UIAll.UISequenceIsCompleted);
 		
-		UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;		
-		UIManager.UIAll.BigMessage = "";	
+		UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
+		UIManager.UIAll.BigMessage = "";
 		
 		declare PlayerList = "";
         	foreach (Player in Players) {
@@ -278,8 +352,9 @@ main() {
 	        }
 
         	XmlRpc.SendCallback("endMap",PlayerList);
-		UnloadMap();		
+		Mode::UnloadMap();
 	}
 	
 	UIManager.UILayerDestroy(LayerSpawnScreen);
+	UIManager.UILayerDestroy(LayerScoresTable);
 }
