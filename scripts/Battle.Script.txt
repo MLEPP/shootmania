@@ -1,6 +1,7 @@
 #RequireContext CSmMode
 
 #Include "MathLib" as MathLib
+#Include "TextLib" as TextLib
 #Include "Libs/Nadeo/ShootMania/SM.Script.txt" as SM
 #Include "Libs/Nadeo/Mode.Script.txt"
 
@@ -23,11 +24,12 @@
 #Setting	CaptureMaxValue				30000// Valeur en milisecondes, par poteau
 
 #Const		CompatibleMapTypes			"BattleArena" 
-#Const		Version					"2012-06-15"
+#Const		Version						"2012-07-06"
 #Const		UITickPeriod				200
 
 ***UIPlayer***
 ***
+UI.BigMessageSound = CUIConfig::EUISound::Notice;
 UI.BigMessage = Airshot::Message(Player);
 ***
 
@@ -44,11 +46,11 @@ declare IsCapturePossible = !IsGoalDenied;
 ***Rules***
 ***
 declare ModeName = "Battle";
-declare ModeRules = """Two teams
+declare ModeRules = TextLib::Compose(_("Two teams\n\n- Be the first to capture all the poles of the opposing team in the allotted time (%1 seconds) to score 1 point.\n- The first team to reach the point limit wins."), TextLib::ToText(TimeLimit));
 
-- Be the first to capture all the poles of the opposing team in the allotted time ({{{ TimeLimit }}} seconds) to score 1 point.
-- The first team to reach the point limit wins.
-""";
+
+
+
 ***
 
 /* ------------------------------------- */
@@ -142,6 +144,11 @@ main() {
 		
 		UIManager.ResetAll();
 		UIManager.UIAll.UISequence = CUIConfig::EUISequence::Intro;
+		UIManager.UIAll.SendNotice(
+			_("New match"), CUIConfig::ENoticeLevel::MatchInfo, 
+			Null, CUIConfig::EAvatarVariant::Default, 
+			CUIConfig::EUISound::StartRound, 0
+		);
 		
 		ClanScores[1] = 0;
 		ClanScores[2] = 0;	
@@ -340,15 +347,16 @@ main() {
 """;
 					}		
 					
-					if(((Now - StartTime) / 8000) % 2 == 0) 
-						LayerTops.ManialinkPage = Top::GetFrameTop("Capture", "Top 5 Captures", "130 -30", "Percent");
+				if(((Now - StartTime) / 8000) % 2 == 0) 
+						LayerTops.ManialinkPage = Top::GetFrameTop("Capture", _("Top 5 Captures"), "130 -30", "Percent");
 					else 
-						LayerTops.ManialinkPage = Top::GetFrameTop("Damages", "Top 5 Score", "130 -30", "");
+						LayerTops.ManialinkPage = Top::GetFrameTop("Damages", _("Top 5 Score"), "130 -30", "");
 					
 					UIManager.UIAll.UILayers.clear();
 					UIManager.UIAll.UILayers.add(LayerTops);
 					UIManager.UIAll.UILayers.add(LayerRoundInfo);  
-								
+
+										
 					declare PlayerClan1Id = NullId;
 					declare PlayerClan2Id = NullId;
 					foreach(Player in Players) {
@@ -368,7 +376,7 @@ main() {
 						UIManager.UIAll.ScoreSummary_MatchPoints2 = -1;
 						UIManager.UIAll.ScoreSummary_Gauge2 = ClanTotalRatios[2]/100.;
 					} else {
-						UIManager.UIAll.OverlayScoreSummary = False;				
+						UIManager.UIAll.OverlayScoreSummary = False;
 					}
 					
 					declare UsedLayers = Ident[];
@@ -379,11 +387,11 @@ main() {
 						declare CaptureRatio for Player = 0.;
 						if(0. < CaptureRatio && CaptureRatio < 1.) {
 							UI.GaugeRatio = CaptureRatio;
-							UI.GaugeMessage = "Capturing...";
+							UI.GaugeMessage = _("Capturing...");
 							UI.GaugeClan = Player.CurrentClan;
 						} else if (CaptureRatio == 1.) {
 							UI.GaugeRatio = 1.;
-							UI.GaugeMessage = "Pole Captured";
+							UI.GaugeMessage = _("Pole captured");
 							UI.GaugeClan = Player.CurrentClan;						
 						} else {
 							UI.GaugeRatio = -1.;
@@ -432,8 +440,8 @@ main() {
 		
 		
 			LayerTops.ManialinkPage = 
-				Top::GetFrameTop("Capture", "Top 5 Captures", "130 0", "Percent") ^
-				Top::GetFrameTop("Damages", "Top 5 Score", "130 -30", "");
+				Top::GetFrameTop("Capture", _("Top 5 Captures"), "130 0", "Percent") ^
+				Top::GetFrameTop("Damages", _("Top 5 Score"), "130 -30", "");
 			UIManager.UIAll.UILayers.clear();
 			UIManager.UIAll.UILayers.add(LayerTops);
 
@@ -442,15 +450,18 @@ main() {
 				if (UI==Null) continue;
 				UI.BigMessage = "";
 			}
-						
+
+			
+			sleep(1700);
+			UIManager.UIAll.BigMessageSound = CUIConfig::EUISound::EndRound;
 			if ( Victory::IsRoundWinner(1) ) {
-				UIManager.UIAll.BigMessage = Teams[0].ColorizedName ^ " wins the round";	
+				UIManager.UIAll.BigMessage = TextLib::Compose(_("$<%1$> wins the round!"), Teams[0].ColorizedName);	
 				Clan1Score += 1;			
 			} else if ( Victory::IsRoundWinner(2) ) {
-				UIManager.UIAll.BigMessage = Teams[1].ColorizedName ^ " wins the round";
+				UIManager.UIAll.BigMessage = TextLib::Compose(_("$<%1$> wins the round!"), Teams[1].ColorizedName);
 				Clan2Score += 1;
 			} else {
-				UIManager.UIAll.BigMessage = "This round is a draw";
+				UIManager.UIAll.BigMessage = _("Draw round");
 			}
 			
 			Victory::SetMatchWinnerFromScore(RoundsToWin, RoundGapToWin, RoundsLimit);
@@ -473,14 +484,15 @@ main() {
 			
 			
 			LayerTops.ManialinkPage = 
-				Top::GetFrameTop("Capture", "Top 5 Captures", "130 40", "Percent") ^
-				Top::GetFrameTop("Damages", "Top 5 Score", "130 -10", "");
+				Top::GetFrameTop("Capture", _("Top 5 Captures"), "130 40", "Percent") ^
+				Top::GetFrameTop("Damages", _("Top 5 Score"), "130 -10", "");
 			UIManager.UIAll.UILayers.clear();
 			UIManager.UIAll.UILayers.add(LayerTops);
 
 			sleep(4*1000);
 						
-			+++RoundEnd+++
+			+++RoundEnd+++	
+			
 			XmlRpc.SendCallback("endRound",MapName);
 			Score::RoundEnd();			
 			Top::RoundEnd();
@@ -497,12 +509,13 @@ main() {
 		UIManager.ResetAll();
 		UIManager.UIAll.UISequence = CUIConfig::EUISequence::Outro;
 		
+UIManager.UIAll.BigMessageSound = CUIConfig::EUISound::EndRound;
 		declare WinnerClan = -1;
 		if ( Victory::IsMatchWinner(1) ) {
-			UIManager.UIAll.BigMessage = Teams[0].ColorizedName ^ " wins the match";
+			UIManager.UIAll.BigMessage = TextLib::Compose(_("$<%1$> wins the match!"), Teams[0].ColorizedName);
 			WinnerClan = 1;
 		} else if (  Victory::IsMatchWinner(2) ) {
-			UIManager.UIAll.BigMessage = Teams[1].ColorizedName ^ " wins the match";
+			UIManager.UIAll.BigMessage = TextLib::Compose(_("$<%1$> wins the match!"), Teams[1].ColorizedName);
 			WinnerClan = 2;
 		}
 		MatchNumber += 1;
