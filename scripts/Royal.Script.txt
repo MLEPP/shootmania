@@ -1,24 +1,22 @@
 #RequireContext CSmMode
 
-#Include "Libs/Nadeo/Mode.Script.txt"
 #Include "MathLib" as MathLib
 #Include "TextLib" as TextLib
+#Include "Libs/Nadeo/Mode.Script.txt" as Mode
 #Include "Libs/Nadeo/Top.Script.txt" as Top
 #Include "Libs/Nadeo/ShootMania/SM.Script.txt" as SM
 #Include "Libs/Nadeo/ShootMania/Score.Script.txt" as Score
 
 #Const	CompatibleMapTypes	"RoyalArena"
-#Const	Version				"2012-06-19"
-
+#Const	Version				"2012-07-04"
 
 /* ------------------------------------- */
 // Settings
 /* ------------------------------------- */
-
-#Setting MapPointsLimit			200	as "Points to win a map"
-#Setting OffZoneTimeLimit		50	as "OffZone shrink time"
-#Setting OffZoneActivationTime	4	as "OffZone activation time"
-#Setting SpawnInterval			5	as "Time between waves of spawns"
+#Setting S_MapPointsLimit			200	as _("Points to win a map")
+#Setting S_OffZoneActivationTime	4	as _("OffZone activation duration")
+#Setting S_OffZoneTimeLimit			50	as _("OffZone shrink duration")
+#Setting S_SpawnInterval			5	as _("Time between each wave of spawns")
 
 #Const C_UITickPeriod			200		///< Update UI every xx milliseconds
 #Const C_OffZoneAutoStartTime	-1		///< Automatically start the offzone after xx seconds
@@ -28,10 +26,9 @@
 /* ------------------------------------- */
 // Globales variables
 /* ------------------------------------- */
-
-declare Integer[Ident] PlayerSpawnQueue;					///< A list of players to spawn
-declare Ident[][Integer] PriorityBlockSpawnQueue;			///< A list of spawn points to use
-declare Integer TotalPlayersSpawned;						///< Number of players spawned for the current round
+declare Integer[Ident] 		G_PlayerSpawnQueue;			///< A list of players to spawn
+declare Ident[][Integer]	G_PriorityBlockSpawnQueue;	///< A list of spawn points to use
+declare Integer 			G_TotalPlayersSpawned;		///< Number of players spawned for the current round
 
 /* ------------------------------------- */
 // Functions
@@ -43,7 +40,7 @@ declare Integer TotalPlayersSpawned;						///< Number of players spawned for the
  * @param _MinPlayers	minimum number of players to begin
  */
 Void WaitForPlayers(Integer _MinPlayers) {
-	UIManager.UIAll.BigMessage = "Waiting for players...";
+	UIManager.UIAll.BigMessage = _("Waiting for players...");
 	StartTime = -1;
 	EndTime = -1;
 	while (PlayersNbTotal < _MinPlayers && !MatchEndRequested) {
@@ -57,22 +54,22 @@ Void WaitForPlayers(Integer _MinPlayers) {
 /* ------------------------------------- */
 /// Update the player spawn queue
 Void UpdatePlayerSpawnQueue() {
-	PlayerSpawnQueue.clear();
+	G_PlayerSpawnQueue.clear();
 	foreach (Player in Players) {
 		declare SpawnTime for Player = -1;
-		PlayerSpawnQueue[Player.Id] = SpawnTime;
+		G_PlayerSpawnQueue[Player.Id] = SpawnTime;
 	}
-	PlayerSpawnQueue = PlayerSpawnQueue.sort();
+	G_PlayerSpawnQueue = G_PlayerSpawnQueue.sort();
 }
 
 /* ------------------------------------- */
 /// Update the block spawn queue
 Void UpdateBlockSpawnQueue() {	
-	PriorityBlockSpawnQueue = [1=>Ident[], 2=>Ident[], 3=>Ident[]];
+	G_PriorityBlockSpawnQueue = [1=>Ident[], 2=>Ident[], 3=>Ident[]];
 	foreach (BlockSpawn in BlockSpawns) {
-		if (BlockSpawn.Order <= 1)			PriorityBlockSpawnQueue[1].add(BlockSpawn.Id);
-		else if (BlockSpawn.Order == 2)		PriorityBlockSpawnQueue[2].add(BlockSpawn.Id);
-		else if (BlockSpawn.Order >= 3)		PriorityBlockSpawnQueue[3].add(BlockSpawn.Id);
+		if (BlockSpawn.Order <= 1)		G_PriorityBlockSpawnQueue[1].add(BlockSpawn.Id);
+		else if (BlockSpawn.Order == 2)	G_PriorityBlockSpawnQueue[2].add(BlockSpawn.Id);
+		else if (BlockSpawn.Order >= 3)	G_PriorityBlockSpawnQueue[3].add(BlockSpawn.Id);
 	}
 }
 
@@ -82,14 +79,14 @@ Void SpawnPlayers() {
 	declare Ident[] ToRemove;
 	
 	for (I, 1, 3) {
-		if (PlayerSpawnQueue.count <= 0) break;
-		while (PriorityBlockSpawnQueue[I].count > 0) {
-			if (PlayerSpawnQueue.count <= 0) break;
+		if (G_PlayerSpawnQueue.count <= 0) break;
+		while (G_PriorityBlockSpawnQueue[I].count > 0) {
+			if (G_PlayerSpawnQueue.count <= 0) break;
 		
-			declare SpawnId = PriorityBlockSpawnQueue[I][MathLib::Rand(0, PriorityBlockSpawnQueue[I].count - 1)];
-			declare Tmp = PriorityBlockSpawnQueue[I].remove(SpawnId);
+			declare SpawnId = G_PriorityBlockSpawnQueue[I][MathLib::Rand(0, G_PriorityBlockSpawnQueue[I].count - 1)];
+			declare Tmp = G_PriorityBlockSpawnQueue[I].remove(SpawnId);
 			
-			foreach (PlayerId => SpawnTime in PlayerSpawnQueue) {
+			foreach (PlayerId => SpawnTime in G_PlayerSpawnQueue) {
 				if (Players.existskey(PlayerId)) {
 					SM::SpawnPlayer(Players[PlayerId], 0, BlockSpawns[SpawnId]);
 					ToRemove.add(PlayerId);
@@ -99,7 +96,7 @@ Void SpawnPlayers() {
 				}
 			}
 			foreach (Id in ToRemove) {
-				declare Tmp = PlayerSpawnQueue.removekey(Id);
+				declare Tmp = G_PlayerSpawnQueue.removekey(Id);
 			}
 		}
 	}
@@ -111,16 +108,18 @@ Void SpawnPlayers() {
  * @param _PlayerId		The player who just have been eliminated
  */
 Void UpdateSurvivalScore(Ident _PlayerId) {
-	/// When more than 3 players was spawned
-	if (PlayersNbAlive > 1 && TotalPlayersSpawned > 2) {
+	// When more than 3 players was spawned
+	if (PlayersNbAlive > 1 && G_TotalPlayersSpawned > 2) {
 		foreach (Player in Players) {
 			if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned && Player.Id != _PlayerId) {
 				Score::AddPoints(Player, 1);
-				if (PlayersNbAlive == 2) Score::AddPoints(Player, (TotalPlayersSpawned / 2) + (TotalPlayersSpawned % 2));
-				if (PlayersNbAlive == 3) Score::AddPoints(Player, TotalPlayersSpawned / 2);
+				if (PlayersNbAlive == 2) Score::AddPoints(Player, (G_TotalPlayersSpawned / 2) + (G_TotalPlayersSpawned % 2));
+				if (PlayersNbAlive == 3) Score::AddPoints(Player, G_TotalPlayersSpawned / 2);
 			}
 		}
-	} else if (TotalPlayersSpawned <= 2 && PlayersNbAlive > 1) {	///< Special case when there was less than 3 players spawned
+	} 
+	// Special case when there was less than 3 players spawned
+	else if (G_TotalPlayersSpawned <= 2 && PlayersNbAlive > 1) {	
 		foreach (Player in Players) {
 			if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned) {
 				if (Player.Id == _PlayerId) {
@@ -135,9 +134,9 @@ Void UpdateSurvivalScore(Ident _PlayerId) {
 	if (!Players.existskey(_PlayerId)) return;	
 	if (Players[_PlayerId].Score != Null) {
 		declare SurvivalBonus for Players[_PlayerId].Score = 0;
-		SurvivalBonus = TotalPlayersSpawned - PlayersNbAlive + 1;
-		if (PlayersNbAlive == 1) SurvivalBonus = SurvivalBonus + TotalPlayersSpawned;
-		if (PlayersNbAlive == 2) SurvivalBonus = SurvivalBonus + (TotalPlayersSpawned / 2);
+		SurvivalBonus = G_TotalPlayersSpawned - PlayersNbAlive + 1;
+		if (PlayersNbAlive == 1) SurvivalBonus = SurvivalBonus + G_TotalPlayersSpawned;
+		if (PlayersNbAlive == 2) SurvivalBonus = SurvivalBonus + (G_TotalPlayersSpawned / 2);
 		Top::IncrementPlayerPoints("Survival", Players[_PlayerId], SurvivalBonus);
 	}
 }
@@ -153,12 +152,12 @@ Text UpdateLayerSpawnQueue() {
 	declare I = 0;
 	declare Max = 15;
 	
-	foreach (PlayerId => Time in PlayerSpawnQueue) {
+	foreach (PlayerId => Time in G_PlayerSpawnQueue) {
 		if (!Players.existskey(PlayerId)) continue;
 		List ^= """<label posn="0 {{{ I * -5 }}}" sizen="28 5" style="TextCardSmallScores2" text="{{{ Players[PlayerId].Name }}}" />""";
 		I += 1;
 		if (I > Max) {
-			List ^= """<label posn="0 {{{ I * -5 }}}" sizen="28 5" style="TextCardSmallScores2" text="{{{ PlayerSpawnQueue.count - Max }}} more..."/>""";
+			List ^= """<label posn="0 {{{ I * -5 }}}" sizen="28 5" style="TextCardSmallScores2" text="{{{ G_PlayerSpawnQueue.count - Max }}} more..."/>""";
 			I += 1;
 			break;
 		}
@@ -167,7 +166,7 @@ Text UpdateLayerSpawnQueue() {
 	ML = """
 		<frame posn="163 {{{ -75 + (I * 5) }}}">
 			<quad posn="-40 0 -1" sizen="35 {{{ 7 + (I * 5) }}}" style="Bgs1InRace" substyle="BgList"/>
-			<label posn="-36 -1 3" style="TextRankingsBig" scale="0.6" text="Spawn queue" />
+			<label posn="-36 -1 3" style="TextRankingsBig" scale="0.6" text="{{{_("Spawn queue")}}}" />
 			<frame posn="-37 -6">
 				{{{ List }}}
 			</frame>
@@ -239,11 +238,11 @@ Text UpdateLayerScoreTable() {
 	ML = """
 		<frame posn="-67.5 -48">
 			<quad posn="0 0 1" sizen="30 8" style="Bgs1InRace" halign="center" substyle="BgList"/>
-			<label posn="0 -2 2" sizen="30 8" style="TextCardSmallScores2" halign="center" text="Point limit: {{{ MapPointsLimit }}}" />
+			<label posn="0 -2 2" sizen="30 8" style="TextCardSmallScores2" halign="center" text="{{{_("Point limit")}}}: {{{ S_MapPointsLimit }}}" />
 		</frame>
 		<frame posn="-51.5 -48">
 			<quad posn="0 0 1" sizen="134 8" style="Bgs1InRace" substyle="BgList"/>
-			<label posn="2 -2 2" sizen="22 8" style="TextRankingsBig" scale="0.8" text="Pole (+{{{PolePoints}}})" />
+			<label posn="2 -2 2" sizen="22 8" style="TextRankingsBig" scale="0.8" text="{{{_("Pole")}}} (+{{{PolePoints}}})" />
 			{{{ RankingPoleList }}}
 		</frame>
 		<frame posn="84 43">
@@ -277,7 +276,7 @@ Text UpdateLayerInfos() {
 	
 	ML = """
 		<frame posn="156 -85 0">
-			<label posn="0 0 1" scale="1.1" halign="right" style="TextButtonNav" text="Remaining players: {{{ PlayerSpawnQueue.count + PlayersNbAlive }}}" />		
+			<label posn="0 0 1" scale="1.1" halign="right" style="TextButtonNav" text="Remaining players: {{{ G_PlayerSpawnQueue.count + PlayersNbAlive }}}" />		
 		</frame>
 	""";
 	
@@ -292,8 +291,9 @@ Text UpdateLayerInfos() {
 Text UpdateLayerSpawnScreen() {
 	declare Text ML;
 	
-	declare TempForI18n = _("Free for all\n- Survive as long as possible to score a maximum of points.\n- Bonus points are awarded for the pole capture and for each player hit.\n- If the pole is captured then the playing area will start to shrink. If a player leaves this area he is eliminated.\n- The first player to reach %1 points wins.");
-	declare TempForI18n_2 = _("Press F1 to show rules");
+	
+	declare RulesText = TextLib::Compose(_("Free for all\n- Survive as long as possible to score a maximum of points.\n- Bonus points are awarded for the pole capture and for each player hit.\n- If the pole is captured then the playing area will start to shrink. If a player leaves this area he is eliminated.\n- The first player to reach %1 points wins."), TextLib::ToText(S_MapPointsLimit));
+	declare RulesTip  = _("Press F1 to show rules");
 	
 	ML = """
 		<script><!--
@@ -332,7 +332,7 @@ Text UpdateLayerSpawnScreen() {
 		--></script>
 		<frame posn="0 -70 0" id="FrameShow">
 			<quad posn="0 0 10" sizen="140 20" halign="center" valign="center" style="Bgs1InRace" substyle="BgTitle3_5" />
-			<label posn="0 0 11" scale="2" halign="center" valign="center" style="TextTitle3" text="Press F1 to show rules" />
+			<label posn="0 0 11" scale="2" halign="center" valign="center" style="TextTitle3" text="{{{RulesTip}}}" />
 		</frame>
 		<frame posn="0 50 1" id="FrameRules">
 			<frame posn="0 0 5">
@@ -341,12 +341,7 @@ Text UpdateLayerSpawnScreen() {
 			</frame>
 			<frame posn="0 -10 5">
 				<quad posn="0 0 10" sizen="300 120" halign="center" bgcolor="222c" />
-				<label posn="-145 -5 11" sizen="145 5" scale="2" autonewline="1" style="TextCardSmallScores2" text="Free for all
-			
-- Survive as long as possible to score a maximum of points. 
-- Bonus points are awarded for the pole capture and for each player hit. 
-- If the pole is captured then the playing area will start to shrink. If a player leaves this area he is eliminated.
-- The first player to reach {{{ MapPointsLimit }}} points wins." />
+				<label posn="-145 -5 11" sizen="145 5" scale="2" autonewline="1" style="TextCardSmallScores2" text="{{{RulesText}}}" />
 			</frame>
 		</frame>
 	""";
@@ -376,7 +371,7 @@ main() {
 /* ------------------------------------- */
 // Map start
 /* ------------------------------------- */
-		LoadMap();
+		Mode::LoadMap();
 		XmlRpc.SendCallback("beginMap",MapName);
 		Score::MatchBegin();
 		Top::MatchBegin();
@@ -387,7 +382,7 @@ main() {
 		
 		UIManager.UIAll.UISequence = CUIConfig::EUISequence::Intro;
 		UIManager.UIAll.BigMessage = _("New match");
-		UIManager.UIAll.StatusMessage = _("Points limit: ")^MapPointsLimit;
+		UIManager.UIAll.StatusMessage = _("Point limit")^": "^S_MapPointsLimit;
 		wait(UIManager.UIAll.UISequenceIsCompleted);
 		UIManager.UIAll.BigMessage = "";
 		UIManager.UIAll.StatusMessage = "";
@@ -398,18 +393,17 @@ main() {
 /* ------------------------------------- */		
 			UIManager.ResetAll();		
 			SM::SetupDefaultVisibility();
-			UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
-			
+			UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;	
 			XmlRpc.SendCallback("beginRound",MapName);
 			
 			Score::RoundBegin();
-		
+			
 			/* ------------------------------------- */
 			// Init goal
 			declare Goal <=> SM::GetPole("Goal", 0);
 			Goal.Gauge.Clan = 0;
 			Goal.Gauge.Value = 0;
-			Goal.Gauge.Max = OffZoneActivationTime * 1000;
+			Goal.Gauge.Max = S_OffZoneActivationTime * 1000;
 			Goal.Gauge.Speed = 0;
 			
 			/* ------------------------------------- */
@@ -442,11 +436,11 @@ main() {
 			UIManager.UIAll.UILayers.add(LayerScoresTable);
 			UIManager.UIAll.UILayers.add(LayerInfos);
 			UpdatePlayerSpawnQueue();
-			TotalPlayersSpawned = PlayerSpawnQueue.count;
-			declare OffZoneBonus = TotalPlayersSpawned;
+			G_TotalPlayersSpawned = G_PlayerSpawnQueue.count;
+			declare OffZoneBonus = G_TotalPlayersSpawned;
 			declare RoundEndRequested = False;
 			declare RoundWinnerId = NullId;
-			declare LastSpawnTime = -SpawnInterval * 1000;
+			declare LastSpawnTime = -S_SpawnInterval * 1000;
 			declare LastMessageTime = Now;
 			declare LastUIUpdateTime = -C_UITickPeriod;
 			LayerScoresTable.ManialinkPage = UpdateLayerScoreTable();
@@ -455,14 +449,13 @@ main() {
 			EndTime = -1;
 			UIManager.UIAll.CountdownEndTime = -1;
 			
-			while (!RoundEndRequested && !MatchEndRequested && !ServerShutdownRequested) 
-			{
+			while (!RoundEndRequested && !MatchEndRequested && !ServerShutdownRequested) {
 /* ------------------------------------- */
 // Play loop
 /* ------------------------------------- */
 				yield;
 				
-				if (PlayerSpawnQueue.count > 0 && LastSpawnTime + (SpawnInterval * 1000) < Now) {
+				if (G_PlayerSpawnQueue.count > 0 && LastSpawnTime + (S_SpawnInterval * 1000) < Now) {
 					/* ------------------------------------- */
 					// Spawn players
 					UpdateBlockSpawnQueue();
@@ -470,9 +463,9 @@ main() {
 					LastSpawnTime = Now;
 					UIManager.UIAll.BigMessage = _("Spawning players...");
 					LastMessageTime = -1;
-					UIManager.UIAll.CountdownEndTime =  LastSpawnTime + (SpawnInterval * 1000);
+					UIManager.UIAll.CountdownEndTime =  LastSpawnTime + (S_SpawnInterval * 1000);
 					LayerSpawnQueue.ManialinkPage = UpdateLayerSpawnQueue();
-				} else if (PlayerSpawnQueue.count <= 0 && LastSpawnTime + 100 > Now) {
+				} else if (G_PlayerSpawnQueue.count <= 0 && LastSpawnTime + 100 > Now) {
 					/* ------------------------------------- */
 					// OffZone can be activated
 					if (C_OffZoneAutoStartTime >= 0) UIManager.UIAll.CountdownEndTime = LastSpawnTime + (C_OffZoneAutoStartTime * 1000);
@@ -485,9 +478,10 @@ main() {
 					UIManager.UIAll.Hud3dMarkers = """
 						<marker label="Goal" pos="{{{ Goal.Position[0] }}} {{{ Goal.Position[1] + 25 }}} {{{ Goal.Position[2] }}}" />
 					""";
-				} else if (C_OffZoneAutoStartTime >= 0 && PlayerSpawnQueue.count <= 0 
+				} else if (C_OffZoneAutoStartTime >= 0 && G_PlayerSpawnQueue.count <= 0 
 							&& OffZoneRadiusSpeed == 0. && OffZoneRadius == -1
-							&& LastSpawnTime + (C_OffZoneAutoStartTime * 1000) < Now) {
+							&& LastSpawnTime + (C_OffZoneAutoStartTime * 1000) < Now) 
+				{
 					/* ------------------------------------- */
 					// Auto activate goal
 					Goal.Gauge.Speed = Goal.Gauge.Max;
@@ -499,7 +493,7 @@ main() {
 						declare Integer SpawnTime for Event.Victim;
 						SpawnTime = Now;
 						UpdateSurvivalScore(Event.Victim.Id);
-						LayerScoresTable.ManialinkPage = UpdateLayerScoreTable();
+						LayerScoresTable.ManialinkPage = UpdateLayerScoreTable();					
 						XmlRpc.SendCallback("playerDeath", Event.Victim.Login);						
 						PassOn(Event);
 					} else if (Event.Type == CSmModeEvent::EType::OnCapture ) {
@@ -507,8 +501,8 @@ main() {
 							/* ------------------------------------- */
 							// Active OffZone
 							OffZoneRadius = C_DefaultOffZoneRadius;
-							OffZoneRadiusSpeed = C_DefaultOffZoneRadius / OffZoneTimeLimit;
-							Goal.Gauge.Max = OffZoneTimeLimit * 1000;
+							OffZoneRadiusSpeed = C_DefaultOffZoneRadius / S_OffZoneTimeLimit;
+							Goal.Gauge.Max = S_OffZoneTimeLimit * 1000;
 							Goal.Gauge.Value = Goal.Gauge.Max;
 							Goal.Gauge.Speed = -1;
 						}
@@ -553,7 +547,7 @@ main() {
 				
 				/* ------------------------------------- */
 				// Active goal 
-				if (PlayerSpawnQueue.count <= 0 && OffZoneRadiusSpeed == 0. && OffZoneRadius == -1) {
+				if (G_PlayerSpawnQueue.count <= 0 && OffZoneRadiusSpeed == 0. && OffZoneRadius == -1) {
 					if (Goal.Sector.PlayersIds.count > 0) Goal.Gauge.Speed = 1;
 					else Goal.Gauge.Speed = 0;
 					
@@ -565,12 +559,14 @@ main() {
 								declare PoleBonus for Players[PlayerId].Score = 0;
 								PoleBonus = Bonus;
 								Score::AddPoints(Players[PlayerId], PoleBonus);
-								XmlRpc.SendCallback("poleCapture", Players[PlayerId].Login);
+								XmlRpc.SendCallback("poleCapture", Players[PlayerId].Login); 
 								Top::IncrementPlayerPoints("Pole", Players[PlayerId], PoleBonus);
-								UIManager.UIAll.SendNotice(TextLib::Compose(_("$<%1$> activated the OffZone"), Players[PlayerId].Name), 
-										CUIConfig::ENoticeLevel::MatchInfo, Null, 
-										CUIConfig::EAvatarVariant::Default, 
-										CUIConfig::EUISound::StartRound, 0);
+								UIManager.UIAll.SendNotice(
+									TextLib::Compose(_("$<%1$> activated the OffZone"), Players[PlayerId].Name), 
+									CUIConfig::ENoticeLevel::MatchInfo, Null, 
+									CUIConfig::EAvatarVariant::Default, 
+									CUIConfig::EUISound::StartRound, 0
+								);
 							}
 						}
 					}
@@ -589,7 +585,6 @@ main() {
 				}
 				if (LastUIUpdateTime + C_UITickPeriod < Now) {
 					LayerInfos.ManialinkPage = UpdateLayerInfos();
-					//LayerScoresTable.ManialinkPage = UpdateLayerScoreTable();
 					LastUIUpdateTime = Now;
 					
 					declare UsedLayers = Ident[];
@@ -612,8 +607,10 @@ main() {
 					// Remove layers
 					declare LayersToRemove = Ident[];
 					foreach (Layer in UIManager.UIAll.UILayers) { UsedLayers.add(Layer.Id); }
-					UsedLayers.add(LayerSpawnQueue.Id);UsedLayers.add(LayerScoresTable.Id);
-					UsedLayers.add(LayerInfos.Id);UsedLayers.add(LayerTops.Id);
+					UsedLayers.add(LayerSpawnQueue.Id);
+					UsedLayers.add(LayerScoresTable.Id);
+					UsedLayers.add(LayerInfos.Id);
+					UsedLayers.add(LayerTops.Id);
 					foreach (Layer in UIManager.UILayers) {
 						if (!UsedLayers.exists(Layer.Id)) {
 							LayersToRemove.add(Layer.Id);
@@ -626,8 +623,9 @@ main() {
 				
 				/* ------------------------------------- */
 				// Round end conditions
-				if ((Players.count > 1 && PlayerSpawnQueue.count <= 0 && PlayersNbAlive <= 1)
-					|| (Players.count == 1 && PlayerSpawnQueue.count <= 0 && PlayersNbAlive <= 0)) { // Allow solo playing
+				if ((Players.count > 1 && G_PlayerSpawnQueue.count <= 0 && PlayersNbAlive <= 1)
+					|| (Players.count == 1 && G_PlayerSpawnQueue.count <= 0 && PlayersNbAlive <= 0)) ///< Allow solo playing
+				{
 					foreach (Player in Players) {
 						if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned) {
 							declare Integer SpawnTime for Player;
@@ -697,7 +695,7 @@ main() {
 				}
 			}
 			
-			if (MaxPoints >= MapPointsLimit) break;
+			if (MaxPoints >= S_MapPointsLimit) break;
 		}
 /* ------------------------------------- */
 // Map End
@@ -706,31 +704,24 @@ main() {
 		Top::RoundEnd();
 		Top::MatchEnd();	
 
-		declare PlayerList = "";
-		foreach (Player in Players) {
-			PlayerList = PlayerList^(Player.Login^":"^Player.Score.Points^";");
-		}
-		foreach (Player in Spectators) {
-			PlayerList = PlayerList^(Player.Login^":"^Player.Score.Points^";");
-		}
-
+		UIManager.UIAll.UILayers.clear();
+		
 		XmlRpc.SendCallback("endMap",PlayerList);
 		
-		UIManager.UIAll.UILayers.clear();
-
-		UIManager.UIAll.UISequence = CUIConfig::EUISequence::Outro;	
-		if (Players.existskey(MapWinnerId)) 
+		UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
+		if (Players.existskey(MapWinnerId)) {
 			UIManager.UIAll.BigMessage = TextLib::Compose(_("$<%1$> wins the match!"), Players[MapWinnerId].Name);
-		else
+		} else {
 			UIManager.UIAll.BigMessage = _("|Match|Draw");
+		}
 		sleep(6000);
 		
 		UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;	
-		UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;	
 		UIManager.UIAll.UILayers.add(LayerTops); 
 		wait(UIManager.UIAll.UISequenceIsCompleted);
+		
 		UIManager.UIAll.BigMessage = "";	
-		UnloadMap();		
+		Mode::UnloadMap();		
 	}
 	
 	UIManager.UILayerDestroy(LayerSpawnQueue);
