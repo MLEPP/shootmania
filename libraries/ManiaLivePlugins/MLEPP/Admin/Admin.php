@@ -91,8 +91,10 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 
         $this->addAdminCommand(array($this, 'GetRulesScriptInfo'), array('get', 'rules', 'info'), false, false, false);
 		$this->addAdminCommand(array($this, 'GetRulesScriptParams'), array('get', 'rules', 'param'), false, false, false);
-		$this->addAdminCommand(array($this, 'skipTrack'), array('skip'), false, false, false);
+		$this->addAdminCommand(array($this, 'skip'), array('skip'), false, false, false);
 		$this->addAdminCommand(array($this, 'kick'), array('kick'), false, false, false);
+		$this->addAdminCommand(array($this, 'restart'), array('restart'), false, false, false);
+		
 		$this->addAdminCommand(array($this, 'cancel'), array('cancel'), false, false, false);
 		$this->addAdminCommand(array($this, 'enableCallvotes'), array('enablevotes'), false, false, false);
 		$this->addAdminCommand(array($this, 'disableCallvotes'), array('disablevotes'), false, false, false);
@@ -196,17 +198,19 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
         $item->addCall(array($this, 'panelCommand'));
         $panel->addItem($item);
         //empty
-        /*$item = new Button("empty", "empty", "empty");
+       
+	   $item = new Button("empty", "empty", "empty");
         $item->addCall(array($this, 'panelCommand'));
-        $panel->addItem($item);*/
+        $panel->addItem($item);
         //addtrack
-        /*$item = new Button("Icons64x64_1", "Add", "addtrack");
+		/*       
+	   $item = new Button("Icons64x64_1", "Add", "addtrack");
         $item->addCall(array($this, 'panelCommand'));
-        $panel->addItem($item);*/
+        $panel->addItem($item);
         //removetrack
-        /*$item = new Button("Icons64x64_1", "MediaAudioDownloading", "removetrack");
+        $item = new Button("Icons64x64_1", "MediaAudioDownloading", "removetrack");
         $item->addCall(array($this, 'panelCommand'));
-        $panel->addItem($item);*/
+        $panel->addItem($item);
         //empty
         $item = new Button("empty", "empty", "empty");
         $item->addCall(array($this, 'panelCommand'));
@@ -219,6 +223,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
         /*$item = new Button("Icons64x64_1", "ToolRoot", "list");
         $item->addCall(array($this, 'panelCommand'));
         $panel->addItem($item);*/
+		
         //players
         $item = new Button("Icons64x64_1", "Buddy", "players");
         $item->addCall(array($this, 'panelCommand'));
@@ -621,7 +626,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 
 		$matchsettings = $dataDir . "Maps/MatchSettings/";
 
-		$tracklist = 'maplist.txt';
+		$tracklist = "maplist.txt";
 		/*if (empty($tracklist)) {
 			$this->selectTracklist($fromLogin);
 			return;
@@ -1254,7 +1259,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
      * @param mixed $param3
      * @return void
      */
-    function skipTrack($fromLogin, $param1 = NULL, $param2 = NULL, $param3 = NULL) {
+    function skip($fromLogin, $param1 = NULL, $param2 = NULL, $param3 = NULL) {
        	$player = $this->storage->getPlayerObject($fromLogin);
 		$message = 'No Admin permissions';
          if(!AdminGroup::contains($player->login)) {
@@ -1283,7 +1288,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
      * @param mixed $param3
      * @return void
      */
-    function restartTrack($fromLogin, $param1 = NULL, $param2 = NULL, $param3 = NULL) {
+    function restart($fromLogin, $param1 = NULL, $param2 = NULL, $param3 = NULL) {
        	$player = $this->storage->getPlayerObject($fromLogin);
 		$message = 'No Admin permissions';
          if(!AdminGroup::contains($player->login)) {
