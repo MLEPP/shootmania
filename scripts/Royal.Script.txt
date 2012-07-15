@@ -706,6 +706,14 @@ main() {
 
 		UIManager.UIAll.UILayers.clear();
 		
+		declare PlayerList = "";
+        	foreach (Player in Players) {
+        		PlayerList = PlayerList^(Player.Login^":"^Player.Score.Points^";");
+	        }
+        	foreach (Player in Spectators) {
+        		PlayerList = PlayerList^(Player.Login^":"^Player.Score.Points^";");
+	        }
+	
 		XmlRpc.SendCallback("endMap",PlayerList);
 		
 		UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
