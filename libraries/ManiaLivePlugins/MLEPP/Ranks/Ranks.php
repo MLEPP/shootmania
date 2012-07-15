@@ -5,8 +5,8 @@
  *
  * -- MLEPP Plugin --
  * @name Ranks
- * @date 06-07-2012
- * @version 0.2.2
+ * @date 15-07-2012
+ * @version 0.2.3
  * @website mlepp.trackmania.nl
  * @package MLEPP
  *
@@ -80,7 +80,7 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 	 */
 
 	function onInit() {
-		$this->setVersion('0.2.0');
+		$this->setVersion('0.2.3');
 		$this->setPublicMethod('getVersion');
 		$this->setPublicMethod('getRank');
 	}
@@ -123,10 +123,11 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 				  ) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;";
 			$this->db->query($q);
 		}
+		
+		// check for right database structure, will check even if no players has connected
+		$playerinfo = $this->db->query("SELECT * FROM information_schema.columns WHERE TABLE_NAME='players' and COLUMN_NAME='player_kills';")->fetchStdObject();				
 
-		$playerinfo = $this->db->query("SELECT * FROM `players` ORDER BY `player_id` DESC LIMIT 0,1")->fetchStdObject();
-
-		if(!isset($playerinfo->player_kills)) {
+		if(!isset($playerinfo->TABLE_NAME)) {
 			$q = "ALTER TABLE `players`
 				  ADD `player_kills` MEDIUMINT( 9 ) NOT NULL DEFAULT '0',
 				  ADD `player_deaths` MEDIUMINT( 9 ) NOT NULL DEFAULT '0',
