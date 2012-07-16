@@ -200,7 +200,7 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
 
             $dataDir = $this->connection->gameDataDirectory();
             $dataDir = str_replace('\\', '/', $dataDir);
-            $challengeDir = $dataDir . "Maps/Downloaded/MX/";
+            $challengeDir = $dataDir . $this->config->mxDownloadDir;
             if (!is_dir($challengeDir)) {
                 mkdir($challengeDir, 0777, true);
             }
@@ -213,7 +213,7 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
             }
 
             $targetFile = $challengeDir . $trackinfo->Name . '-' . $mxid . '.Map.Gbx';
-            $eventTargetFile = "Maps/Downloaded/MX/" . $trackinfo->Name . '-' . $mxid . '.Map.Gbx';
+			$eventTargetFile = $this->config->mxDownloadDir . $trackinfo->Name . '-' . $mxid . '.Map.Gbx';
 
             if (file_put_contents($targetFile, $trackdata) === false) {
 				$this->connection->chatSendServerMessage('$fff» $f00$iCouldn\'t write trackdata. Check directory & file permissions at dedicated tracks folder!', $loginObj);

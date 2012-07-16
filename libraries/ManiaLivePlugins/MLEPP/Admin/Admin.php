@@ -90,7 +90,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
         Console::println('[' . date('H:i:s') . '] [MLEPP] Plugin: Admin v' . $this->getVersion());
 
         $this->addAdminCommand(array($this, 'GetRulesScriptInfo'), array('get', 'rules', 'info'), false, false, false);
-		$this->addAdminCommand(array($this, 'GetRulesScriptParams'), array('get', 'rules', 'param'), false, false, false);
+		$this->addAdminCommand(array($this, 'setModeSettings'), array('set', 'script', 'settings'), true, true, false);
 		$this->addAdminCommand(array($this, 'skip'), array('skip'), false, false, false);
 		$this->addAdminCommand(array($this, 'kick'), array('kick'), false, false, false);
 		$this->addAdminCommand(array($this, 'restart'), array('restart'), false, false, false);
@@ -509,34 +509,170 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
         $this->connection->chatSendServerMessage('$f00$iWrong number of parameters given. The admin command you entered takes $fff'.$number.' $f00of parameters!');
         Console::println('[' . date('H:i:s') . '] [MLEPP] [AdminPanel] [' . $login . '] Wrong number of parameters given.');
     }
-
 	
-	/**
-	GetRulesScriptParams
-	*/
-	function GetRulesScriptParams($fromLogin, $param1 = NULL, $param2 = NULL, $param3 = NULL) {
+	 /**
+	 *
+	 */
+	 function setModeSettings($fromLogin, $param1, $param2, $param3 = NULL) {
         $player = $this->storage->getPlayerObject($fromLogin);
         if(!AdminGroup::contains($player->login)) {
-        	$this->connection->chatSendServerMessage('$fff» $f00$iYou don\'t have the permission to do that!', $player);
+           $this->connection->chatSendServerMessage('$fff» $f00$iYou don\'t have the permission to do that!', $player);
             return;
         }
+		$RSI = $this->connection->getModeScriptInfo();
+		if ($RSI->name == 'Royal.Script.txt'){
+        $gamemode = NULL;
+
+        if (strtolower($param1) == "pointlimit")
+            $modesettings = 'S_MapPointsLimit';
+		if (strtolower($param1) == "offzone activation")
+            $modesettings = 'S_OffZoneActivationTime';
+		if (strtolower($param1) == "offzone timelimit")
+            $modesettings = 'S_OffZoneTimeLimit	';
+		if (strtolower($param1) == "spawn")
+            $modesettings = 'S_SpawnInterval';
+        if ($modesettings === NULL) {
+            $this->connection->chatSendServerMessage('Usage: /admin set script settings pointlimit X or offzone activation X or offzone timelimit X or spawn X ', $fromLogin);
+            return;
+        }
+		if (is_numeric($param2)) {
+            $param2 = (int) $param2;
+        } else {
+            $this->connection->chatSendServerMessage('Invalid parameter. Correct parameter for the command is a numeric value.', $fromLogin);
+            return;
+        }
+		$setmodesetting = array($modesettings => $param2);
+		}
+		
+		$RSI = $this->connection->getModeScriptInfo();
+		if ($RSI->name == 'Melee.Script.txt'){
+        $gamemode = NULL;
+
+        if (strtolower($param1) == "pointlimit")
+            $modesettings = 'S_PointLimit';
+		if (strtolower($param1) == "timelimit")
+            $modesettings = 'S_TimeLimit';
+        if ($param1 == NULL) {
+            $this->connection->chatSendServerMessage('Usage: /admin set script settings pointlimit X or timelimit X  ', $fromLogin);
+            return;
+        }
+		if (is_numeric($param2)) {
+            $param2 = (int) $param2;
+        } else {
+            $this->connection->chatSendServerMessage('Invalid parameter. Correct parameter for the command is a numeric value.', $fromLogin);
+            return;
+        }
+		$setmodesetting = array($modesettings => $param2);
+		}
+		
+		$RSI = $this->connection->getModeScriptInfo();
+		if ($RSI->name == 'Battle.Script.txt'){
+        $gamemode = NULL;
+
+        if (strtolower($param1) == "respawn")
+            $modesettings = 'RespawnTime';
+		if (strtolower($param1) == "rtw")
+            $modesettings = 'RoundsToWin';
+		if (strtolower($param1) == "rgtw")
+            $modesettings = 'RoundGapToWin';
+		if (strtolower($param1) == "roundlimit")
+            $modesettings = 'RoundsLimit';
+		if (strtolower($param1) == "timelimit")
+            $modesettings = 'TimeLimit';
+		if (strtolower($param1) == "capturemv")
+            $modesettings = 'CaptureMaxValue';
+        if ($param1 == NULL) {
+            $this->connection->chatSendServerMessage('Usage: /admin set script settings respawn X or rtw X or rgtw X or roundlimit X or timelimit X or capturemv X  ', $fromLogin);
+            return;
+        }
+		if (is_numeric($param2)) {
+            $param2 = (int) $param2;
+        } else {
+            $this->connection->chatSendServerMessage('Invalid parameter. Correct parameter for the command is a numeric value.', $fromLogin);
+            return;
+        }
+		$setmodesetting = array($modesettings => $param2);
+		}
+		
+		$RSI = $this->connection->getModeScriptInfo();
+		if ($RSI->name == 'BattleWaves.Script.txt'){
+        $gamemode = NULL;
+
+        if (strtolower($param1) == "respawn")
+            $modesettings = 'RespawnTime';
+		if (strtolower($param1) == "rtw")
+            $modesettings = 'RoundsToWin';
+		if (strtolower($param1) == "rgtw")
+            $modesettings = 'RoundGapToWin';
+		if (strtolower($param1) == "roundlimit")
+            $modesettings = 'RoundsLimit';
+		if (strtolower($param1) == "timelimit")
+            $modesettings = 'TimeLimit';
+		if (strtolower($param1) == "capturemv")
+            $modesettings = 'CaptureMaxValue';
+		if (strtolower($param1) == "TFFC")
+            $modesettings = 'TimeLimitForFirstCapture';
+		if (strtolower($param1) == "TAFC")
+            $modesettings = 'TimeLimitAfterFirstCapture';
+		if (strtolower($param1) == "waveduration")
+            $modesettings = '"WaveDuration';
+        if ($param1 == NULL) {
+            $this->connection->chatSendServerMessage('Usage: /admin set script settings respawn X or rtw X or rgtw X or roundlimit X or timelimit X or capturemv X or waveduration X or TAFC X or TFFC X  ', $fromLogin);
+            return;
+        }
+		if (is_numeric($param2)) {
+            $param2 = (int) $param2;
+        } else {
+            $this->connection->chatSendServerMessage('Invalid parameter. Correct parameter for the command is a numeric value.', $fromLogin);
+            return;
+        }
+		$setmodesetting = array($modesettings => $param2);
+		}
+		
+		$RSI = $this->connection->getModeScriptInfo();
+		if ($RSI->name == 'ShootMania\Elite'){
+        $gamemode = NULL;
+
+        if (strtolower($param1) == "timeattack")
+            $modesettings = 'S_TimeAttack';
+		if (strtolower($param1) == "timepylon")
+            $modesettings = 'S_TimePylon';
+		if (strtolower($param1) == "timecapture")
+            $modesettings = 'S_TimeCapture';
+		if (strtolower($param1) == "winround")
+            $modesettings = 'S_WinRound';
+		if (strtolower($param1) == "winroundgap")
+            $modesettings = 'S_WinRoundGap';
+		if (strtolower($param1) == "winroundlimit")
+            $modesettings = 'S_WinRoundLimit';
+		if (strtolower($param1) == "winmap")
+            $modesettings = 'S_WinMap';
+		if (strtolower($param1) == "WarmUp")
+            $modesettings = '"S_WarmupDuration';
+        if ($param1 == NULL) {
+            $this->connection->chatSendServerMessage('Usage: /admin set script settings timeattack X or timepylon X or timecapture X or winround X or winroundgap X or winroundlimit X or winmap X or WarmUp X  ', $fromLogin);
+            return;
+        }
+		if (is_numeric($param2)) {
+            $param2 = (int) $param2;
+        } else {
+            $this->connection->chatSendServerMessage('Invalid parameter. Correct parameter for the command is a numeric value.', $fromLogin);
+            return;
+        }
+		$setmodesetting = array($modesettings => $param2);
+		}
+
         try {
-            $RSP = $this->connection->getRulesScriptParams();
-			var_dump($RSP);
-            $RinfoWindow = RulesInfo::Create($fromLogin);
-            $RinfoWindow->setTitle("RulesScriptParams");
-			$RinfoWindow->setText('Settings#1: '.$RSP->TimeLimit);
-			$RinfoWindow->setText1('Settings#2: '.$RSP->Pointlimit);
-            $RinfoWindow->setSize(100, 100);
-            $RinfoWindow->centerOnScreen();
-            $RinfoWindow->show();
-        } catch (\Exception $e) {
+            $this->connection->setModeScriptSettings($setmodesetting);
+            $admin = Storage::GetInstance()->getPlayerObject($fromLogin);
+            $this->connection->chatSendServerMessage('$fff»» $ff0Admin $fff' . $admin->nickName . ' $z$ssets script settings to $fff ' . ucfirst($param1).'$z$s and $fff'. ucfirst($param2));
+         } catch (\Exception $e) {
             $this->connection->chatSendServerMessage('$fff' . $e->getMessage(), $fromLogin);
         }
     }
 	
 	 /**
-     * GetRulesScriptInfo()
+     * GetModeScriptInfo()
      */
     function GetRulesScriptInfo($fromLogin, $param1 = NULL, $param2 = NULL, $param3 = NULL) {
         $player = $this->storage->getPlayerObject($fromLogin);
@@ -545,23 +681,131 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
             return;
         }
         try {
-            $RSI = $this->connection->getRulesScriptInfo();
-            $RinfoWindow = RulesInfo::Create($fromLogin);
-            $RinfoWindow->setTitle("RulesScriptInformation");
-            $RinfoWindow->setText('Scriptname: '.$RSI->Name);
-			$RinfoWindow->setText1('MapTypes: '.$RSI->CompatibleMapTypes);
-			$RinfoWindow->setText2('Description: '.$RSI->Description);
-			$RinfoWindow->setText3('ParamName: '.$RSI->ParamDescs[0]['Name']);
-			$RinfoWindow->setText4('ParamDesc: '.$RSI->ParamDescs[0]['Desc']);
-			$RinfoWindow->setText5('ParamType: '.$RSI->ParamDescs[0]['Type']);
-			$RinfoWindow->setText6('ParamLimit: '.$RSI->ParamDescs[0]['Default']);
-			$RinfoWindow->setText7('ParamName: '.$RSI->ParamDescs[1]['Name']);
-			$RinfoWindow->setText8('ParamDesc: '.$RSI->ParamDescs[1]['Desc']);
-			$RinfoWindow->setText9('ParamType: '.$RSI->ParamDescs[1]['Type']);
-			$RinfoWindow->setText10('ParamLimit: '.$RSI->ParamDescs[1]['Default']);
+            $RSI = $this->connection->getModeScriptInfo();
+			if ($RSI->name == 'ShootMania\Elite'){
+			$RinfoWindow = RulesInfo::Create($fromLogin);
+            $RinfoWindow->setTitle("Mode Script Info: Elite");
+            $RinfoWindow->setText('Scriptname: '.$RSI->name);
+			$RinfoWindow->setText1('MapTypes: '.$RSI->compatibleMapTypes);
+			$RinfoWindow->setText2('Version: '.$RSI->version);
+			$RinfoWindow->setText3('Settings: '.$RSI->paramDescs[0]->name);
+			$RinfoWindow->setText4('Default: '.$RSI->paramDescs[0]->default);
+			$RinfoWindow->setText5('Settings: '.$RSI->paramDescs[1]->name);
+			$RinfoWindow->setText6('Default: '.$RSI->paramDescs[1]->default);
+			$RinfoWindow->setText7('Settings: '.$RSI->paramDescs[2]->name);
+			$RinfoWindow->setText8('Default: '.$RSI->paramDescs[2]->default);
+			$RinfoWindow->setText9('Settings: '.$RSI->paramDescs[3]->name);
+			$RinfoWindow->setText10('Default: '.$RSI->paramDescs[3]->default);
+			$RinfoWindow->setText11('Settings: '.$RSI->paramDescs[4]->name);
+			$RinfoWindow->setText12('Default: '.$RSI->paramDescs[4]->default);
+			$RinfoWindow->setText13('Settings: '.$RSI->paramDescs[5]->name);
+			$RinfoWindow->setText14('Default: '.$RSI->paramDescs[5]->default);
+			$RinfoWindow->setText15('Settings: '.$RSI->paramDescs[6]->name);
+			$RinfoWindow->setText16('Default: '.$RSI->paramDescs[6]->default);
+			$RinfoWindow->setText17('Settings: '.$RSI->paramDescs[7]->name);
+			$RinfoWindow->setText18('Default: '.$RSI->paramDescs[7]->default);
+			$RinfoWindow->setText19('Settings: '.$RSI->paramDescs[8]->name);
+			$RinfoWindow->setText20('Default: '.$RSI->paramDescs[8]->default);
+			$RinfoWindow->setText21('Settings: '.$RSI->paramDescs[9]->name);
+			$RinfoWindow->setText22('Default: '.$RSI->paramDescs[9]->default);
+
+            $RinfoWindow->setSize(165, 165);
+            $RinfoWindow->centerOnScreen();
+            $RinfoWindow->show();
+			}
+			if ($RSI->name == 'Royal.Script.txt'){
+			$RinfoWindow = RulesInfo::Create($fromLogin);
+            $RinfoWindow->setTitle("Mode Script Info: Royal");
+            $RinfoWindow->setText('Scriptname: '.$RSI->name);
+			$RinfoWindow->setText1('MapTypes: '.$RSI->compatibleMapTypes);
+			$RinfoWindow->setText2('Version: '.$RSI->version);
+			$RinfoWindow->setText3('Settings: '.$RSI->paramDescs[0]->name);
+			$RinfoWindow->setText4('Default: '.$RSI->paramDescs[0]->default);
+			$RinfoWindow->setText5('Settings: '.$RSI->paramDescs[1]->name);
+			$RinfoWindow->setText6('Default: '.$RSI->paramDescs[1]->default);
+			$RinfoWindow->setText7('Settings: '.$RSI->paramDescs[2]->name);
+			$RinfoWindow->setText8('Default: '.$RSI->paramDescs[2]->default);
+			$RinfoWindow->setText9('Settings: '.$RSI->paramDescs[3]->name);
+			$RinfoWindow->setText10('Default: '.$RSI->paramDescs[3]->default);
+			
             $RinfoWindow->setSize(100, 100);
             $RinfoWindow->centerOnScreen();
             $RinfoWindow->show();
+			}
+			if ($RSI->name == 'Battle.Script.txt'){
+			$RinfoWindow = RulesInfo::Create($fromLogin);
+            $RinfoWindow->setTitle("Mode Script Info: Battle");
+            $RinfoWindow->setText('Scriptname: '.$RSI->name);
+			$RinfoWindow->setText1('MapTypes: '.$RSI->compatibleMapTypes);
+			$RinfoWindow->setText2('Version: '.$RSI->version);
+			$RinfoWindow->setText3('Settings: '.$RSI->paramDescs[0]->name);
+			$RinfoWindow->setText4('Default: '.$RSI->paramDescs[0]->default);
+			$RinfoWindow->setText5('Settings: '.$RSI->paramDescs[1]->name);
+			$RinfoWindow->setText6('Default: '.$RSI->paramDescs[1]->default);
+			$RinfoWindow->setText7('Settings: '.$RSI->paramDescs[2]->name);
+			$RinfoWindow->setText8('Default: '.$RSI->paramDescs[2]->default);
+			$RinfoWindow->setText9('Settings: '.$RSI->paramDescs[3]->name);
+			$RinfoWindow->setText10('Default: '.$RSI->paramDescs[3]->default);
+			$RinfoWindow->setText11('Settings: '.$RSI->paramDescs[4]->name);
+			$RinfoWindow->setText12('Default: '.$RSI->paramDescs[4]->default);
+			$RinfoWindow->setText13('Settings: '.$RSI->paramDescs[5]->name);
+			$RinfoWindow->setText14('Default: '.$RSI->paramDescs[5]->default);
+			$RinfoWindow->setText15('Settings: '.$RSI->paramDescs[6]->name);
+			$RinfoWindow->setText16('Default: '.$RSI->paramDescs[6]->default);
+			
+            $RinfoWindow->setSize(100, 100);
+            $RinfoWindow->centerOnScreen();
+            $RinfoWindow->show();
+			}
+			
+			if ($RSI->name == 'BattleWaves.Script.txt'){
+			$RinfoWindow = RulesInfo::Create($fromLogin);
+            $RinfoWindow->setTitle("Mode Script Info: BattleWaves");
+            $RinfoWindow->setText('Scriptname: '.$RSI->name);
+			$RinfoWindow->setText1('MapTypes: '.$RSI->compatibleMapTypes);
+			$RinfoWindow->setText2('Version: '.$RSI->version);
+			$RinfoWindow->setText3('Settings: '.$RSI->paramDescs[0]->name);
+			$RinfoWindow->setText4('Default: '.$RSI->paramDescs[0]->default);
+			$RinfoWindow->setText5('Settings: '.$RSI->paramDescs[1]->name);
+			$RinfoWindow->setText6('Default: '.$RSI->paramDescs[1]->default);
+			$RinfoWindow->setText7('Settings: '.$RSI->paramDescs[2]->name);
+			$RinfoWindow->setText8('Default: '.$RSI->paramDescs[2]->default);
+			$RinfoWindow->setText9('Settings: '.$RSI->paramDescs[3]->name);
+			$RinfoWindow->setText10('Default: '.$RSI->paramDescs[3]->default);
+			$RinfoWindow->setText11('Settings: '.$RSI->paramDescs[4]->name);
+			$RinfoWindow->setText12('Default: '.$RSI->paramDescs[4]->default);
+			$RinfoWindow->setText13('Settings: '.$RSI->paramDescs[5]->name);
+			$RinfoWindow->setText14('Default: '.$RSI->paramDescs[5]->default);
+			$RinfoWindow->setText15('Settings: '.$RSI->paramDescs[6]->name);
+			$RinfoWindow->setText16('Default: '.$RSI->paramDescs[6]->default);
+			$RinfoWindow->setText17('Settings: '.$RSI->paramDescs[7]->name);
+			$RinfoWindow->setText18('Default: '.$RSI->paramDescs[7]->default);
+			$RinfoWindow->setText19('Settings: '.$RSI->paramDescs[8]->name);
+			$RinfoWindow->setText20('Default: '.$RSI->paramDescs[8]->default);
+			$RinfoWindow->setText21('Settings: '.$RSI->paramDescs[9]->name);
+			$RinfoWindow->setText22('Default: '.$RSI->paramDescs[9]->default);
+			
+            $RinfoWindow->setSize(165, 165);
+            $RinfoWindow->centerOnScreen();
+            $RinfoWindow->show();
+			}
+			
+			if ($RSI->name == 'Melee.Script.txt'){
+			$RinfoWindow = RulesInfo::Create($fromLogin);
+            $RinfoWindow->setTitle("Mode Script Info: Melee");
+            $RinfoWindow->setText('Scriptname: '.$RSI->name);
+			$RinfoWindow->setText1('MapTypes: '.$RSI->compatibleMapTypes);
+			$RinfoWindow->setText2('Version: '.$RSI->version);
+			$RinfoWindow->setText3('Settings: '.$RSI->paramDescs[0]->name);
+			$RinfoWindow->setText4('Default: '.$RSI->paramDescs[0]->default);
+			$RinfoWindow->setText5('Settings: '.$RSI->paramDescs[1]->name);
+			$RinfoWindow->setText6('Default: '.$RSI->paramDescs[1]->default);;
+			
+            $RinfoWindow->setSize(105, 105);
+            $RinfoWindow->centerOnScreen();
+            $RinfoWindow->show();
+			}
+			
         } catch (\Exception $e) {
             $this->connection->chatSendServerMessage('$fff' . $e->getMessage(), $fromLogin);
         }

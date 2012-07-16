@@ -3,6 +3,6 @@
 namespace ManiaLivePlugins\MLEPP\AddRemoveMaps;
 
 class Config extends \ManiaLib\Utils\Singleton {
-	public $credentials = '***:***';
+	public $mxDownloadDir = 'Maps/Downloaded/MX/';
 }
 ?>
