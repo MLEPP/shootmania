@@ -72,6 +72,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
         $this->setPublicMethod('getVersion');
         $this->setPublicMethod('addAdminCommand');
         $this->setPublicMethod('removeAdminCommand');
+		$this->setPublicMethod('saveMatchSettings');
     }
 
     /**
@@ -86,6 +87,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 
         AdminWindow::$adminPlugin = $this;
         PlayersWindow::$adminPlugin = $this;
+		$this->config = Config::getInstance();
         
         Console::println('[' . date('H:i:s') . '] [MLEPP] Plugin: Admin v' . $this->getVersion());
 
@@ -870,7 +872,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 
 		$matchsettings = $dataDir . "Maps/MatchSettings/";
 
-		$tracklist = "maplist.txt";
+		$tracklist = $this->config->matchsettings;
 		/*if (empty($tracklist)) {
 			$this->selectTracklist($fromLogin);
 			return;

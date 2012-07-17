@@ -155,7 +155,7 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
                 Console::println('[' . date('H:i:s') . '] [MLEPP] [AddRemoveMaps] [' . $admin->login . '] Added new local track :' . $param1);
                 $eventTargetFile = $targetFile;
                 Dispatcher::dispatch(new onTrackAdded($login, $eventTargetFile, $isTmx));
-                //$this->callPublicMethod('MLEPP\Admin', 'saveMatchSettings', $fromLogin, NULL, NULL, true);
+                $this->callPublicMethod('MLEPP\Admin', 'saveMatchSettings', $fromLogin, NULL, NULL, true);
             } catch (\Exception $e) {
 				$this->connection->chatSendServerMessage('$fff» $f00$i' . $e->getMessage(), $fromLogin);
             }
@@ -213,7 +213,7 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
             }
 
             $targetFile = $challengeDir . $trackinfo->Name . '-' . $mxid . '.Map.Gbx';
-			$eventTargetFile = $this->config->mxDownloadDir . $trackinfo->Name . '-' . $mxid . '.Map.Gbx';
+            $eventTargetFile = $this->config->mxDownloadDir . $trackinfo->Name . '-' . $mxid . '.Map.Gbx';
 
             if (file_put_contents($targetFile, $trackdata) === false) {
 				$this->connection->chatSendServerMessage('$fff» $f00$iCouldn\'t write trackdata. Check directory & file permissions at dedicated tracks folder!', $loginObj);
@@ -233,7 +233,7 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
                 $this->connection->insertMap($targetFile);
 				$this->connection->chatSendServerMessage('$fff»» $ff0Admin ' . $loginObj->nickName . '$z$s$ff0 added track $fff' . $trackinfo->Name . '$z$s$ff0 from $fffM$5DFX$0ae!');
                 Dispatcher::dispatch(new onTrackAdded($login,$eventTargetFile, true));
-                //$this->callPublicMethod('MLEPP\Admin', 'saveMatchSettings', $login, NULL, NULL, true);
+                $this->callPublicMethod('MLEPP\Admin', 'saveMatchSettings', $login, NULL, NULL, true);
 
                 Console::println('[' . date('H:i:s') . '] [MLEPP] [ManiaExchange] [' . $login . '] Succesfully added track ' . $trackinfo->Name . '.');
             } catch (\Exception $e) {
@@ -287,7 +287,7 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
 		$this->connection->chatSendServerMessage('$fff»» $ff0Admin ' . $admin->nickName . '$z$s$ff0 removed this track from playlist.');
         Console::println('[' . date('H:i:s') . '] [MLEPP] [AddRemoveMaps] [' . $admin->login . '] Removed current track from the tracklist.');
         Dispatcher::dispatch(new onTrackRemoved($login, $challengeFile));
-        $this->callPublicMethod('MLEPP\Admin', 'saveMatchSettings', $fromLogin, NULL, NULL, true);
+        $this->callPublicMethod('MLEPP\Admin', 'saveMatchSettings', $login, NULL, NULL, true);
     }
 
     /**
@@ -300,70 +300,51 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
      * @param mixed $param3
      * @return
      */
-    function remove($fromLogin, $param1 = NULL, $param2 = NULL, $param3 = NULL) {
-		if (!AdminGroup::contains($fromLogin)) {
-            $this->connection->chatSendServerMessage('$fff» $f00$iYou don\'t have the permission to do that!', $login);
-            return;
-        }
-        if ($param1 == 'this') {
-            $this->removethis($fromLogin);
-            return;
-        }
-
-        $admin = Storage::GetInstance()->getPlayerObject($fromLogin);
-        $login = $admin->login;
-        $data = false;
-
-        $param1 = (int) $param1;
-        if ($param1 == null || !\is_numeric($param1) || $param1 < 0) {
-
-            $info = Info::Create($login);
-            $info->setSize(100, 30);
-            $info->setTitle('Wrong use of /admin remove #');
-            $text = "You need to use a valid number";
-            $info->setText($text);
-            $info->centerOnScreen();
-            WindowHandler::showDialog($info);
-            return false;
-            Console::println('[' . date('H:i:s') . '] [MLEPP] [AddRemoveMaps] [' . $admin->login . '] Wrong use of /admin remove (use valid number).');
-        }
-
-        if ($this->isPluginLoaded("MLEPP\Jukebox")) {
-            $data = $this->callPublicMethod("MLEPP\Jukebox", "getJukeboxTrack", $login, $param1);
-            if ($data != false) {
-                $file = $data["challenge_file"];
-                $name = $data["challenge_name"];
-            }
-        }
-
-        if ($data == false) {
-            $challenges = $this->connection->getMapList(-1, 0);
-            $file = "";
-            $name = "";
-            foreach ($challenges as $key => $data) {
-                if (($key + 1) == $param1) {
-                    $file = $data->fileName;
-                    $name = $data->name;
-                    break;
+    /**
+         * remove()
+         * Function removes track from the tracklist.
+         *
+         * @param mixed $fromLogin
+         * @param mixed $param1
+         * @param mixed $param2
+         * @param mixed $param3
+         * @return
+         */
+        function remove($fromLogin, $param1 = NULL, $param2 = NULL, $param3 = NULL) {
+                if (!AdminGroup::contains($fromLogin)) {
+                        $this->connection->chatSendServerMessage('$fff» $f00$iYou don\'t have the permission to do that!', $login);
+                        return;
                 }
-            }
+                if ($param1 == 'this') {
+                        $this->removethis($fromLogin);
+                        return;
+                }
+
+                $admin = Storage::GetInstance()->getPlayerObject($fromLogin);
+                $login = $admin->login;
+                $param1 = (int) $param1;
+                if ($param1 == null || !\is_numeric($param1) || $param1 < 0) {
+                        Console::println('[' . date('H:i:s') . '] [MLEPP] [AddRemoveMaps] [' . $admin->login . '] Wrong use of /admin remove (use valid number).');
+                        $this->connection->chatSendServerMessage('$fff» $f00$iWrong use of /admin remove (use valid number).', $admin);
+                }
+
+                if ($param1 > count($this->storage->maps)) {
+                        $this->connection->chatSendServerMessage('$fff» $f00$iError. Invalid map number!', $login);
+						Console::println('[' . date('H:i:s') . '] [MLEPP] [AddRemoveMaps] Error. Invalid map number!.');
+                        return;
+                }
+                try {
+                        $fileName = $this->storage->maps[($param1 - 1)]->fileName;
+                        $name = $this->storage->maps[($param1 - 1)]->name;
+                        
+                        $this->connection->removeMap($fileName);
+                        $this->connection->chatSendServerMessage('$fff»» $ff0Admin ' . $admin->nickName . '$z$s$ff0 removed track $fff' . $name . '$z$s$ff0 from playlist.');
+						Console::println('[' . date('H:i:s') . '] [MLEPP] [AddRemoveMaps] Removed track '.$name.' from playlist.');
+                        $this->callPublicMethod('MLEPP\Admin', 'saveMatchSettings', $fromLogin, NULL, NULL, true);
+                } catch (\Exception $e) {
+                        $this->connection->chatSendServerMessage('$fff» $f00$i'.$e->getMessage(), $login);
+                }
         }
-
-        $dataDir = $this->connection->gameDataDirectory();
-        $dataDir = str_replace('\\', '/', $dataDir);
-        $challengeFile = $dataDir . "Maps/" . $file;
-
-
-        if (!is_file($challengeFile)) {
-			$this->connection->chatSendServerMessage('$fff» $f00$iTarget trackfile not found in filesystem. Check, that you have entered correct track id!', $admin);
-            Console::println('[' . date('H:i:s') . '] [MLEPP] [AddRemoveMaps] [' . $admin->login . '] Target trackfile not found in filesystem.');
-            return;
-        }
-        $this->connection->removeMap($challengeFile);
-		$this->connection->chatSendServerMessage('$fff»» $ff0Admin ' . $admin->nickName . '$z$s$ff0 removed track $fff' . $name . '$z$s$ff0 from playlist.');
-        Dispatcher::dispatch(new onTrackRemoved($login, $challengeFile));
-        $this->callPublicMethod('MLEPP\Admin', 'saveMatchSettings', $fromLogin, NULL, NULL, true);
-    }
 
     /**
      * filterName()
