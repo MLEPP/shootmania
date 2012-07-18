@@ -96,6 +96,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 		$this->addAdminCommand(array($this, 'skip'), array('skip'), false, false, false);
 		$this->addAdminCommand(array($this, 'kick'), array('kick'), false, false, false);
 		$this->addAdminCommand(array($this, 'restart'), array('restart'), false, false, false);
+		$this->addAdminCommand(array($this, 'setServerPassword'), array('set', 'server', 'password'), true, false, false);
 		
 		$this->addAdminCommand(array($this, 'cancel'), array('cancel'), false, false, false);
 		$this->addAdminCommand(array($this, 'enableCallvotes'), array('enablevotes'), false, false, false);
@@ -848,6 +849,37 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 			$this->connection->chatSendServerMessage('$fff» $f00$i' . $e->getMessage(), $fromLogin);
 		}
 	}
+	
+	/**
+     * setServerPassword()
+     * Admin function, sets server password.
+     *
+     * @param mixed $fromLogin
+     * @param mixed $param1
+     * @param mixed $param2
+     * @param mixed $param3
+     * @return void
+     */
+    function setServerPassword($fromLogin, $param1, $param2 = NULL, $param3 = NULL) {
+		$player = $this->storage->getPlayerObject($fromLogin);
+		if(!AdminGroup::contains($player->login)) {
+			$this->connection->chatSendServerMessage('$fff» $f00$iYou don\'t have the permission to do that!', $player);
+			return;
+		}
+
+        if (empty($param1)) {
+            $param1 = "";
+        }
+
+        try {
+            $this->connection->setServerPassword($param1);
+            $admin = Storage::GetInstance()->getPlayerObject($fromLogin);
+            $this->connection->chatSendServerMessage('$fff» $f00$i' . $admin->nickName . '$z$s sets/unsets new server password.');
+           $this->connection->chatSendServerMessage('$fff» $f00$i' . $param1, $fromLogin);
+        } catch (\Exception $e) {
+            $this->connection->chatSendServerMessage('$fff» $f00$i' . $e->getMessage(), $fromLogin);
+        }
+    }
 
 	/**
 	 * saveMatchSettings()
