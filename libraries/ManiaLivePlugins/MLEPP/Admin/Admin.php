@@ -1751,10 +1751,10 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
         // $this->connection->chatSendServerMessage('$fff'.$action, $login);
         switch ($action) {
             case 'skip':
-                $this->skipTrack($login);
+                $this->skip($login);
                 break;
             case 'restart':
-                $this->restartTrack($login);
+                $this->restart($login);
                 break;
             case 'queueRestart':
                 $this->callPublicMethod('MLEPP\Jukebox', 'adminQueueRestart', $login);

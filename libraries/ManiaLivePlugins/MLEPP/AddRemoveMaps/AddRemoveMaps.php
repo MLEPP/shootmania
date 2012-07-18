@@ -250,7 +250,6 @@ class AddRemoveMaps extends \ManiaLive\PluginHandler\Plugin {
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_URL, $url);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-		curl_setopt($ch, CURLOPT_USERPWD, $this->config->credentials);
 		curl_setopt($ch, CURLOPT_HTTPAUTH, CURLOPT_HTTPAUTH);
 		curl_setopt($ch, CURLOPT_USERAGENT, 'MLEPP ManiaExchange');
 
