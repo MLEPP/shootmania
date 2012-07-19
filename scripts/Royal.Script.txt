@@ -8,7 +8,7 @@
 #Include "Libs/Nadeo/ShootMania/Score.Script.txt" as Score
 
 #Const	CompatibleMapTypes	"RoyalArena"
-#Const	Version				"2012-07-04"
+#Const	Version				"2012-07-19"
 
 /* ------------------------------------- */
 // Settings
@@ -152,12 +152,15 @@ Text UpdateLayerSpawnQueue() {
 	declare I = 0;
 	declare Max = 15;
 	
+	declare MoreString = TextLib::Compose(_("%1 more ..."), TextLib::ToText(G_PlayerSpawnQueue.count  - Max));
 	foreach (PlayerId => Time in G_PlayerSpawnQueue) {
+		declare PseudoString = TextLib::MLEncode(Players[PlayerId].Name);
+		
 		if (!Players.existskey(PlayerId)) continue;
-		List ^= """<label posn="0 {{{ I * -5 }}}" sizen="28 5" style="TextCardSmallScores2" text="{{{ Players[PlayerId].Name }}}" />""";
+		List ^= """<label posn="0 {{{I * -5}}}" sizen="28 5" style="TextCardSmallScores2" text="{{{PseudoString}}}" />""";
 		I += 1;
 		if (I > Max) {
-			List ^= """<label posn="0 {{{ I * -5 }}}" sizen="28 5" style="TextCardSmallScores2" text="{{{ G_PlayerSpawnQueue.count - Max }}} more..."/>""";
+			List ^= """<label posn="0 {{{I * -5}}}" sizen="28 5" style="TextCardSmallScores2" text="{{{MoreString}}}"/>""";
 			I += 1;
 			break;
 		}
@@ -209,7 +212,7 @@ Text UpdateLayerScoreTable() {
 	foreach (Pseudo => Points in RankingPole) {
 		PolePoints = Points;
 		RankingPoleList ^= """
-			<label posn="{{{ 22 + (K * 22) }}} -2 10" sizen="20 5" style="TextCardSmallScores2" text="{{{ Pseudo }}}" />
+			<label posn="{{{ 22 + (K * 22) }}} -2 10" sizen="20 5" style="TextCardSmallScores2" text="{{{ TextLib::MLEncode(Pseudo) }}}" />
 		""";
 		K += 1;
 		if (K >= 5) break;
@@ -218,7 +221,7 @@ Text UpdateLayerScoreTable() {
 	foreach (Pseudo => Points in RankingHit) {
 		RankingHitList ^= """
 			<label posn="0 {{{ J * -5 }}}" sizen="4 5" style="TextCardSmallScores2" text="{{{ J + 1 }}}: " />
-			<label posn="4 {{{ J * -5 }}}" sizen="21 5" style="TextCardSmallScores2" text="{{{ Pseudo }}}" />
+			<label posn="4 {{{ J * -5 }}}" sizen="21 5" style="TextCardSmallScores2" text="{{{ TextLib::MLEncode(Pseudo) }}}" />
 			<label posn="28 {{{ J * -5 }}}" sizen="4 5" style="TextCardSmallScores2" text="+{{{ Points * -1 }}}" />
 		""";
 		J += 1;
@@ -228,7 +231,7 @@ Text UpdateLayerScoreTable() {
 	foreach (Pseudo => Points in RankingSurvival) {
 		RankingSurvivalList ^= """
 			<label posn="0 {{{ I * -5 }}}" sizen="4 5" style="TextCardSmallScores2" text="{{{ PlayersNbAlive + I }}}: " />
-			<label posn="4 {{{ I * -5 }}}" sizen="21 5" style="TextCardSmallScores2" text="{{{ Pseudo }}}" />
+			<label posn="4 {{{ I * -5 }}}" sizen="21 5" style="TextCardSmallScores2" text="{{{ TextLib::MLEncode(Pseudo) }}}" />
 			<label posn="28 {{{ I * -5 }}}" sizen="4 5" style="TextCardSmallScores2" text="+{{{ Points * -1 }}}" />
 		""";
 		I += 1;
@@ -247,14 +250,14 @@ Text UpdateLayerScoreTable() {
 		</frame>
 		<frame posn="84 43">
 			<quad posn="0 0 1" sizen="37 90" style="Bgs1InRace" substyle="BgList"/>
-			<label posn="17.5 -2 2" halign="center" style="TextRankingsBig" scale="0.8" text="{{{_("Survival")}}}" />
+			<label posn="17.5 -2 2" sizen="40 6" halign="center" style="TextRankingsBig" scale="0.8" text="{{{_("Survival")}}}" />
 			<frame posn="2 -8 3">
 				{{{ RankingSurvivalList }}}
 			</frame>
 		</frame>
 		<frame posn="-121 43">
 			<quad posn="0 0 1" sizen="37 90" style="Bgs1InRace" substyle="BgList"/>
-			<label posn="17.5 -2 2" halign="center" style="TextRankingsBig" scale="0.8" text="{{{_("Hits")}}}" />
+			<label posn="17.5 -2 2" sizen="40 6" halign="center" style="TextRankingsBig" scale="0.8" text="{{{_("Hits")}}}" />
 			<frame posn="2 -8 3">
 				{{{ RankingHitList }}}
 			</frame>
@@ -272,11 +275,15 @@ Text UpdateLayerScoreTable() {
 Text UpdateLayerInfos() {
 	declare ML = "";
 	
-	declare TempForI18n = _("Remaining players: %1");	// TODO fix the translation in ML..
+
+	declare RemainString = TextLib::Compose(
+		_("Remaining players: %1"),
+		TextLib::ToText(G_PlayerSpawnQueue.count + PlayersNbAlive)
+	);
 	
 	ML = """
 		<frame posn="156 -85 0">
-			<label posn="0 0 1" scale="1.1" halign="right" style="TextButtonNav" text="Remaining players: {{{ G_PlayerSpawnQueue.count + PlayersNbAlive }}}" />		
+			<label posn="0 0 1" scale="1.1" halign="right" style="TextButtonNav" text="{{{ RemainString }}}" />		
 		</frame>
 	""";
 	
