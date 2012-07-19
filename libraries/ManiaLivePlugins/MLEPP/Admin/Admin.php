@@ -151,7 +151,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 		$cmd->help = $this->descPlayers;
 
 		$this->addAdminCommand(array($this, 'GetRulesScriptInfo'), array('get', 'rules', 'info'), false, false, false);
-		$this->addAdminCommand(array($this, 'setModeSettings'), array('set', 'script', 'settings'), true, true, false);
+		$this->addAdminCommand(array($this, 'setModeSettings'), array('set', 'script', 'settings'), true, false, false);
 		$this->addAdminCommand(array($this, 'skip'), array('skip'), false, false, false);
 		$this->addAdminCommand(array($this, 'kick'), array('kick'), false, false, false);
 		$this->addAdminCommand(array($this, 'restart'), array('restart'), false, false, false);
@@ -596,7 +596,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 				$modesettings = 'S_OffZoneTimeLimit	';
 			if (strtolower($param1) == "spawn")
 				$modesettings = 'S_SpawnInterval';
-			if ($modesettings === NULL) {
+			if ($param1 == "") {
 				$this->connection->chatSendServerMessage('Usage: /set script settings pointlimit X or offzone activation X or offzone timelimit X or spawn X ', $fromLogin);
 				return;
 			}
