@@ -151,7 +151,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 		$cmd->help = $this->descPlayers;
 
 		$this->addAdminCommand(array($this, 'GetRulesScriptInfo'), array('get', 'rules', 'info'), false, false, false);
-		$this->addAdminCommand(array($this, 'setModeSettings'), array('set', 'script', 'settings'), true, false, false);
+		$this->addAdminCommand(array($this, 'setModeSettings'), array('set', 'script', 'settings'), true, true, false);
 		$this->addAdminCommand(array($this, 'skip'), array('skip'), false, false, false);
 		$this->addAdminCommand(array($this, 'kick'), array('kick'), false, false, false);
 		$this->addAdminCommand(array($this, 'restart'), array('restart'), false, false, false);
@@ -617,7 +617,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 				$modesettings = 'S_PointLimit';
 			if (strtolower($param1) == "timelimit")
 				$modesettings = 'S_TimeLimit';
-			if ($param1 == NULL) {
+			if ($param1 == "") {
 				$this->connection->chatSendServerMessage('Usage: /set script settings pointlimit X or timelimit X  ', $fromLogin);
 				return;
 			}
@@ -646,7 +646,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 				$modesettings = 'TimeLimit';
 			if (strtolower($param1) == "capturemv")
 				$modesettings = 'CaptureMaxValue';
-			if ($param1 == NULL) {
+			if ($param1 == "") {
 				$this->connection->chatSendServerMessage('Usage: /set script settings respawn X or rtw X or rgtw X or roundlimit X or timelimit X or capturemv X  ', $fromLogin);
 				return;
 			}
@@ -681,7 +681,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 				$modesettings = 'TimeLimitAfterFirstCapture';
 			if (strtolower($param1) == "waveduration")
 				$modesettings = '"WaveDuration';
-			if ($param1 == NULL) {
+			if ($param1 == "") {
 				$this->connection->chatSendServerMessage('Usage: /set script settings respawn X or rtw X or rgtw X or roundlimit X or timelimit X or capturemv X or waveduration X or TAFC X or TFFC X  ', $fromLogin);
 				return;
 			}
@@ -696,12 +696,13 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 
 		$RSI = $this->connection->getModeScriptInfo();
 		if ($RSI->name == 'ShootMania\Elite') {
+		var_dump($RSI);
 			$gamemode = NULL;
 
-			if (strtolower($param1) == "timeattack")
-				$modesettings = 'S_TimeAttack';
-			if (strtolower($param1) == "timepylon")
-				$modesettings = 'S_TimePylon';
+			if (strtolower($param1) == "timelimit")
+				$modesettings = 'S_TimeLimit';
+			if (strtolower($param1) == "timecapture")
+				$modesettings = 'S_TimePole';
 			if (strtolower($param1) == "timecapture")
 				$modesettings = 'S_TimeCapture';
 			if (strtolower($param1) == "winround")
@@ -715,7 +716,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 			if (strtolower($param1) == "WarmUp")
 				$modesettings = '"S_WarmupDuration';
 			if ($param1 == NULL) {
-				$this->connection->chatSendServerMessage('Usage: /set script settings timeattack X or timepylon X or timecapture X or winround X or winroundgap X or winroundlimit X or winmap X or WarmUp X  ', $fromLogin);
+				$this->connection->chatSendServerMessage('Usage: /set script settings timelimit X or timecapture  X or timecapture X or winround X or winroundgap X or winroundlimit X or winmap X or WarmUp X  ', $fromLogin);
 				return;
 			}
 			if (is_numeric($param2)) {
