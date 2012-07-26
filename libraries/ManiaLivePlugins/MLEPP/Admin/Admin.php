@@ -635,17 +635,17 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 			$gamemode = NULL;
 
 			if (strtolower($param1) == "respawn")
-				$modesettings = 'RespawnTime';
+				$modesettings = 'S_RespawnTime';
 			if (strtolower($param1) == "rtw")
-				$modesettings = 'RoundsToWin';
+				$modesettings = 'S_RoundsToWin';
 			if (strtolower($param1) == "rgtw")
-				$modesettings = 'RoundGapToWin';
+				$modesettings = 'S_RoundGapToWin';
 			if (strtolower($param1) == "roundlimit")
-				$modesettings = 'RoundsLimit';
+				$modesettings = 'S_RoundsLimit';
 			if (strtolower($param1) == "timelimit")
-				$modesettings = 'TimeLimit';
+				$modesettings = 'S_TimeLimit';
 			if (strtolower($param1) == "capturemv")
-				$modesettings = 'CaptureMaxValue';
+				$modesettings = 'S_CaptureMaxValue';
 			if ($param1 == "") {
 				$this->connection->chatSendServerMessage('Usage: /set script settings respawn X or rtw X or rgtw X or roundlimit X or timelimit X or capturemv X  ', $fromLogin);
 				return;
@@ -664,23 +664,23 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 			$gamemode = NULL;
 
 			if (strtolower($param1) == "respawn")
-				$modesettings = 'RespawnTime';
+				$modesettings = 'S_RespawnTime';
 			if (strtolower($param1) == "rtw")
-				$modesettings = 'RoundsToWin';
+				$modesettings = 'S_RoundsToWin';
 			if (strtolower($param1) == "rgtw")
-				$modesettings = 'RoundGapToWin';
+				$modesettings = 'S_RoundGapToWin';
 			if (strtolower($param1) == "roundlimit")
-				$modesettings = 'RoundsLimit';
+				$modesettings = 'S_RoundsLimit';
 			if (strtolower($param1) == "timelimit")
-				$modesettings = 'TimeLimit';
+				$modesettings = 'S_TimeLimit';
 			if (strtolower($param1) == "capturemv")
-				$modesettings = 'CaptureMaxValue';
+				$modesettings = 'S_CaptureMaxValue';
 			if (strtolower($param1) == "TFFC")
-				$modesettings = 'TimeLimitForFirstCapture';
+				$modesettings = 'S_TimeLimitForFirstCapture';
 			if (strtolower($param1) == "TAFC")
-				$modesettings = 'TimeLimitAfterFirstCapture';
+				$modesettings = 'S_TimeLimitAfterFirstCapture';
 			if (strtolower($param1) == "waveduration")
-				$modesettings = '"WaveDuration';
+				$modesettings = 'S_WaveDuration';
 			if ($param1 == "") {
 				$this->connection->chatSendServerMessage('Usage: /set script settings respawn X or rtw X or rgtw X or roundlimit X or timelimit X or capturemv X or waveduration X or TAFC X or TFFC X  ', $fromLogin);
 				return;
@@ -696,9 +696,9 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 
 		$RSI = $this->connection->getModeScriptInfo();
 		if ($RSI->name == 'ShootMania\Elite') {
-		var_dump($RSI);
 			$gamemode = NULL;
-
+			if (strtolower($param1) == "Mode")
+				$modesettings = 'S_Mode';
 			if (strtolower($param1) == "timelimit")
 				$modesettings = 'S_TimeLimit';
 			if (strtolower($param1) == "timecapture")
@@ -713,10 +713,12 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 				$modesettings = 'S_WinRoundLimit';
 			if (strtolower($param1) == "winmap")
 				$modesettings = 'S_WinMap';
+			if (strtolower($param1) == "winmatch")
+				$modesettings = 'S_WinMatch';
 			if (strtolower($param1) == "WarmUp")
 				$modesettings = '"S_WarmupDuration';
 			if ($param1 == NULL) {
-				$this->connection->chatSendServerMessage('Usage: /set script settings timelimit X or timecapture  X or timecapture X or winround X or winroundgap X or winroundlimit X or winmap X or WarmUp X  ', $fromLogin);
+				$this->connection->chatSendServerMessage('Usage: /set script settings timelimit X or or Mode X or winmatch X or warmup 0 or timecapture  X or timecapture X or winround X or winroundgap X or winroundlimit X or winmap X or WarmUp X  ', $fromLogin);
 				return;
 			}
 			if (is_numeric($param2)) {
