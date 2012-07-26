@@ -8,7 +8,7 @@
 #Include "Libs/Nadeo/ShootMania/Score.Script.txt" as Score
 
 #Const	CompatibleMapTypes	"RoyalArena"
-#Const	Version				"2012-07-19"
+#Const	Version				"2012-07-24"
 
 /* ------------------------------------- */
 // Settings
@@ -23,6 +23,7 @@
 #Const C_OffZoneMinRadius		8.		///< Minimum size of the OffZone at the end
 #Const C_DefaultOffZoneRadius	300.	///< Default radius of the OffZone
 
+#Const C_NbBots	0	///< Number of bots for debug
 /* ------------------------------------- */
 // Globales variables
 /* ------------------------------------- */
@@ -405,6 +406,7 @@ main() {
 			
 			Score::RoundBegin();
 			
+			SetNbFakePlayers(C_NbBots, 0);
 			/* ------------------------------------- */
 			// Init goal
 			declare Goal <=> SM::GetPole("Goal", 0);
@@ -630,8 +632,8 @@ main() {
 				
 				/* ------------------------------------- */
 				// Round end conditions
-				if ((Players.count > 1 && G_PlayerSpawnQueue.count <= 0 && PlayersNbAlive <= 1)
-					|| (Players.count == 1 && G_PlayerSpawnQueue.count <= 0 && PlayersNbAlive <= 0)) ///< Allow solo playing
+				if ((G_TotalPlayersSpawned > 1 && G_PlayerSpawnQueue.count <= 0 && PlayersNbAlive <= 1)
+					|| (G_TotalPlayersSpawned <= 1 && G_PlayerSpawnQueue.count <= 0 && PlayersNbAlive <= 0)) ///< Allow solo playing
 				{
 					foreach (Player in Players) {
 						if (Player.SpawnStatus == CSmPlayer::ESpawnStatus::Spawned) {
