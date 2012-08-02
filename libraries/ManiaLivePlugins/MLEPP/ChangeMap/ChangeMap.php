@@ -1,5 +1,6 @@
 <?php
 /**
+ * Change map plugin v.0.1.1 (01/08/12)
  * @author dfk7677
  * @copyright 2012
  *
@@ -43,7 +44,7 @@ class ChangeMap extends \ManiaLive\PluginHandler\Plugin {
      * @return void
      */
     function onInit() {
-        $this->setVersion('0.1.0');
+        $this->setVersion('0.1.1');
         $this->setPublicMethod('getVersion');
 		
     }
@@ -75,9 +76,9 @@ class ChangeMap extends \ManiaLive\PluginHandler\Plugin {
 	function onUnLoad() {
         Console::println('[' . date('H:i:s') . '] [UNLOAD] Change Map v' . $this->getVersion() . '');
         if ($this->isPluginLoaded('MLEPP\Admin')) {
-            $this->callPublicMethod('MLEPP\Admin', 'removeAdminCommand', 'map');   //remove full add mx command structure
+            $this->callPublicMethod('MLEPP\Admin', 'removeAdminCommand', 'map');   //remove command
             
-            Console::println('[' . date('H:i:s') . '] [UNLOAD] [ChangeMap] Removed all dependend add/remove commands from admin.');
+            Console::println('[' . date('H:i:s') . '] [UNLOAD] [ChangeMap] Removed all dependend map commands from admin.');
         }
         parent::onUnload();
     }
@@ -85,7 +86,7 @@ class ChangeMap extends \ManiaLive\PluginHandler\Plugin {
 	
 	/**
      * map()
-     * Function removes current track from tracklist.
+     * Changes map.
      *
      * @param mixed $login
      * @param mixed $param1
@@ -98,6 +99,11 @@ class ChangeMap extends \ManiaLive\PluginHandler\Plugin {
             $this->connection->chatSendServerMessage('$fff» $f00$iYou don\'t have the permission to do that!', $login);
             return;
         }
+		
+		if($param1 == NULL) {
+			$this->connection->chatSendServerMessage('$fff» $f00$iYou must specify a map name!', $login);
+			return;
+		}
         $mapList = $this->connection->getMapList(140,0);
 		$numMaps = count($mapList);
 		$mapIndex = -1;
@@ -114,7 +120,7 @@ class ChangeMap extends \ManiaLive\PluginHandler\Plugin {
 			}
 		}
 		
-		//$debug = $param1 . ' ' .$mapIndex;
+		
 		$admin = $this->storage->getPlayerObject($login);
 		
 		if ($mapIndex>=0)
@@ -127,31 +133,32 @@ class ChangeMap extends \ManiaLive\PluginHandler\Plugin {
 					$this->connection->setNextMapIndex($mapIndex);
 					$this->connection->nextMap();
 			
-					$this->connection->chatSendServerMessage('$fff»» $ff0Admin ' . $admin->nickName . '$z$s$ff0 changed map to '.$mapName);
+					$this->connection->chatSendServerMessage('$fff»» $ff0Admin ' . $admin->nickName . '$z$s$ff0 changed map to '.$mapList[$mapIndex]->name);
 				}
 				catch (Exception $e) {
-			//Console::println("Error:\n".$e->getMessage());
+			
 					$this->connection->chatSendServerMessage('$fff» $f00$i' . $e->getMessage(), $login);
 				}
 				Console::println('[' . date('H:i:s') . '] [MLEPP] [Change Map] [' . $admin->login . '] Changed map to ' . $mapName);
 			}
 			else
-				$this->connection->chatSendServerMessage('This map is already being played!',$login);
-				//Console::println('[' . date('H:i:s') . '] [MLEPP] [Change Map] [' . $admin->login . '] Map is alread on');
+				$this->connection->chatSendServerMessage('$fff» $f00$iThis map is already being played!',$login);
+				
 		}
 		else if ($mapIndex==-1)
 		{
-			//Console::println('[' . date('H:i:s') . '] [MLEPP] [Change Map] [' . $admin->login . '] Map not found ');
-			$this->connection->chatSendServerMessage('No map found!',$login);
+			
+			$this->connection->chatSendServerMessage('$fff» $f00$iNo map found!',$login);
 		}
 		else {
-			//Console::println('[' . date('H:i:s') . '] [MLEPP] [Change Map] [' . $admin->login . '] More than one maps found');
-			$this->connection->chatSendServerMessage('More than one maps found!',$login);
+			
+			$this->connection->chatSendServerMessage('$fff» $f00$iMore than one maps found!',$login);
 		}
-		//Console::println('[' . date('H:i:s') . '] [MLEPP] [Change Map] [' . $admin->login . '] ' .$debug );
+		
 
 	}
 	
+	//Strips colors and text formatting from map name
 	function filterName($text) {
         
         $output = "";
