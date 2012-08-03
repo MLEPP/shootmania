@@ -822,7 +822,7 @@ main() {
 		sleep(6000);
 		
 		UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;	
-		UIManager.UIAll.UILayers.add(LayerTops); 
+		LayerAttached = Layers::Attach("Tops", NullId);
 		wait(UIManager.UIAll.UISequenceIsCompleted);
 		
 		UIManager.UIAll.BigMessage = "";	
