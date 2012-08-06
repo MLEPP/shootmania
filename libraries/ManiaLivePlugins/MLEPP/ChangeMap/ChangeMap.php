@@ -168,7 +168,7 @@ class ChangeMap extends \ManiaLive\PluginHandler\Plugin {
 			if ($c == '$') {
 				if ($i+1<=strlen($text)) {
 					$c2 = ord ($text[$i+1]);
-					if($text[$i+1] == '$' {
+					if($text[$i+1] == '$') {
 						$output .= '$';
 					}				
 					else if ($c2 >= 48 && $c2 <= 57) {
