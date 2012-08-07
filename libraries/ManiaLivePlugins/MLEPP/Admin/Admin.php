@@ -522,6 +522,9 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 				case 3:
 					call_user_func_array($tree['callback'], array($login, $adminparams[$validCmdNumber], $adminparams[$validCmdNumber + 1], $adminparams[$validCmdNumber + 2]));
 					break;
+				case 4:
+               call_user_func_array($tree['callback'], array($login, $adminparams[$validCmdNumber], $adminparams[$validCmdNumber + 1], $adminparams[$validCmdNumber + 2], $adminparams[$validCmdNumber + 3]));
+			   	break;
 			}
 		} else {
 
@@ -697,7 +700,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 		$RSI = $this->connection->getModeScriptInfo();
 		if ($RSI->name == 'ShootMania\Elite') {
 			$gamemode = NULL;
-			if (strtolower($param1) == "Mode")
+			if (strtolower($param1) == "mode")
 				$modesettings = 'S_Mode';
 			if (strtolower($param1) == "timelimit")
 				$modesettings = 'S_TimeLimit';
@@ -718,7 +721,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 			if (strtolower($param1) == "WarmUp")
 				$modesettings = '"S_WarmupDuration';
 			if ($param1 == NULL) {
-				$this->connection->chatSendServerMessage('Usage: /set script settings timelimit X or or Mode X or winmatch X or warmup 0 or timecapture  X or timecapture X or winround X or winroundgap X or winroundlimit X or winmap X or WarmUp X  ', $fromLogin);
+				$this->connection->chatSendServerMessage('Usage: /set script settings timelimit X or or mode X or winmatch X or warmup 0 or timecapture  X or timecapture X or winround X or winroundgap X or winroundlimit X or winmap X or WarmUp X  ', $fromLogin);
 				return;
 			}
 			if (is_numeric($param2)) {
