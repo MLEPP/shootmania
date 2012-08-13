@@ -152,6 +152,23 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 			case 'playerHit':
 				$this->mode_onPlayerHit($param2);
 				return;
+			case 'capture':
+				$this->sendCallbacks('mode_onPoleCapture', $param2);
+				return;
+			case 'startRound':
+				$this->sendCallbacks('mode_onStartRoundElite', $param2);
+				return;
+			case 'endRound':
+				$this->sendCallbacks('mode_onEndRoundElite', $param2);
+				var_dump($param2);
+				return;
+			case 'hit':
+				$this->sendCallbacks('mode_onHitElite', $param2);
+				return;
+			case 'frag':
+				$this->sendCallbacks('mode_onFragElite', $param2);
+				return;
+			
 		}
 	}
 

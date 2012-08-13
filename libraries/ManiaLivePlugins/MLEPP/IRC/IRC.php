@@ -139,6 +139,63 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 			$this->say('Map: '.Core::stripColors($map->name).' by '.Core::stripColors($map->author));
 		}
 	}
+	
+	function mode_onPoleCapture($login) {
+	$map = $this->connection->getCurrentMapInfo();
+	$this->say('4 PoleCapture by: '.$login.' on '.Core::stripColors($map->name).'');
+	}
+	
+	function mode_onStartRoundElite($param2) {
+	$map = $this->connection->getCurrentMapInfo();
+	$this->say('4 StartRound: No: '.$param2.' on '.Core::stripColors($map->name).'');
+	}
+	
+	function mode_onEndRoundElite($param2) {
+	var_dump($param2);
+	$map = $this->connection->getCurrentMapInfo();
+	$EndRoundData = explode(';', $param2);
+	$WinSide = str_replace('WinSide:', '', $EndRoundData[0]);
+	$Side = str_replace('Side:', '', $EndRoundData[1]);
+	$Wincondition = str_replace('WinCondition:', '', $EndRoundData[2]);
+	if ($Wincondition == 1){
+	$this->say('4 EndRound: '.$Side.' Win by timelimit on '.Core::stripColors($map->name).'');
+	}
+	if ($Wincondition == 2){
+	$this->say('4 EndRound: '.$Side.' Win by reaching pole on '.Core::stripColors($map->name).'');
+	}
+	if ($Wincondition == 3){
+	$this->say('4 EndRound: '.$Side.' Win by elimination of attack player on '.Core::stripColors($map->name).'');
+	}
+	if ($Wincondition == 4){
+	$this->say('4 EndRound: '.$Side.' Win by elimination of all defense players on '.Core::stripColors($map->name).'');
+	}
+	}
+	
+	function mode_onHitElite($param){
+	$players = explode(';', $param);
+	$shooter = str_replace('Shooter:', '', $players[0]);
+	$victim = str_replace('Victim:', '', $players[2]);
+	$weaponnum = str_replace('WeaponNum:', '', $players[1]);
+	if($weaponnum == 1){
+	$this->say('4 '.$victim.' was hit by a Railgun from '.$shooter.'');
+	}
+	if($weaponnum == 2){
+	$this->say('4 '.$victim.' was hit by a Rocket from '.$shooter.'');
+	}
+	}
+	
+	function mode_onFragElite($param){
+	$players = explode(';', $param);
+	$shooter = str_replace('Shooter:', '', $players[0]);
+	$victim = str_replace('Victim:', '', $players[2]);
+	$weaponnum = str_replace('WeaponNum:', '', $players[1]);
+	if($weaponnum == 1){
+	$this->say('4 '.$victim.' was killed by a Railgun from '.$shooter.'');
+	}
+	if($weaponnum == 2){
+	$this->say('4 '.$victim.' was killed by a Rocket from '.$shooter.'');
+	}
+	}
 
 	function onTick() {
 		if(!isset($this->i)) {
