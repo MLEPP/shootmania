@@ -139,6 +139,7 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 				return;
 			case 'endRound':
 				$this->sendCallbacks('mode_onEndRound', $param2);
+				$this->sendCallbacks('mode_onEndRoundElite', $param2);
 				return;
 			case 'poleCapture':
 				$this->sendCallbacks('mode_onPoleCapture', $param2);
@@ -157,10 +158,6 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 				return;
 			case 'startRound':
 				$this->sendCallbacks('mode_onStartRoundElite', $param2);
-				return;
-			case 'endRound':
-				$this->sendCallbacks('mode_onEndRoundElite', $param2);
-				var_dump($param2);
 				return;
 			case 'hit':
 				$this->sendCallbacks('mode_onHitElite', $param2);

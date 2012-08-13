@@ -151,7 +151,6 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 	}
 	
 	function mode_onEndRoundElite($param2) {
-	var_dump($param2);
 	$map = $this->connection->getCurrentMapInfo();
 	$EndRoundData = explode(';', $param2);
 	$WinSide = str_replace('WinSide:', '', $EndRoundData[0]);
