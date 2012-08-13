@@ -38,12 +38,12 @@ namespace ManiaLivePlugins\MLEPP\IRC;
 
 class Config extends \ManiaLib\Utils\Singleton {
     public $hostname = 0;
-    public $server = 'irc.tweakers.net';
+    public $server = 'irc.quakenet.org';
     public $port = 6667;
-    public $realname = 'Botje';
-    public $nickname = 'testbot.';
-    public $ident = 'testbot';
-    public $channels = array('#bots');
+    public $realname = 'Mcon-bot';
+    public $nickname = 'mconbot.';
+    public $ident = 'mconbot';
+    public $channels = array('#mcon-elite');
     
     public $authmethod = '';
     public $authpass = '';
@@ -51,8 +51,8 @@ class Config extends \ManiaLib\Utils\Singleton {
     public $messageLength = 'long';
     public $disable = array();
     
-    public $operCredentials = 'User Pass';
-    public $operChghost = 'test.test.net';
+    public $operCredentials = 'w1llaSmurf';
+    public $operChghost = '178.239.60.101';
 }
 
 ?>
