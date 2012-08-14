@@ -5,8 +5,8 @@
  *
  * -- MLEPP Plugin --
  * @name Karma
- * @date 06-07-2012
- * @version 0.2.2
+ * @date 14-08-2012
+ * @version 0.3.0
  * @website mlepp.trackmania.nl
  * @package MLEPP
  *
@@ -61,7 +61,7 @@ class Karma extends \ManiaLive\PluginHandler\Plugin {
 	 */
 
 	function onInit() {
-		$this->setVersion('0.2.0');
+		$this->setVersion('0.3.0');
 		$this->setPublicMethod('getVersion');
 	}
 

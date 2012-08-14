@@ -4,13 +4,14 @@
  * MLEPP - ManiaLive Extending Plugin Pack
  *
  * -- MLEPP Plugin --
- * @name HeadsUp
- * @date 07-06-2011
- * @version r1170
+ * @name AutoModeChange
+ * @date 14-08-2012
+ * @version 0.3.0
  * @website mlepp.trackmania.nl
  * @package MLEPP
- * @author The MLEPP team
- * @copyright 2011
+ *
+ * @author The MLEPP Team
+ * @copyright 2010 - 2012
  *
  * ---------------------------------------------------------------------
  * This program is free software: you can redistribute it and/or modify
@@ -60,7 +61,7 @@ class HeadsUp extends \ManiaLive\PluginHandler\Plugin {
 	 */
 	function onInit() {
 		// this needs to be set in the init section
-		$this->setVersion('0.2.0');
+		$this->setVersion('0.3.0');
 		$this->setPublicMethod('getVersion');
 	}
 
@@ -75,7 +76,7 @@ class HeadsUp extends \ManiaLive\PluginHandler\Plugin {
 		$this->config = Config::getInstance();
 		
 
-		if ($this->isPluginLoaded('MLEPP\Admin', '0.2.0')) {
+		if ($this->isPluginLoaded('MLEPP\Admin', '0.3.0')) {
 			$this->callPublicMethod('MLEPP\Admin', 'addAdminCommand', array($this, 'setText'), array("set", "headsup", "text"), true, false, false);
 			$this->callPublicMethod('MLEPP\Admin', 'addAdminCommand', array($this, 'setUrl'), array("set", "headsup", "url"), true, false, false);
 			$this->callPublicMethod('MLEPP\Admin', 'addAdminCommand', array($this, 'setWidth'), array("set", "headsup", "width"), true, false, false);
