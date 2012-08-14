@@ -3,7 +3,7 @@
  */
 #RequireContext CSmMode
 #Const	CompatibleMapTypes	"BattleArena"
-#Const	Version				"2012-07-25"
+#Const	Version				"2012-08-10"
 
 #Include "MathLib" as MathLib
 #Include "TextLib" as TextLib
@@ -212,7 +212,7 @@ main() {
 		Airshot::MatchBegin();
 		BalancedWeapons::MatchBegin();
 		Victory::MatchBegin();
-		if (S_AutoBalance) AutoTeamBalance();
+		if (S_AutoBalance) Mode::AutoTeamBalance();
 		Mode::Ladder_OpenMatch_All();
 		+++MatchBegin+++
 		
@@ -220,6 +220,7 @@ main() {
 		
 		UIManager.ResetAll();
 		UIManager.UIAll.UISequence = CUIConfig::EUISequence::Intro;
+		wait(UIManager.UIAll.UISequenceIsCompleted);
 		UIManager.UIAll.SendNotice(
 			_("New match"), CUIConfig::ENoticeLevel::MatchInfo, 
 			Null, CUIConfig::EAvatarVariant::Default, 
@@ -238,6 +239,7 @@ main() {
 			UIManager.UIAll.UISequence = CUIConfig::EUISequence::Playing;
 
 
+			UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 
 			Score::RoundBegin();	
 			Top::RoundBegin();
@@ -258,7 +260,11 @@ main() {
 			---EndTime---
 			
 			declare MapSidesIndices = [1=>(Round % 2)+1, 2=>2-(Round % 2)];
-			declare CSmBlockSpawn[Integer] ClanSpawnAnchors = [1=>SM::GetSpawn("Spawn", MapSidesIndices[1]), 2=>SM::GetSpawn("Spawn", MapSidesIndices[2])];
+			
+			declare CSmBlockSpawn[Integer] ClanSpawnAnchors = [
+				1=>SM::GetSpawn("Spawn", MapSidesIndices[1]),
+				2=>SM::GetSpawn("Spawn", MapSidesIndices[2])
+			];
 			foreach (Clan => Spawn in ClanSpawnAnchors) {
 				Spawn.Base.Clan = Clan;
 				Spawn.Base.IsActive = True;
@@ -432,7 +438,14 @@ main() {
 
 """;
 					
-					for (I, 0, ClanPoles[1].count-1) {
+						for (I, 0, ClanPoles[1].count-1) {
+						// If the map doesn't have the same number of poles for each team (validation problem)
+						if (!ClanPoles[2].existskey(I)) {
+							MatchEndRequested = True;
+							UIManager.UIAll.StatusMessage = "Error: This map doesn't have the same number of poles for each team.";
+							log(Now^"> MapName: "^Map.MapName^" doesn't have the same number of poles for each team (validation problem)");
+							break;
+						}
 						declare Gauges = [1 => ClanPoles[1][I].Gauge, 2 => ClanPoles[2][I].Gauge];
 						declare Substyle = [1=>"BgWindow3", 2=>"BgWindow3"];
 						if(Gauges[1].Value == Gauges[1].Max) Substyle[1] = "BgWindow2";
@@ -608,6 +621,7 @@ main() {
 				Top::GetFrameTop("Damages", _("Top 5 Score"), "130 -10", "");
 			UIManager.UIAll.UILayers.clear();
 			UIManager.UIAll.UILayers.add(LayerTops);
+			UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
 
 			sleep(4*1000);
 						
@@ -619,6 +633,8 @@ main() {
 			Airshot::RoundEnd();
 			BalancedWeapons::RoundEnd();
 			Victory::RoundEnd();	
+			UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;	
+			
 			
 			Round += 1;			
 		}
@@ -633,6 +649,7 @@ main() {
 		UIManager.UIAll.UISequence = CUIConfig::EUISequence::Outro;
 		
 		UIManager.UIAll.BigMessageSound = CUIConfig::EUISound::EndRound;
+		UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
 		declare WinnerClan = -1;
 		if (Victory::IsMatchWinner(1)) {
 			UIManager.UIAll.BigMessage = TextLib::Compose(_("$<%1$> wins the match!"), Teams[0].ColorizedName);
@@ -640,6 +657,8 @@ main() {
 		} else if (Victory::IsMatchWinner(2)) {
 			UIManager.UIAll.BigMessage = TextLib::Compose(_("$<%1$> wins the match!"), Teams[1].ColorizedName);
 			WinnerClan = 2;
+		} else {
+			UIManager.UIAll.BigMessage = _("Draw match");
 		}
 		MatchNumber += 1;
 				
@@ -681,13 +700,14 @@ main() {
 		BalancedWeapons::MatchEnd();
 		Victory::MatchEnd();	
 		
-		UIManager.UIAll.BigMessage = "";
+		
 		UIManager.UIAll.UISequence = CUIConfig::EUISequence::Podium;				
 		
 		sleep(10*1000);
 
 		UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::Normal;
 		UIManager.UIAll.UILayers.clear();
+		UIManager.UIAll.BigMessage = "";
 
 		sleep(1*1000);
 			
