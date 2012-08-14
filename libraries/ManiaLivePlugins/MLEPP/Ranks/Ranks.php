@@ -223,6 +223,38 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 
 		Console::println('['.date('H:i:s').'] [MLEPP] [Ranks] '.$victim.' was killed by '.$shooter);
 	}
+	
+	function mode_onFragElite($param){
+	$players = explode(';', $param);
+	$shooter = str_replace('Shooter:', '', $players[0]);
+	$victim = str_replace('Victim:', '', $players[2]);
+	$weaponnum = str_replace('WeaponNum:', '', $players[1]);
+
+		$map = $this->connection->getCurrentMapInfo();
+
+		// Insert kill into the database
+		$q = "INSERT INTO `kills` (
+				`kill_victim`,
+				`kill_shooter`,
+				`kill_time`,
+				`kill_mapUid`
+			  ) VALUES (
+			    '".$victim."',
+			    '".$shooter."',
+			    '".date('Y-m-d H:i:s')."',
+			    '".$map->uId."'
+			  )";
+		$this->db->query($q);
+
+		// update kill/death statistics
+		$shooterinfo = $this->db->query("SELECT * FROM `players` WHERE `player_login` = '".$shooter."'")->fetchStdObject();
+		$this->db->query("UPDATE `players` SET `player_kills` = '".($shooterinfo->player_kills+1)."' WHERE `player_login` = '".$shooter."'");
+
+		$victiminfo = $this->db->query("SELECT * FROM `players` WHERE `player_login` = '".$victim."'")->fetchStdObject();
+		$this->db->query("UPDATE `players` SET `player_deaths` = '".($victiminfo->player_deaths+1)."' WHERE `player_login` = '".$victim."'");
+
+		Console::println('['.date('H:i:s').'] [MLEPP] [Ranks] '.$victim.' was killed by '.$shooter);
+	}
 
 	function ranksCommand($login, $param1 = null, $param2 = null, $param3 = null) {
 		$points = array_keys($this->ranks);

@@ -970,7 +970,7 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 		}
 
 		try {
-			$this->connection->setServerPassword($param1);
+			$this->connection->setServerPasswordForSpectator($param1);
 			$admin = $this->storage->getPlayerObject($fromLogin);
 			$this->connection->chatSendServerMessage('$fff»» $ff0Admin $fff' . $admin->nickName . '$z$s$ff0 sets/unsets new spec password to $fff' . $param1, $fromLogin);
 		} catch (\Exception $e) {
