@@ -8,7 +8,7 @@ use ManiaLib\Gui\Elements\Quad;
 use ManiaLib\Gui\Elements\BgsPlayerCard;
 use ManiaLib\Gui\Elements\Icons64x64_1;
 use ManiaLive\Utilities\Time;
-use ManiaLive\DedicatedApi\Connection;
+use DedicatedApi\Connection;
 use ManiaLive\Gui\Controls\Frame;
 use ManiaLive\Gui\Controls\PageNavigator;
 
@@ -52,7 +52,7 @@ class ListWindow extends \ManiaLive\Gui\ManagedWindow
 		$this->players = $players;
 		$this->serverName = $serverName;
 		$this->title = $title;
-		$this->connection =  Connection::getInstance();
+		//$this->connection =  Connection::getInstance();
 	}
 
 	function makeFirstLine($posy = 0)
