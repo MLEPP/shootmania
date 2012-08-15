@@ -37,7 +37,7 @@
 namespace ManiaLivePlugins\MLEPP\JoinLeaveMessage;
 
 use ManiaLive\Utilities\Console;
-use ManiaLive\DedicatedApi\Connection;
+use DedicatedApi\Connection;
 use ManiaLive\Data\Storage;
 use ManiaLive\Features\Admin\AdminGroup;
 use ManiaLive\Config\Loader;
