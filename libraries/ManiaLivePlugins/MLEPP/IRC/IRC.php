@@ -266,10 +266,11 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 						$this->write('PONG '.$name_buffer[1]);
 					}
 					if ($name_buffer[0] == 'ERROR' && $name_buffer[1] == 'Closing' && $name_buffer[3] == 'Link'){
-                fclose(this->socket);
+                fclose($this->socket);
                 sleep(2);
 				$this->starter();
 					break;
+					}
 				}
 			}
 		}
