@@ -64,7 +64,7 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 		$version = '0.2.3';
 		$this->setVersion($version);
 		$this->setPublicMethod('getVersion');
-
+		$this->setPublicMethod('tellIRC');
 		$this->config = Config::getInstance();
 	}
 
@@ -406,6 +406,31 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 			}
 		} else {
 			$this->write('PRIVMSG '.$reciever.' :'.$message);
+		}
+	}
+
+	/**
+	*	Public function to let other plugins announce stuff
+	*	$this->callPublicMethod('MLEPP\IRC', 'tellIRC', $ARRAY);
+	*	$ARRAY ( message , source , channel(optional) )
+	*/
+	function tellIRC($array) {
+		$source = $array[1];
+		$message = $array[0];
+		if(!in_array('tellIRCmessage', $this->config->disable) && is_array($array) && !empty($array)) {
+			if(isset($array[2])){$reciever=$array[2];}else{$reciever='a.channels';}
+				if($reciever == 'a.channels') {
+					for($i = 0; isset($this->config->channels[$i]); $i++) {
+						$this->write('PRIVMSG '.$this->config->channels[$i].' :['.$source.']'.$message);
+					}
+				} else {
+					// this only supports a single channel right now
+					$this->write('PRIVMSG '.$reciever.' :['.$source.']'.$message);
+				}
+		} else {
+				Console::println('[' . date('H:i:s') . '] [MLEPP] Plugin: IRC. '.$source.' tried to announce to IRC.');
+				if(!is_array($array) | empty($array)) { Console::println('[' . date('H:i:s') . '] No array passed to tellIRC or it was empty.'); }
+				if(in_array('tellIRCmessage', $this->config->disable)) { Console::println('[' . date('H:i:s') . ']Feature tellIRC disabled in pluginconfig.'); }
 		}
 	}
 }
