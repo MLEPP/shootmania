@@ -5,8 +5,8 @@
  *
  * -- MLEPP Plugin --
  * @name IRC
- * @date 06-09-2011
- * @version v0.2.3
+ * @date 17-08-2012
+ * @version v0.3.0
  * @website mlepp.trackmania.nl
  * @package MLEPP
  *
@@ -61,7 +61,7 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 	 */
 
 	function onInit() {
-		$version = '0.2.3';
+		$version = '0.3.0';
 		$this->setVersion($version);
 		$this->setPublicMethod('getVersion');
 		$this->setPublicMethod('tellIRC');
@@ -265,6 +265,10 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 					if($name_buffer[0] == 'PING') {
 						$this->write('PONG '.$name_buffer[1]);
 					}
+					if ($name_buffer[0] == 'ERROR' && $name_buffer[1] == 'Closing' && $name_buffer[3] == 'Link'){
+                fclose(this->socket);
+                sleep(2);
+				$this->starter();
 					break;
 				}
 			}
