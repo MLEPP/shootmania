@@ -814,9 +814,11 @@ main() {
 		XmlRpc.SendCallback("endMap",PlayerList);
 		
 		UIManager.UIAll.ScoreTableVisibility = CUIConfig::EVisibility::ForcedVisible;
-		if (Players.existskey(MapWinnerId)) {
-			UIManager.UIAll.BigMessage = TextLib::Compose(_("$<%1$> wins the match!"), Players[MapWinnerId].Name);
+		if (Users.existskey(MapWinnerId)) {
+			UIManager.UIAll.BigMessageSound = CUIConfig::EUISound::EndRound;
+			UIManager.UIAll.BigMessage = TextLib::Compose(_("$<%1$> wins the match!"), Users[MapWinnerId].Name);
 		} else {
+			UIManager.UIAll.BigMessageSound = CUIConfig::EUISound::EndRound;
 			UIManager.UIAll.BigMessage = _("|Match|Draw");
 		}
 		sleep(6000);

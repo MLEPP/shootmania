@@ -5,8 +5,8 @@
  *
  * -- MLEPP Plugin --
  * @name IRC
- * @date 06-09-2011
- * @version v0.2.3
+ * @date 17-08-2012
+ * @version v0.3.0
  * @website mlepp.trackmania.nl
  * @package MLEPP
  *
@@ -61,10 +61,10 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 	 */
 
 	function onInit() {
-		$version = '0.2.3';
+		$version = '0.3.0';
 		$this->setVersion($version);
 		$this->setPublicMethod('getVersion');
-
+		$this->setPublicMethod('tellIRC');
 		$this->config = Config::getInstance();
 	}
 
@@ -139,6 +139,62 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 			$this->say('Map: '.Core::stripColors($map->name).' by '.Core::stripColors($map->author));
 		}
 	}
+	
+	function mode_onPoleCapture($login) {
+	$map = $this->connection->getCurrentMapInfo();
+	$this->say('15,14 PoleCapture by: '.$login.' on '.Core::stripColors($map->name).'');
+	}
+	
+	function mode_onStartRoundElite($param2) {
+	$map = $this->connection->getCurrentMapInfo();
+	$this->say('15,14 StartRound: No: '.$param2.' on '.Core::stripColors($map->name).'');
+	}
+	
+	function mode_onEndRoundElite($param2) {
+	$map = $this->connection->getCurrentMapInfo();
+	$EndRoundData = explode(';', $param2);
+	$WinSide = str_replace('WinSide:', '', $EndRoundData[0]);
+	$Side = str_replace('Side:', '', $EndRoundData[1]);
+	$Wincondition = str_replace('WinCondition:', '', $EndRoundData[2]);
+	if ($Wincondition == 1){
+	$this->say('12,15 EndRound: '.$Side.' Win by timelimit on '.Core::stripColors($map->name).'');
+	}
+	if ($Wincondition == 2){
+	$this->say('12,15 EndRound: '.$Side.' Win by reaching pole on '.Core::stripColors($map->name).'');
+	}
+	if ($Wincondition == 3){
+	$this->say('12,15 EndRound: '.$Side.' Win by elimination of attack player on '.Core::stripColors($map->name).'');
+	}
+	if ($Wincondition == 4){
+	$this->say('12,15 EndRound: '.$Side.' Win by elimination of all defense players on '.Core::stripColors($map->name).'');
+	}
+	}
+	
+	function mode_onHitElite($param){
+	$players = explode(';', $param);
+	$shooter = str_replace('Shooter:', '', $players[0]);
+	$victim = str_replace('Victim:', '', $players[2]);
+	$weaponnum = str_replace('WeaponNum:', '', $players[1]);
+	if($weaponnum == 1){
+	$this->say('12,14 '.$victim.' was hit by a Railgun from '.$shooter.'');
+	}
+	if($weaponnum == 2){
+	$this->say('12,14 '.$victim.' was hit by a Rocket from '.$shooter.'');
+	}
+	}
+	
+	function mode_onFragElite($param){
+	$players = explode(';', $param);
+	$shooter = str_replace('Shooter:', '', $players[0]);
+	$victim = str_replace('Victim:', '', $players[2]);
+	$weaponnum = str_replace('WeaponNum:', '', $players[1]);
+	if($weaponnum == 1){
+	$this->say('4,15 '.$victim.' was killed by a Railgun from '.$shooter.'');
+	}
+	if($weaponnum == 2){
+	$this->say('4,15 '.$victim.' was killed by a Rocket from '.$shooter.'');
+	}
+	}
 
 	function onTick() {
 		if(!isset($this->i)) {
@@ -168,12 +224,20 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 								$message = str_replace($name_buffer[1].' ', '', $message);
 								$message = str_replace($name_buffer[2].' ', '', $message);
 								$message = substr($message, 2);
+                                if (ISSET($name_buffer[5])){
+                                if ($name_buffer[5] == 'none'){$name_buffer[5] = '';}
+								$d_message = $name_buffer[5];
 								if($message == '!version') {
 									$this->say('!version : Running MLEPP IRC Bot r'.$this->getVersion().'.');
 								} elseif($message == '!players') {
 									$this->sendPlayerCount();
 								} elseif($message == '!spectators') {
 									$this->sendSpecCount();
+								} elseif($message == '!admin serverpass '.$d_message.'') {
+									$this->sendServerpass($d_message);
+								} elseif($message == '!admin specpass '.$d_message.'') {
+									$this->sendSpecpass($d_message);
+								}
 								} else {
 									if(strstr($message, 'ACTION ')) {
 										$message = str_replace('ACTION ', '', $message);
@@ -201,12 +265,47 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 					if($name_buffer[0] == 'PING') {
 						$this->write('PONG '.$name_buffer[1]);
 					}
+					if ($name_buffer[0] == 'ERROR' && $name_buffer[1] == 'Closing' && $name_buffer[3] == 'Link'){
+                fclose($this->socket);
+                sleep(2);
+				$this->starter();
 					break;
+					}
 				}
 			}
 		}
 	}
+	
+	function sendServerpass($param)
+	{
+		if (empty($param)) {
+			$param = "";
+		}
 
+		try {
+			$this->connection->setServerPassword($param);
+		$say = '!server password '.$param.' ';
+		$this->say($say);
+		} catch (\Exception $e) {
+			$say = '!server password ' . $e->getMessage();
+		}
+	}
+	
+	function sendSpecpass($param)
+	{
+		if (empty($param)) {
+			$param = "";
+		}
+
+		try {
+			$this->connection->setServerPasswordForSpectator($param);
+		$say = '!spec password '.$param.' ';
+		$this->say($say);
+		} catch (\Exception $e) {
+			$say = '!spec password ' . $e->getMessage();
+		}
+	}
+	
 	function sendPlayerCount() {
 		$maxplayers = $this->connection->getMaxPlayers();
 		$say = '!players ('.$this->playercount().'/'.$maxplayers['CurrentValue'].'): ';
@@ -312,6 +411,31 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 			}
 		} else {
 			$this->write('PRIVMSG '.$reciever.' :'.$message);
+		}
+	}
+
+	/**
+	*	Public function to let other plugins announce stuff
+	*	$this->callPublicMethod('MLEPP\IRC', 'tellIRC', $ARRAY);
+	*	$ARRAY ( message , source , channel(optional) )
+	*/
+	function tellIRC($array) {
+		$source = $array[1];
+		$message = $array[0];
+		if(!in_array('tellIRCmessage', $this->config->disable) && is_array($array) && !empty($array)) {
+			if(isset($array[2])){$reciever=$array[2];}else{$reciever='a.channels';}
+				if($reciever == 'a.channels') {
+					for($i = 0; isset($this->config->channels[$i]); $i++) {
+						$this->write('PRIVMSG '.$this->config->channels[$i].' :['.$source.']'.$message);
+					}
+				} else {
+					// this only supports a single channel right now
+					$this->write('PRIVMSG '.$reciever.' :['.$source.']'.$message);
+				}
+		} else {
+				Console::println('[' . date('H:i:s') . '] [MLEPP] Plugin: IRC. '.$source.' tried to announce to IRC.');
+				if(!is_array($array) | empty($array)) { Console::println('[' . date('H:i:s') . '] No array passed to tellIRC or it was empty.'); }
+				if(in_array('tellIRCmessage', $this->config->disable)) { Console::println('[' . date('H:i:s') . ']Feature tellIRC disabled in pluginconfig.'); }
 		}
 	}
 }

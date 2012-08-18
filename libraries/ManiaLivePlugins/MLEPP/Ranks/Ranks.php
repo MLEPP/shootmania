@@ -5,8 +5,8 @@
  *
  * -- MLEPP Plugin --
  * @name Ranks
- * @date 15-07-2012
- * @version 0.2.3
+ * @date 14-08-2012
+ * @version 0.3.0
  * @website mlepp.trackmania.nl
  * @package MLEPP
  *
@@ -37,7 +37,7 @@
 namespace ManiaLivePlugins\MLEPP\Ranks;
 
 use ManiaLive\Utilities\Console;
-use ManiaLive\DedicatedApi\Connection;
+use DedicatedApi\Connection;
 use ManiaLive\Data\Storage;
 use ManiaLive\Features\Admin\AdminGroup;
 use ManiaLive\Config\Loader;
@@ -80,7 +80,7 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 	 */
 
 	function onInit() {
-		$this->setVersion('0.2.3');
+		$this->setVersion('0.3.0');
 		$this->setPublicMethod('getVersion');
 		$this->setPublicMethod('getRank');
 	}
@@ -197,6 +197,38 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 
 	function mode_onPlayerDeath($victim, $shooter = null) {
 		if(is_null($shooter)) return;
+
+		$map = $this->connection->getCurrentMapInfo();
+
+		// Insert kill into the database
+		$q = "INSERT INTO `kills` (
+				`kill_victim`,
+				`kill_shooter`,
+				`kill_time`,
+				`kill_mapUid`
+			  ) VALUES (
+			    '".$victim."',
+			    '".$shooter."',
+			    '".date('Y-m-d H:i:s')."',
+			    '".$map->uId."'
+			  )";
+		$this->db->query($q);
+
+		// update kill/death statistics
+		$shooterinfo = $this->db->query("SELECT * FROM `players` WHERE `player_login` = '".$shooter."'")->fetchStdObject();
+		$this->db->query("UPDATE `players` SET `player_kills` = '".($shooterinfo->player_kills+1)."' WHERE `player_login` = '".$shooter."'");
+
+		$victiminfo = $this->db->query("SELECT * FROM `players` WHERE `player_login` = '".$victim."'")->fetchStdObject();
+		$this->db->query("UPDATE `players` SET `player_deaths` = '".($victiminfo->player_deaths+1)."' WHERE `player_login` = '".$victim."'");
+
+		Console::println('['.date('H:i:s').'] [MLEPP] [Ranks] '.$victim.' was killed by '.$shooter);
+	}
+	
+	function mode_onFragElite($param){
+	$players = explode(';', $param);
+	$shooter = str_replace('Shooter:', '', $players[0]);
+	$victim = str_replace('Victim:', '', $players[2]);
+	$weaponnum = str_replace('WeaponNum:', '', $players[1]);
 
 		$map = $this->connection->getCurrentMapInfo();
 

@@ -8,7 +8,7 @@ use ManiaLib\Gui\Elements\Quad;
 use ManiaLib\Gui\Elements\BgsPlayerCard;
 use ManiaLib\Gui\Elements\Icons64x64_1;
 use ManiaLive\Utilities\Time;
-use ManiaLive\DedicatedApi\Connection;
+use DedicatedApi\Connection;
 use ManiaLive\Gui\Controls\Frame;
 use ManiaLive\Gui\Controls\PageNavigator;
 use ManiaLivePlugins\MLEPP\Core\Core;
@@ -51,7 +51,7 @@ class ListWindow extends \ManiaLive\Gui\ManagedWindow
 	{
 		$this->karmaInfo = $karmaInfo;
 		$this->mapName = $mapName;
-		$this->connection =  Connection::getInstance();
+		//$this->connection =  Connection::getInstance();
 		//$this->mlepp =  Core::getInstance();
 	}
 

@@ -4,14 +4,14 @@
  * MLEPP - ManiaLive Extending Plugin Pack
  *
  * -- MLEPP Plugin --
- * @name Chat Emotes
- * @date 30-06-2011
- * @version r1170
+ * @name ChatEmotes
+ * @date 14-08-2012
+ * @version 0.3.0
  * @website mlepp.trackmania.nl
  * @package MLEPP
  *
- * @author The MLEPP team
- * @copyright 2010 - 2011
+ * @author The MLEPP Team
+ * @copyright 2010 - 2012
  *
  * ---------------------------------------------------------------------
  * This program is free software: you can redistribute it and/or modify
@@ -59,7 +59,7 @@ class ChatEmotes extends \ManiaLive\PluginHandler\Plugin {
 	function onInit() {
 		// this needs to be set in the init section
 		$this->setPublicMethod('getVersion');
-		$this->setVersion("0.1.0");
+		$this->setVersion("0.3.0");
 		$this->config = Config::getInstance();        		
 	}
 

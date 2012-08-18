@@ -5,8 +5,8 @@
  *
  * -- MLEPP Plugin --
  * @name Join/Leave Message
- * @date 06-07-2012
- * @version 0.2.2
+ * @date 14-08-2012
+ * @version 0.3.0
  * @website mlepp.trackmania.nl
  * @package MLEPP
  *
@@ -37,7 +37,7 @@
 namespace ManiaLivePlugins\MLEPP\JoinLeaveMessage;
 
 use ManiaLive\Utilities\Console;
-use ManiaLive\DedicatedApi\Connection;
+use DedicatedApi\Connection;
 use ManiaLive\Data\Storage;
 use ManiaLive\Features\Admin\AdminGroup;
 use ManiaLive\Config\Loader;
@@ -52,7 +52,7 @@ class JoinLeaveMessage extends \ManiaLive\PluginHandler\Plugin {
 	 */
 
 	function onInit() {
-		$this->setVersion('0.2.0');
+		$this->setVersion('0.3.0');
 		$this->setPublicMethod('getVersion');
 	}
 

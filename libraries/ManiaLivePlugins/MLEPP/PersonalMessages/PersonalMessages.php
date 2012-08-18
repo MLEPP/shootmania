@@ -5,8 +5,8 @@
  *
  * -- MLEPP Plugin --
  * @name Personal Messages
- * @date 22-07-2012
- * @version 0.1.0
+ * @date 14-08-2012
+ * @version 0.3.0
  * @website mlepp.trackmania.nl
  * @package MLEPP
  *
@@ -60,7 +60,7 @@ class PersonalMessages extends \ManiaLive\PluginHandler\Plugin {
 	 */
 	function onInit() {
 // this needs to be set in the init section
-		$this->setVersion(0.1);
+		$this->setVersion(0.3.0);
 		$this->setPublicMethod('getVersion');
 	}
 
