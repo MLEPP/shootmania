@@ -2,11 +2,11 @@
 
 This plugin pack is for ManiaLive, the server controller made by [NADEO](http://www.nadeo.com/) for [ManiaPlanet](http://www.maniaplanet.com/).
 
-Tested with [ManiaLive](http://code.google.com/p/manialive/downloads/detail?name=ManiaLive_2.2.2.zip) r2.2.2
+Tested with [ManiaLive](http://manialive.googlecode.com/files/ManiaLive_2.3.zip) r2.3
 
 Currently MLEPP for ShootMania is under development. You can always download the latest commit [here](https://github.com/MLEPP/shootmania/downloads/) (click "Download as zip" or "Download as tar.gz")!
 
-Current release: v0.3.0 (bèta), 14-08-2012 (including statistics (kills/deaths) and ranks)
+Current release: v0.3.1 (bèta), 19-08-2012 (including statistics (kills/deaths) and ranks)
 
 ##Requirements
 - PHP 5.3 (for ManiaLive)
