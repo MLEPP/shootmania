@@ -60,7 +60,7 @@ class PersonalMessages extends \ManiaLive\PluginHandler\Plugin {
 	 */
 	function onInit() {
 // this needs to be set in the init section
-		$this->setVersion(0.3.0);
+		$this->setVersion('0.3.0');
 		$this->setPublicMethod('getVersion');
 	}
 
