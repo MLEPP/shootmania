@@ -101,7 +101,7 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 		$execute = $this->db->execute("SELECT * FROM `players` ORDER BY `player_timeplayed` DESC LIMIT 0,100");
 		$players = array();
 		$i = 0;
-		while($player = $execute->fetchStdObject()) {
+		while($player = $execute->fetchObject()) {
 			$players[$i] = $player;
 			$i++;
 		}
@@ -118,7 +118,7 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 
 	function onPlayerDisconnect($login) {
 		try {
-			$info = $this->db->execute("SELECT `player_timeplayed` FROM `players` WHERE `player_login` = '".$login."'")->fetchStdObject();
+			$info = $this->db->execute("SELECT `player_timeplayed` FROM `players` WHERE `player_login` = '".$login."'")->fetchObject();
 			$q = "UPDATE `players` SET `player_timeplayed` = '".($info->player_timeplayed + (time()-$this->players[$login]))."' WHERE `player_login` = '".$login."'";
 			$this->db->execute($q);
 		} catch(\Exception $e) {}
