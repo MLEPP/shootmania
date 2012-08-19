@@ -206,7 +206,7 @@ class Karma extends \ManiaLive\PluginHandler\Plugin {
 		}
 
 		$q = "SELECT * FROM `karma` WHERE `karma_trackuid` = ".$this->db->quote($uid).";";
-		$query = $this->db->query($q);
+		$query = $this->db->execute($q);
 
 		$counter = 0;
 		$totalkarma = 0;
@@ -287,7 +287,7 @@ class Karma extends \ManiaLive\PluginHandler\Plugin {
 		$g =  "SELECT * FROM `karma` WHERE `karma_playerlogin` = ".$this->db->quote($login)."
 		 AND `karma_trackuid` = ".$this->db->quote($uid).";";
 
-		$query = $this->db->query($g);
+		$query = $this->db->execute($g);
 		// get player data
 		$player = $this->storage->getPlayerObject($login);
 
@@ -301,7 +301,7 @@ class Karma extends \ManiaLive\PluginHandler\Plugin {
                                                 ".$this->db->quote($uid).",
                                                 ".$this->db->quote($value)."
                                                 )";
-			$this->db->query($q);
+			$this->db->execute($q);
 		}
 		else {
 			//	--> update existing player entry
@@ -315,7 +315,7 @@ class Karma extends \ManiaLive\PluginHandler\Plugin {
 			 AND
 			 `karma_trackuid` = ".$this->db->quote($uid).";";
 
-			$this->db->query($q);
+			$this->db->execute($q);
 		}
 	}
 }

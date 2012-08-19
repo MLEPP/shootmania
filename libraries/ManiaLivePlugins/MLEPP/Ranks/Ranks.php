@@ -110,7 +110,7 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
   					`kill_mapUid` varchar(60) NOT NULL,
   					PRIMARY KEY (`kill_id`)
 				  ) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;";
-			$this->db->query($q);
+			$this->db->execute($q);
 		}
 
 		if(!$this->db->tableExists('captures')) {
@@ -121,18 +121,18 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
   					`capture_time` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
   					PRIMARY KEY (`capture_id`)
 				  ) ENGINE=MyISAM DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;";
-			$this->db->query($q);
+			$this->db->execute($q);
 		}
 		
 		// check for right database structure, will check even if no players has connected
-		$playerinfo = $this->db->query("SELECT * FROM information_schema.columns WHERE TABLE_NAME='players' and COLUMN_NAME='player_kills';")->fetchStdObject();				
+		$playerinfo = $this->db->execute("SELECT * FROM information_schema.columns WHERE TABLE_NAME='players' and COLUMN_NAME='player_kills';")->fetchObject();				
 
 		if(!isset($playerinfo->TABLE_NAME)) {
 			$q = "ALTER TABLE `players`
 				  ADD `player_kills` MEDIUMINT( 9 ) NOT NULL DEFAULT '0',
 				  ADD `player_deaths` MEDIUMINT( 9 ) NOT NULL DEFAULT '0',
 				  ADD `player_captures` MEDIUMINT( 9 ) NOT NULL DEFAULT '0'";
-			$this->db->query($q);
+			$this->db->execute($q);
 		}
 
 		$points = array_keys($this->ranks);
@@ -167,7 +167,7 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 				}
 
 				$q = "UPDATE `players` SET `player_points` = '".($this->players[$arrayplayer[0]]['score'] + $arrayplayer[1])."' WHERE `player_login` = '".$arrayplayer[0]."'";
-				$this->db->query($q);
+				$this->db->execute($q);
 
 				$this->players[$arrayplayer[0]] = array('score' => ($this->players[$arrayplayer[0]]['score'] + $arrayplayer[1]),
 					'rank' => $this->ranks[$this->closest($points, ($this->players[$arrayplayer[0]]['score'] + $arrayplayer[1]))]);
@@ -188,11 +188,11 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 			    '".$map->uId."',
 			    '".date('Y-m-d H:i:s')."'
 			  )";
-		$this->db->query($q);
+		$this->db->execute($q);
 
 		// update capture statistics
-		$info = $this->db->query("SELECT * FROM `players` WHERE `player_login` = '".$login."'")->fetchStdObject();
-		$this->db->query("UPDATE `players` SET `player_captures` = '".($info->player_captures+1)."' WHERE `player_login` = '".$login."'");
+		$info = $this->db->execute("SELECT * FROM `players` WHERE `player_login` = '".$login."'")->fetchObject();
+		$this->db->execute("UPDATE `players` SET `player_captures` = '".($info->player_captures+1)."' WHERE `player_login` = '".$login."'");
 	}
 
 	function mode_onPlayerDeath($victim, $shooter = null) {
@@ -212,14 +212,14 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 			    '".date('Y-m-d H:i:s')."',
 			    '".$map->uId."'
 			  )";
-		$this->db->query($q);
+		$this->db->execute($q);
 
 		// update kill/death statistics
-		$shooterinfo = $this->db->query("SELECT * FROM `players` WHERE `player_login` = '".$shooter."'")->fetchStdObject();
-		$this->db->query("UPDATE `players` SET `player_kills` = '".($shooterinfo->player_kills+1)."' WHERE `player_login` = '".$shooter."'");
+		$shooterinfo = $this->db->execute("SELECT * FROM `players` WHERE `player_login` = '".$shooter."'")->fetchObject();
+		$this->db->execute("UPDATE `players` SET `player_kills` = '".($shooterinfo->player_kills+1)."' WHERE `player_login` = '".$shooter."'");
 
-		$victiminfo = $this->db->query("SELECT * FROM `players` WHERE `player_login` = '".$victim."'")->fetchStdObject();
-		$this->db->query("UPDATE `players` SET `player_deaths` = '".($victiminfo->player_deaths+1)."' WHERE `player_login` = '".$victim."'");
+		$victiminfo = $this->db->execute("SELECT * FROM `players` WHERE `player_login` = '".$victim."'")->fetchObject();
+		$this->db->execute("UPDATE `players` SET `player_deaths` = '".($victiminfo->player_deaths+1)."' WHERE `player_login` = '".$victim."'");
 
 		Console::println('['.date('H:i:s').'] [MLEPP] [Ranks] '.$victim.' was killed by '.$shooter);
 	}
@@ -244,14 +244,14 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 			    '".date('Y-m-d H:i:s')."',
 			    '".$map->uId."'
 			  )";
-		$this->db->query($q);
+		$this->db->execute($q);
 
 		// update kill/death statistics
-		$shooterinfo = $this->db->query("SELECT * FROM `players` WHERE `player_login` = '".$shooter."'")->fetchStdObject();
-		$this->db->query("UPDATE `players` SET `player_kills` = '".($shooterinfo->player_kills+1)."' WHERE `player_login` = '".$shooter."'");
+		$shooterinfo = $this->db->execute("SELECT * FROM `players` WHERE `player_login` = '".$shooter."'")->fetchObject();
+		$this->db->execute("UPDATE `players` SET `player_kills` = '".($shooterinfo->player_kills+1)."' WHERE `player_login` = '".$shooter."'");
 
-		$victiminfo = $this->db->query("SELECT * FROM `players` WHERE `player_login` = '".$victim."'")->fetchStdObject();
-		$this->db->query("UPDATE `players` SET `player_deaths` = '".($victiminfo->player_deaths+1)."' WHERE `player_login` = '".$victim."'");
+		$victiminfo = $this->db->execute("SELECT * FROM `players` WHERE `player_login` = '".$victim."'")->fetchObject();
+		$this->db->execute("UPDATE `players` SET `player_deaths` = '".($victiminfo->player_deaths+1)."' WHERE `player_login` = '".$victim."'");
 
 		Console::println('['.date('H:i:s').'] [MLEPP] [Ranks] '.$victim.' was killed by '.$shooter);
 	}
@@ -263,7 +263,7 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 
 		foreach($this->storage->players as $player) {
 			try {
-				$dbinfo = $this->db->query("SELECT `player_kills`, `player_deaths`, `player_captures` FROM `players` WHERE `player_login` = '".$player->login."'")->fetchStdObject();
+				$dbinfo = $this->db->execute("SELECT `player_kills`, `player_deaths`, `player_captures` FROM `players` WHERE `player_login` = '".$player->login."'")->fetchObject();
 				$players[] = array('nickname' => $player->nickName,
 								   'points' => $this->players[$player->login]['score'],
 								   'rank' => $this->players[$player->login]['rank'],
@@ -275,7 +275,7 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 
 		foreach($this->storage->spectators as $player) {
 			try {
-				$dbinfo = $this->db->query("SELECT `player_kills`, `player_deaths`, `player_captures` FROM `players` WHERE `player_login` = '".$player->login."'")->fetchStdObject();
+				$dbinfo = $this->db->execute("SELECT `player_kills`, `player_deaths`, `player_captures` FROM `players` WHERE `player_login` = '".$player->login."'")->fetchObject();
 				$players[] = array('nickname' => $player->nickName,
 								   'points' => $this->players[$player->login]['score'],
 								   'rank' => $this->players[$player->login]['rank'],
@@ -295,10 +295,10 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 	function top100Command($login, $param1 = null, $param2 = null, $param3 = null) {
 		$points = array_keys($this->ranks);
 		$window = ListWindow::Create($login);
-		$query = $this->db->query("SELECT * FROM `players` ORDER BY `player_points` DESC LIMIT 0,100");
+		$execute = $this->db->execute("SELECT * FROM `players` ORDER BY `player_points` DESC LIMIT 0,100");
 		$players = array();
 		$i = 0;
-		while($player = $query->fetchStdObject()) {
+		while($player = $execute->fetchObject()) {
 			$players[$i] = array('nickname' => $player->player_nickname,
 								 'points' => $player->player_points,
 								 'rank' => $this->ranks[$this->closest($points, $player->player_points)],
@@ -328,8 +328,8 @@ class Ranks extends \ManiaLive\PluginHandler\Plugin {
 			return $this->players[$login];
 		} else {
 			$q = "SELECT `player_captures`, `player_kills`, `player_deaths`, `player_points` FROM `players` WHERE `player_login` = '".$login."'";
-			$query = $this->db->query($q);
-			$info = $query->fetchStdObject();
+			$execute = $this->db->execute($q);
+			$info = $execute->fetchObject();
 
 			if($info->player_deaths != 0) {
 				$kd = ($info->player_kills/$info->player_deaths);

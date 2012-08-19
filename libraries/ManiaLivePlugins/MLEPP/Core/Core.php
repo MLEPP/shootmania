@@ -74,7 +74,7 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
   					PRIMARY KEY (`player_id`),
   					UNIQUE KEY `player_login` (`player_login`)
 				  ) ENGINE=MyISAM DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
-			$this->db->query($q);
+			$this->db->execute($q);
 		}
 
 		foreach($this->storage->players as $player) {
@@ -98,10 +98,10 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 
 	function activeCommand($login, $param1 = null, $param2 = null, $param3 = null) {
 		$window = ListWindow::Create($login);
-		$query = $this->db->query("SELECT * FROM `players` ORDER BY `player_timeplayed` DESC LIMIT 0,100");
+		$execute = $this->db->execute("SELECT * FROM `players` ORDER BY `player_timeplayed` DESC LIMIT 0,100");
 		$players = array();
 		$i = 0;
-		while($player = $query->fetchObject()) {
+		while($player = $execute->fetchStdObject()) {
 			$players[$i] = $player;
 			$i++;
 		}
@@ -118,9 +118,9 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 
 	function onPlayerDisconnect($login) {
 		try {
-			$info = $this->db->query("SELECT `player_timeplayed` FROM `players` WHERE `player_login` = '".$login."'")->fetchObject();
+			$info = $this->db->execute("SELECT `player_timeplayed` FROM `players` WHERE `player_login` = '".$login."'")->fetchStdObject();
 			$q = "UPDATE `players` SET `player_timeplayed` = '".($info->player_timeplayed + (time()-$this->players[$login]))."' WHERE `player_login` = '".$login."'";
-			$this->db->query($q);
+			$this->db->execute($q);
 		} catch(\Exception $e) {}
 	}
 
@@ -226,10 +226,10 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 	//$this->callPublicMethod('MLEPP\Core', 'getPlayerInfo', $login);
 	function getPlayerInfo($login) {
 		$g =  "SELECT * FROM `players` WHERE `player_login` = ".$this->db->quote($login).";";
-		$query = $this->db->query($g);
+		$execute = $this->db->execute($g);
 
-		if($query->recordCount() == 1) {
-			return $query->fetchObject();
+		if($execute->recordCount() == 1) {
+			return $execute->fetchObject();
 		} else {
 			return false;
 		}
@@ -237,9 +237,9 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 
 	function insertPlayer($player) {
 		$g =  "SELECT * FROM `players` WHERE `player_login` = ".$this->db->quote($player->login).";";
-		$query = $this->db->query($g);
+		$execute = $this->db->execute($g);
 
-		if($query->recordCount() == 0) {
+		if($execute->recordCount() == 0) {
 			$q = "INSERT INTO `players` (
 					`player_login`,
 					`player_nickname`,
@@ -259,7 +259,7 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 				  WHERE `player_login` = '".$player->login."'";
 		}
 
-		$this->db->query($q);
+		$this->db->execute($q);
 	}
 
 	static function stripColors($input, $for_tm = true) {
