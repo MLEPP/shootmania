@@ -215,7 +215,7 @@ class Karma extends \ManiaLive\PluginHandler\Plugin {
 		$negative = 0;
 
 		$this->playerKarmas = array();
-		while($data = $query->fetchStdObject()) {
+		while($data = $query->fetchObject()) {
 			if($data->karma_value == '-1') {
 				$karma_value = '--';
 				$totalkarma = ($totalkarma-1);
