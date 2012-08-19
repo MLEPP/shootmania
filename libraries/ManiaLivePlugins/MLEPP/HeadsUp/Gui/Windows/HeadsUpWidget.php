@@ -43,7 +43,7 @@ class HeadsUpWidget extends \ManiaLive\Gui\Window {
 			$label->setText(''.$lines[$x]);
 			$label->setHalign("center");
 			$label->setValign("top");
-			$label->setPosition(0, (4*$x));
+			$label->setPosition(0, -(4*$x));
 			$this->addComponent($label);
 		}
 		
