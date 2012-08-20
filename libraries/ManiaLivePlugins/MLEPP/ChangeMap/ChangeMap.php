@@ -1,6 +1,6 @@
 <?php
 /**
- * Change map plugin v.0.1.1 (01/08/12)
+ * Change map plugin for MLEPP v.0.2.1 (20/08/12)
  * @author dfk7677
  * @copyright 2012
  *
@@ -45,7 +45,7 @@ class ChangeMap extends \ManiaLive\PluginHandler\Plugin {
      * @return void
      */
     function onInit() {
-        $this->setVersion('0.2.0');
+        $this->setVersion('0.2.1');
         $this->setPublicMethod('getVersion');
 		
     }
@@ -169,7 +169,7 @@ class ChangeMap extends \ManiaLive\PluginHandler\Plugin {
 		
 			$player = $this->storage->getPlayerObject($login);
 			$window = MapsWindow::Create($player->login);
-			$window->setSize(180, 120);
+			$window->setSize(130, 120);
 			$window->centerOnScreen();
 			$window->show();
 			return;
