@@ -33,6 +33,7 @@ use ManiaLive\Features\Admin\AdminGroup;
 use ManiaLive\Features\ChatCommand\Command;
 use ManiaLive\Event\Dispatcher;
 use ManiaLive\DedicatedApi\Structures;
+use ManiaLivePlugins\MLEPP\ChangeMap\Gui\Windows\MapsWindow;
 
 class ChangeMap extends \ManiaLive\PluginHandler\Plugin {
 
@@ -44,7 +45,7 @@ class ChangeMap extends \ManiaLive\PluginHandler\Plugin {
      * @return void
      */
     function onInit() {
-        $this->setVersion('0.1.1');
+        $this->setVersion('0.2.0');
         $this->setPublicMethod('getVersion');
 		
     }
@@ -57,10 +58,11 @@ class ChangeMap extends \ManiaLive\PluginHandler\Plugin {
      */
     function onLoad() {
         Console::println('[' . date('H:i:s') . '] [MLEPP] Plugin: Change Map v' . $this->getVersion());
-        
+        MapsWindow::$adminPlugin = $this;
 
         if ($this->isPluginLoaded('MLEPP\Admin')) {
             $this->callPublicMethod('MLEPP\Admin', 'addAdminCommand', array($this, 'map'), array("map"), true, false, false);
+			$this->callPublicMethod('MLEPP\Admin', 'addAdminCommand', array($this, 'maps'), array("maps"), true, false, false);
            
         } else {
             Console::println('[' . date('H:i:s') . '] [MLEPP] [ChangeMap] Disabled admin commands, Admin is not loaded, define admin plugin before this!');
@@ -77,7 +79,7 @@ class ChangeMap extends \ManiaLive\PluginHandler\Plugin {
         Console::println('[' . date('H:i:s') . '] [UNLOAD] Change Map v' . $this->getVersion() . '');
         if ($this->isPluginLoaded('MLEPP\Admin')) {
             $this->callPublicMethod('MLEPP\Admin', 'removeAdminCommand', 'map');   //remove command
-            
+            $this->callPublicMethod('MLEPP\Admin', 'removeAdminCommand', 'maps');   //remove command
             Console::println('[' . date('H:i:s') . '] [UNLOAD] [ChangeMap] Removed all dependend map commands from admin.');
         }
         parent::onUnload();
@@ -104,7 +106,7 @@ class ChangeMap extends \ManiaLive\PluginHandler\Plugin {
 			$this->connection->chatSendServerMessage('$fff» $f00$iYou must specify a map name!', $login);
 			return;
 		}
-        $mapList = $this->connection->getMapList(140,0);
+        $mapList = $this->connection->getMapList(128,0);
 		$numMaps = count($mapList);
 		$mapIndex = -1;
 		for ($i =0 ;$i <$numMaps ; $i++) {
@@ -156,6 +158,32 @@ class ChangeMap extends \ManiaLive\PluginHandler\Plugin {
 		}
 		
 
+	}
+	
+	
+	function maps($login) {
+		if (!AdminGroup::contains($login)) {
+            $this->connection->chatSendServerMessage('$fff» $f00$iYou don\'t have the permission to do that!', $login);
+            return;
+        }
+		
+			$player = $this->storage->getPlayerObject($login);
+			$window = MapsWindow::Create($player->login);
+			$window->setSize(180, 120);
+			$window->centerOnScreen();
+			$window->show();
+			return;
+		
+	}
+	
+	function onClick($login, $action, $target) {
+		//$this->connection->chatSendServerMessage("$login --> $action --> $target", $this->storage->getPlayerObject($login));
+
+		switch ($action) {
+			case 'change':
+				$this->map($login,$this->filterName($target));
+				break;
+			}
 	}
 	
 	//Strips colors and text formatting from map name
