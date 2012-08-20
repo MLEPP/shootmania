@@ -176,9 +176,11 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 	$victim = str_replace('Victim:', '', $players[2]);
 	$weaponnum = str_replace('WeaponNum:', '', $players[1]);
 	if($weaponnum == 1){
+	sleep(1);
 	$this->say('12,14 '.$victim.' was hit by a Railgun from '.$shooter.'');
 	}
 	if($weaponnum == 2){
+	sleep(1);
 	$this->say('12,14 '.$victim.' was hit by a Rocket from '.$shooter.'');
 	}
 	}
@@ -189,9 +191,11 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 	$victim = str_replace('Victim:', '', $players[2]);
 	$weaponnum = str_replace('WeaponNum:', '', $players[1]);
 	if($weaponnum == 1){
+	sleep(1);
 	$this->say('4,15 '.$victim.' was killed by a Railgun from '.$shooter.'');
 	}
 	if($weaponnum == 2){
+	sleep(1);
 	$this->say('4,15 '.$victim.' was killed by a Rocket from '.$shooter.'');
 	}
 	}
