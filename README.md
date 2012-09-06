@@ -2,7 +2,7 @@
 
 This plugin pack is for ManiaLive, the server controller made by [NADEO](http://www.nadeo.com/) for [ManiaPlanet](http://www.maniaplanet.com/).
 
-Tested with [ManiaLive](http://manialive.googlecode.com/files/ManiaLive_2.3.zip) r2.3
+Tested with [ManiaLive](http://manialive.googlecode.com/files/ManiaLive_2.4.zip) r2.4
 
 Currently MLEPP for ShootMania is under development. You can always download the latest commit [here](https://github.com/MLEPP/shootmania/downloads/) (click "Download as zip" or "Download as tar.gz")!
 
