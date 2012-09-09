@@ -165,7 +165,9 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 			case 'frag':
 				$this->sendCallbacks('mode_onFragElite', $param2);
 				return;
-			
+			case 'captureCheckpoint':
+				$this->sendCallbacks('mode_onPoleCapture', $param2);
+				return;
 		}
 	}
 
