@@ -1,8 +1,17 @@
 <?php
+
 /**
- * Change map plugin for MLEPP v.0.2.1 (20/08/12)
- * @author dfk7677
- * @copyright 2012
+ * MLEPP - ManiaLive Extending Plugin Pack
+ *
+ * -- MLEPP Plugin --
+ * @name Changemap
+ * @date 09-09-2012
+ * @version 0.4.0
+ * @website mlepp.trackmania.nl
+ * @package MLEPP
+ *
+ * @author The MLEPP Team
+ * @copyright 2010 - 2012
  *
  * ---------------------------------------------------------------------
  * This program is free software: you can redistribute it and/or modify
@@ -24,6 +33,7 @@
  * the GNU General Public License version 3.
  * ---------------------------------------------------------------------
  */
+ 
 namespace ManiaLivePlugins\MLEPP\ChangeMap;
 
 use ManiaLive\Data\Storage;
@@ -45,7 +55,7 @@ class ChangeMap extends \ManiaLive\PluginHandler\Plugin {
      * @return void
      */
     function onInit() {
-        $this->setVersion('0.2.1');
+        $this->setVersion('0.4.0');
         $this->setPublicMethod('getVersion');
 		
     }

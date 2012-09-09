@@ -4,8 +4,8 @@
  *
  * -- MLEPP Plugin --
  * @name Core
- * @date 14-08-2012
- * @version 0.3.0
+ * @date 09-09-2012
+ * @version 0.4.0
  * @website mlepp.trackmania.nl
  * @package MLEPP
  *
@@ -47,7 +47,7 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 	private $lastHit = array();
 
 	function onInit() {
-		$this->setVersion('0.3.0');
+		$this->setVersion('0.4.0');
 		$this->setPublicMethod('registerPlugin');
 		$this->setPublicMethod('sendCallbacks');
 		$this->setPublicMethod('getPlayerInfo');

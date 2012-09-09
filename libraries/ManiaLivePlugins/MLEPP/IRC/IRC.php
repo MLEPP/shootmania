@@ -5,8 +5,8 @@
  *
  * -- MLEPP Plugin --
  * @name IRC
- * @date 17-08-2012
- * @version v0.3.0
+ * @date 09-09-2012
+ * @version 0.4.0
  * @website mlepp.trackmania.nl
  * @package MLEPP
  *
@@ -61,7 +61,7 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 	 */
 
 	function onInit() {
-		$version = '0.3.0';
+		$version = '0.4.0';
 		$this->setVersion($version);
 		$this->setPublicMethod('getVersion');
 		$this->setPublicMethod('tellIRC');

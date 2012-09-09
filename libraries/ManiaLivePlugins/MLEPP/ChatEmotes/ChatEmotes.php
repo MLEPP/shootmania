@@ -5,8 +5,8 @@
  *
  * -- MLEPP Plugin --
  * @name ChatEmotes
- * @date 14-08-2012
- * @version 0.3.0
+ * @date 09-09-2012
+ * @version 0.4.0
  * @website mlepp.trackmania.nl
  * @package MLEPP
  *
@@ -59,7 +59,7 @@ class ChatEmotes extends \ManiaLive\PluginHandler\Plugin {
 	function onInit() {
 		// this needs to be set in the init section
 		$this->setPublicMethod('getVersion');
-		$this->setVersion("0.3.0");
+		$this->setVersion("0.4.0");
 		$this->config = Config::getInstance();        		
 	}
 

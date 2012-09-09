@@ -4,9 +4,9 @@
  * MLEPP - ManiaLive Extending Plugin Pack
  *
  * -- MLEPP Plugin --
- * @name AutoModeChange
- * @date 14-08-2012
- * @version 0.3.0
+ * @name HeadsUp
+ * @date 09-09-2012
+ * @version 0.4.0
  * @website mlepp.trackmania.nl
  * @package MLEPP
  *
@@ -61,7 +61,7 @@ class HeadsUp extends \ManiaLive\PluginHandler\Plugin {
 	 */
 	function onInit() {
 		// this needs to be set in the init section
-		$this->setVersion('0.3.0');
+		$this->setVersion('0.4.0');
 		$this->setPublicMethod('getVersion');
 	}
 
