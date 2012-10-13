@@ -139,6 +139,8 @@ class Core extends \ManiaLive\PluginHandler\Plugin {
 				return;
 			case 'endRound':
 				$this->sendCallbacks('mode_onEndRound', $param2);
+				return;
+			case 'endTurn':
 				$this->sendCallbacks('mode_onEndRoundElite', $param2);
 				return;
 			case 'poleCapture':
