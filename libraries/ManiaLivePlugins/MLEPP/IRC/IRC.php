@@ -241,7 +241,18 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 									$this->sendServerpass($d_message);
 								} elseif($message == '!admin specpass '.$d_message.'') {
 									$this->sendSpecpass($d_message);
+								} elseif($message == '!admin 0000 '.$d_message.'') {
+								if (empty($d_message)) {
+								$d_message = "";
 								}
+								try {
+			                                    $this->say($this->irc_prep2('', 'bla bla bla', $ircuser));
+								} catch (\Exception $e) {
+								$say = '!admin 0000' . $e->getMessage();
+								$this->say($say);
+								}
+
+                                    break;
 								} else {
 									if(strstr($message, 'ACTION ')) {
 										$message = str_replace('ACTION ', '', $message);
@@ -252,6 +263,7 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 								}
 							}
 						}
+					}
 					}
 
 					if($name_buffer[1] == 'JOIN') {
@@ -417,6 +429,13 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 			$this->write('PRIVMSG '.$reciever.' :'.$message);
 		}
 	}
+	
+	function irc_prep2($type, $message, $nick)
+{
+for($i = 0; isset($this->config->channels[$i]); $i++) {
+$this->write('PRIVMSG '. $nick .', '. $this->config->channels[$i] .' :'.$type.''.$message);
+}
+}
 
 	/**
 	*	Public function to let other plugins announce stuff
