@@ -5,7 +5,7 @@
 #Extends "Modes/ShootMania/ModeBase.Script.txt"
  
 #Const	CompatibleMapTypes	"BattleArena"
-#Const	Version				"2012-08-30"
+#Const	Version				"2012-10-11"
 
 #Include "MathLib" as MathLib
 #Include "TextLib" as TextLib
@@ -13,7 +13,7 @@
 #Include "Libs/Nadeo/Victory.Script.txt" as Victory
 #Include "Libs/Nadeo/Interface.Script.txt" as Interface
 #Include "Libs/Nadeo/ShootMania/SM.Script.txt" as SM
-#Include "Libs/Nadeo/ShootMania/Rules.script.txt" as Rules
+#Include "Libs/Nadeo/ShootMania/Rules.Script.txt" as Rules
 #Include "Libs/Nadeo/ShootMania/Score.Script.txt" as Score
 #Include "Libs/Nadeo/ShootMania/BalancedWeapons.Script.txt" as BalancedWeapons
 

@@ -5,12 +5,13 @@
 #Extends "Modes/ShootMania/ModeBase.Script.txt"
 
 #Const	CompatibleMapTypes	"RoyalArena"
-#Const	Version				"2012-08-23"
+#Const	Version				"2012-10-12"
 
 #Include "MathLib" as MathLib
 #Include "TextLib" as TextLib
 #Include "Libs/Nadeo/Top.Script.txt" as Top
 #Include "Libs/Nadeo/Layers.Script.txt" as Layers
+#Include "Libs/Nadeo/Message.Script.txt" as Message
 #Include "Libs/Nadeo/ShootMania/SM.Script.txt" as SM
 #Include "Libs/Nadeo/ShootMania/Rules.Script.txt" as Rules
 #Include "Libs/Nadeo/ShootMania/Score.Script.txt" as Score
@@ -106,6 +107,7 @@ declare LastSpawnTime = -S_SpawnInterval * 1000;
 declare LastMessageTime = Now;
 declare LastUIUpdateTime = -C_UITickPeriod;
 declare Goal <=> SM::GetPole("Goal", 0);
+declare FirstElimId = NullId;
 ***
 
 /* -------------------------------------- */
@@ -176,6 +178,7 @@ UIManager.UIAll.CountdownEndTime = -1;
 /* -------------------------------------- */
 ***PlayLoop***
 ***
+Message::Loop();
 /* ------------------------------------- */
 // Spawn players
 if (G_PlayerSpawnQueue.count > 0 && LastSpawnTime + (S_SpawnInterval * 1000) < Now) {
@@ -223,6 +226,10 @@ foreach (Event in PendingEvents) {
 		SpawnTime = Now;
 		UpdateSurvivalScore(Event.Victim.Id);
 		LayerUpdated = Layers::Update("ScoresTable", UpdateLayerScoresTable());
+		if (Event.Victim != Null && FirstElimId == NullId) {
+			FirstElimId = Event.Victim.User.Id;
+			DisplayFirstElimMessage(Event.Victim.Name);
+		}
 		XmlRpc.SendCallback("playerDeath", Event.Victim.Login);
 		PassOn(Event);
 	} 
@@ -254,7 +261,7 @@ foreach (Event in PendingEvents) {
 							TextLib::Compose(_("$<%1$> activated the OffZone"), Players[PlayerId].Name), 
 							CUIConfig::ENoticeLevel::MatchInfo, Null, 
 							CUIConfig::EAvatarVariant::Default, 
-							CUIConfig::EUISound::PhaseChange, 0
+							CUIConfig::EUISound::StartRound, 0
 						);
 					}
 				}
@@ -263,7 +270,7 @@ foreach (Event in PendingEvents) {
 					_("OffZone activated!"), 
 					CUIConfig::ENoticeLevel::MatchInfo, Null, 
 					CUIConfig::EAvatarVariant::Default, 
-					CUIConfig::EUISound::PhaseChange, 0
+					CUIConfig::EUISound::StartRound, 0
 				);
 			}
 		}
@@ -277,6 +284,10 @@ foreach (Event in PendingEvents) {
 		SpawnTime = Now;
 		UpdateSurvivalScore(Event.Player.Id);
 		LayerUpdated = Layers::Update("ScoresTable", UpdateLayerScoresTable());
+		if (Event.Player != Null && FirstElimId == NullId) {
+			FirstElimId = Event.Player.User.Id;
+			DisplayFirstElimMessage(Event.Player.Name);
+		}
 		XmlRpc.SendCallback("playerRespawn", Event.Player.Login);
 		PassOn(Event);
 	} 
@@ -543,6 +554,26 @@ Void SpawnPlayers() {
 			}
 		}
 	}
+}
+
+/* ------------------------------------- */
+
+/* ------------------------------------- */
+/** Display the First Elimination message
+ *
+ *	@param	_Name		The name of the first eliminated user
+ */
+Void DisplayFirstElimMessage(Text _Name) {
+	Message::SendBigMessage(
+		TextLib::Compose(
+			_("$<%1$> is the first eliminated!"),
+			_Name
+		), 									///< Message
+		3000,								///< Duration
+		1,									///< Priority
+		CUIConfig::EUISound::PhaseChange,	///< Sound
+		1									///< Sound variant
+	);
 }
 
 /* ------------------------------------- */
