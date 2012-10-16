@@ -1,0 +1,6 @@
+ShootMania/Elite/ESWC 2012 - Crossfire.Map.Gbx
+ShootMania/Elite/Elite - telesCope.Map.Gbx
+ShootMania/Elite/Elite - Swift.Map.Gbx
+ShootMania/Elite/Elite - GreenValley.Map.Gbx
+ShootMania/Elite/Elite - Paladin.Map.Gbx
+ShootMania/Elite/Elite - Crossfire-beta.Map.Gbx

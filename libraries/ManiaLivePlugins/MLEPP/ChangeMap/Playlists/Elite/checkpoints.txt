@@ -1,0 +1,3 @@
+ShootMania/Elite/ESWC 2012 - Fallen Castle 1.7.Map.Gbx
+ShootMania/Elite/Elite - GottaCatchemAll.Map.Gbx
+ShootMania/Elite/Elite - Fortress.Map.Gbx

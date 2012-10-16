@@ -1,0 +1,6 @@
+ShootMania/Elite/Elite - CastleCrasher.Map.Gbx
+ShootMania/Elite/Elite - TheCastle_new.Map.Gbx
+ShootMania/Elite/Elite - CrossRoads.Map.Gbx
+ShootMania/Elite/Elite - Fortress.Map.Gbx
+ShootMania/Elite/Elite - Collided.Map.Gbx
+ShootMania/Elite/Elite - ArchWays.Map.Gbx
