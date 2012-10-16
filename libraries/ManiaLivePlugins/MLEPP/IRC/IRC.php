@@ -133,24 +133,23 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 	}
 
 	function mode_onBeginMap($chal) {
-		if(!in_array('beginRace', $this->config->disable)) {
+		if(in_array('beginRace', $this->config->disable)) {return;}
 			$map = $this->connection->getCurrentMapInfo();
 			$this->say('4Begin of the map');
 			$this->say('Map: '.Core::stripColors($map->name).' by '.Core::stripColors($map->author));
-		}
 	}
-	
 	function mode_onPoleCapture($login) {
+		if(in_array('eliteCap', $this->config->disable)) {return;}
 	$map = $this->connection->getCurrentMapInfo();
 	$this->say('15,14 PoleCapture by: '.$login.' on '.Core::stripColors($map->name).'');
 	}
-	
 	function mode_onStartRoundElite($param2) {
+		if(in_array('startEliteround', $this->config->disable)) {return;}
 	$map = $this->connection->getCurrentMapInfo();
 	$this->say('15,14 StartRound: No: '.$param2.' on '.Core::stripColors($map->name).'');
 	}
-	
 	function mode_onEndRoundElite($param2) {
+	if(in_array('endEliteround', $this->config->disable)) {return;}
 	$map = $this->connection->getCurrentMapInfo();
 	$EndRoundData = explode(';', $param2);
 	$WinSide = str_replace('WinSide:', '', $EndRoundData[0]);
@@ -169,8 +168,9 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 	$this->say('12,15 EndRound: '.$Side.' Win by elimination of all defense players on '.Core::stripColors($map->name).'');
 	}
 	}
-	
+
 	function mode_onHitElite($param){
+	if(in_array('eliteHit', $this->config->disable)) {return;}
 	$players = explode(';', $param);
 	$shooter = str_replace('Shooter:', '', $players[0]);
 	$victim = str_replace('Victim:', '', $players[2]);
@@ -184,8 +184,9 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 	$this->say('12,14 '.$victim.' was hit by a Rocket from '.$shooter.'');
 	}
 	}
-	
+
 	function mode_onFragElite($param){
+	if(in_array('eliteFrag', $this->config->disable)) {return;}
 	$players = explode(';', $param);
 	$shooter = str_replace('Shooter:', '', $players[0]);
 	$victim = str_replace('Victim:', '', $players[2]);
@@ -219,7 +220,6 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 					$ircuser = substr($name_buffer[0], 0, strpos($name_buffer[0], '!'));
 
 					echo $data."\n\r";
-
 					if($name_buffer[1] == 'PRIVMSG') {
 						if(!in_array('chatIRCtoTM', $this->config->disable)) {
 							if(substr($name_buffer[2], 0, 1) == '#') {
@@ -265,6 +265,18 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 						}
 					}
 					}
+					
+					/*
+					*
+					*		Take commands from irc
+					*
+					*/
+					// Need Work: 	add password from config instead of 0000
+					if($name_buffer[1] == 'PRIVMSG' && $name_buffer[2] == $this->config->nickname) {
+						if(!in_array('IRCCommands', $this->config->disable)) {
+						$this->say('This is where I would respond to commands', $ircuser);
+						}
+					}
 
 					if($name_buffer[1] == 'JOIN') {
 						if(!in_array('joinIRCMessage', $this->config->disable)) {
@@ -291,7 +303,7 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 			}
 		}
 	}
-	
+
 	function sendServerpass($param)
 	{
 		if (empty($param)) {
@@ -306,7 +318,7 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 			$say = '!server password ' . $e->getMessage();
 		}
 	}
-	
+
 	function sendSpecpass($param)
 	{
 		if (empty($param)) {
@@ -321,7 +333,7 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 			$say = '!spec password ' . $e->getMessage();
 		}
 	}
-	
+
 	function sendPlayerCount() {
 		$maxplayers = $this->connection->getMaxPlayers();
 		$say = '!players ('.$this->playercount().'/'.$maxplayers['CurrentValue'].'): ';
@@ -429,7 +441,7 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 			$this->write('PRIVMSG '.$reciever.' :'.$message);
 		}
 	}
-	
+
 	function irc_prep2($type, $message, $nick)
 {
 for($i = 0; isset($this->config->channels[$i]); $i++) {
