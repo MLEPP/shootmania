@@ -720,6 +720,8 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 				$modesettings = 'S_WinMatch';
 			if (strtolower($param1) == "WarmUp")
 				$modesettings = '"S_WarmupDuration';
+			if (strtolower($param1) == "Draft")
+				$modesettings = '"S_Draft';
 			if ($param1 == NULL) {
 				$this->connection->chatSendServerMessage('Usage: /set script settings timelimit X or or mode X or winmatch X or warmup 0 or timecapture  X or timecapture X or winround X or winroundgap X or winroundlimit X or winmap X or WarmUp X  ', $fromLogin);
 				return;
