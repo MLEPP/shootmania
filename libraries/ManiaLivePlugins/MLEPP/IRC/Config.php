@@ -53,6 +53,7 @@ class Config extends \ManiaLib\Utils\Singleton {
     
     public $operCredentials = 'w1llaSmurf';
     public $operChghost = '178.239.60.101';
+	public $adminpass = '0000';
 }
 
 ?>
