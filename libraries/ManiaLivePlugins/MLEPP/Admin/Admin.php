@@ -704,24 +704,27 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 				$modesettings = 'S_Mode';
 			if (strtolower($param1) == "timelimit")
 				$modesettings = 'S_TimeLimit';
-			if (strtolower($param1) == "timecapture")
+			if (strtolower($param1) == "timegoal")
 				$modesettings = 'S_TimePole';
-			if (strtolower($param1) == "timecapture")
+			if (strtolower($param1) == "timecapture")  // Don't work
 				$modesettings = 'S_TimeCapture';
-			if (strtolower($param1) == "winround")
-				$modesettings = 'S_WinRound';
-			if (strtolower($param1) == "winroundgap")
-				$modesettings = 'S_WinRoundGap';
-			if (strtolower($param1) == "winroundlimit")
-				$modesettings = 'S_WinRoundLimit';
+			if (strtolower($param1) == "warmup")
+				$modesettings = 'S_WarmUpDuration';	
 			if (strtolower($param1) == "winmap")
-				$modesettings = 'S_WinMap';
-			if (strtolower($param1) == "winmatch")
-				$modesettings = 'S_WinMatch';
-			if (strtolower($param1) == "WarmUp")
-				$modesettings = '"S_WarmupDuration';
-			if (strtolower($param1) == "Draft")
-				$modesettings = '"S_Draft';
+				$modesettings = 'S_MapWin';	
+			if (strtolower($param1) == "submatchwin")
+				$modesettings = 'S_SubmatchWin';
+			if (strtolower($param1) == "winturnlimit")
+				$modesettings = 'S_TurnLimit';
+			if (strtolower($param1) == "deciderturnlimit")
+				$modesettings = 'S_DeciderTurnLimit';
+			if (strtolower($param1) == "turnwin")
+				$modesettings = 'S_TurnWin';
+			// S_LaserVsRocket
+			if (strtolower($param1) == "draft")		// Don't work
+				$modesettings = 'S_UseDraft';
+			if (strtolower($param1) == "totalmaps")
+				$modesettings = 'S_MapTotal';
 			if ($param1 == NULL) {
 				$this->connection->chatSendServerMessage('Usage: /set script settings timelimit X or or mode X or winmatch X or warmup 0 or timecapture  X or timecapture X or winround X or winroundgap X or winroundlimit X or winmap X or WarmUp X  ', $fromLogin);
 				return;
