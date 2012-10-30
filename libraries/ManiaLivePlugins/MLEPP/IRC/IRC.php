@@ -221,7 +221,7 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
                     Console::println(date('[m/d,H:i:s]').' time_out: '.$info['timed_out'].' -- eof: '.$info['eof']);
                     $this->joined = FALSE;
                     $gonogo = 'nogo';
-                    reconnect();
+                    $this->reconnect();
                 }
             while(!feof($this->socket)) {
                 $data = fread($this->socket, 4096);
