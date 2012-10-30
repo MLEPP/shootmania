@@ -603,8 +603,15 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 				$this->connection->chatSendServerMessage('Usage: /set script settings pointlimit X or offzone activation X or offzone timelimit X or spawn X ', $fromLogin);
 				return;
 			}
-			if (is_numeric($param2)) {
-				$param2 = (int) $param2;
+			if($param2 = trim(strtolower($param2))){
+				if ($param2 == 'int') $param2 = (int)$param2;
+                if ($param2 == 'float') $param2 = (float)$param2;
+                if ($param2 == 'string') $param2 = (string)$param2;
+                if ($param2 == 'double') $param2 = (double)$param2;
+                if ($param2 == 'boolean') $param2 = (bool)$param2;
+
+                if (strtolower($param2) == 'true') $param2 = true;
+                elseif (strtolower($param2) == 'false') $param2 = false;
 			} else {
 				$this->connection->chatSendServerMessage('Invalid parameter. Correct parameter for the command is a numeric value.', $fromLogin);
 				return;
@@ -624,8 +631,15 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 				$this->connection->chatSendServerMessage('Usage: /set script settings pointlimit X or timelimit X  ', $fromLogin);
 				return;
 			}
-			if (is_numeric($param2)) {
-				$param2 = (int) $param2;
+			if($param2 = trim(strtolower($param2))){
+				if ($param2 == 'int') $param2 = (int)$param2;
+                if ($param2 == 'float') $param2 = (float)$param2;
+                if ($param2 == 'string') $param2 = (string)$param2;
+                if ($param2 == 'double') $param2 = (double)$param2;
+                if ($param2 == 'boolean') $param2 = (bool)$param2;
+
+                if (strtolower($param2) == 'true') $param2 = true;
+                elseif (strtolower($param2) == 'false') $param2 = false;
 			} else {
 				$this->connection->chatSendServerMessage('Invalid parameter. Correct parameter for the command is a numeric value.', $fromLogin);
 				return;
@@ -653,8 +667,15 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 				$this->connection->chatSendServerMessage('Usage: /set script settings respawn X or rtw X or rgtw X or roundlimit X or timelimit X or capturemv X  ', $fromLogin);
 				return;
 			}
-			if (is_numeric($param2)) {
-				$param2 = (int) $param2;
+			if($param2 = trim(strtolower($param2))){
+				if ($param2 == 'int') $param2 = (int)$param2;
+                if ($param2 == 'float') $param2 = (float)$param2;
+                if ($param2 == 'string') $param2 = (string)$param2;
+                if ($param2 == 'double') $param2 = (double)$param2;
+                if ($param2 == 'boolean') $param2 = (bool)$param2;
+
+                if (strtolower($param2) == 'true') $param2 = true;
+                elseif (strtolower($param2) == 'false') $param2 = false;
 			} else {
 				$this->connection->chatSendServerMessage('Invalid parameter. Correct parameter for the command is a numeric value.', $fromLogin);
 				return;
@@ -688,8 +709,15 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 				$this->connection->chatSendServerMessage('Usage: /set script settings respawn X or rtw X or rgtw X or roundlimit X or timelimit X or capturemv X or waveduration X or TAFC X or TFFC X  ', $fromLogin);
 				return;
 			}
-			if (is_numeric($param2)) {
-				$param2 = (int) $param2;
+			if($param2 = trim(strtolower($param2))){
+				if ($param2 == 'int') $param2 = (int)$param2;
+                if ($param2 == 'float') $param2 = (float)$param2;
+                if ($param2 == 'string') $param2 = (string)$param2;
+                if ($param2 == 'double') $param2 = (double)$param2;
+                if ($param2 == 'boolean') $param2 = (bool)$param2;
+
+                if (strtolower($param2) == 'true') $param2 = true;
+                elseif (strtolower($param2) == 'false') $param2 = false;
 			} else {
 				$this->connection->chatSendServerMessage('Invalid parameter. Correct parameter for the command is a numeric value.', $fromLogin);
 				return;
@@ -729,8 +757,15 @@ class Plugin extends \ManiaLive\PluginHandler\Plugin {
 				$this->connection->chatSendServerMessage('Usage: /set script settings timelimit X or or mode X or winmatch X or warmup 0 or timecapture  X or timecapture X or winround X or winroundgap X or winroundlimit X or winmap X or WarmUp X  ', $fromLogin);
 				return;
 			}
-			if (is_numeric($param2)) {
-				$param2 = (int) $param2;
+			if($param2 = trim(strtolower($param2))){
+				if ($param2 == 'int') $param2 = (int)$param2;
+                if ($param2 == 'float') $param2 = (float)$param2;
+                if ($param2 == 'string') $param2 = (string)$param2;
+                if ($param2 == 'double') $param2 = (double)$param2;
+                if ($param2 == 'boolean') $param2 = (bool)$param2;
+
+                if (strtolower($param2) == 'true') $param2 = true;
+                elseif (strtolower($param2) == 'false') $param2 = false;
 			} else {
 				$this->connection->chatSendServerMessage('Invalid parameter. Correct parameter for the command is a numeric value.', $fromLogin);
 				return;
