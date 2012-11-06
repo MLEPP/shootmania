@@ -46,8 +46,9 @@ use ManiaLivePlugins\MLEPP\Core\Core;
 
 class IRC extends \ManiaLive\PluginHandler\Plugin {
 
-    private $socket;
+	private $socket;
 	private $joined = false;
+	private $reconnectTimer;
 	private $i;
 
 	private $mlepp;
@@ -129,6 +130,8 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 					}
 				}
 			}
+		}else{
+			Console::println('IRC :: ERROR! -> Starter called, joined not false');
 		}
 	}
 	/*
@@ -211,6 +214,14 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 		if(!isset($this->i)) {
 			$this->i = 0;
 		}
+		
+		if($this->reconnectTimer < time() && $this->joined === false) {
+			if(!isset($this->reconnectTimer)) { $this->reconnectTimer = time() + 30; }
+			Console::println(date('[m/d,H:i:s]').' IRC :: Reconnecting');
+			$this->reconnect();
+			}
+
+
 
 		if($this->joined === true) {
 			stream_set_timeout($this->socket, 10);
@@ -221,7 +232,7 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 					Console::println(date('[m/d,H:i:s]').' time_out: '.$info['timed_out'].' -- eof: '.$info['eof']);
 					$this->joined = FALSE;
 					$gonogo = 'nogo';
-					$this->reconnect();
+					$this->reconnectTimer = time() + 30;
 				}
 			while(!feof($this->socket)) {
 				$data = fread($this->socket, 4096);
@@ -354,29 +365,23 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 						$this->write('PONG '.$name_buffer[1]);
 					}
 					if ($name_buffer[0] == 'ERROR' && $name_buffer[1] == 'Closing' && $name_buffer[3] == 'Link'){
-                fclose($this->socket);
-                sleep(2);
-				$this->starter();
-					break;
+						fclose($this->socket);
+						sleep(2);
+						$this->starter();
+						break;
 					}
 				}
 			}
 		}
 	}
 	function reconnect(){
-    if ( $this->joined === FALSE){
-        $now = date('His') + 0;
-        Console::println(date('[m/d,H:i:s]').' now: '.$now);
-        if ( ISSET($time_of_con) && $time_of_con < $now){ // retry directly after connected for 45 seconds
-            $timer = $now;
-           Console::println(date('[m/d,H:i:s]').' Disconnected from IRC, trying to reconnect...');
-                   $this->starter();
-        } else { // if connected less then 45 seconds, wait 30sec before retrying
-            $timer = date('His', mktime(date('H'),date('i'),date('s')+30,0,0,0)) + 0;
-            Console::println(date('[m/d,H:i:s]').' Disconnected from IRC, trying to reconnect in 30 seconds...');
-                        $this->starter();
-        }
-    }
+		if ( $this->joined === FALSE){
+			$this->reconnectTimer = time() + 40 +  floor(rand(10, 30));
+			$this->socket = fsockopen($this->config->server, $this->config->port);
+			$this->write('USER '.$this->config->ident.' '.$this->config->hostname.' '.$this->config->server.' :'.$this->config->realname);
+			$this->write('NICK '.$this->config->nickname);
+			$this->starter();
+		}
 	}
 	/*
 	*
