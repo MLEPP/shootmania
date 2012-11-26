@@ -8,6 +8,8 @@ Currently MLEPP for ShootMania is under development. You can always download the
 
 Current release: v0.4.0 (bèta), 09-09-2012 (including statistics (kills/deaths) and ranks) Aswell as Elite statisctics towards IRC
 
+[![Jetbrains PhpStorm](http://dump.klaversma.eu/phpstorm.jpg "This project is developed with Jetbrains PhpStorm")](http://www.jetbrains.com/phpstorm/)
+
 ##Requirements
 - PHP 5.3 (for ManiaLive)
 - MySQL 4/5 (to store everything in the database) (optional)
