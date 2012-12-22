@@ -5,8 +5,8 @@
  *
  * -- MLEPP Plugin --
  * @name IRC
- * @date 22-12-2012
- * @version 0.5.0
+ * @date 09-09-2012
+ * @version 0.4.0
  * @website mlepp.trackmania.nl
  * @package MLEPP
  *
@@ -62,7 +62,7 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 	 */
 
 	function onInit() {
-		$version = '0.5.0';
+		$version = '0.4.0';
 		$this->setVersion($version);
 		$this->setPublicMethod('getVersion');
 		$this->setPublicMethod('tellIRC');
@@ -302,6 +302,9 @@ class IRC extends \ManiaLive\PluginHandler\Plugin {
 										$this->connection->chatSendServerMessage('$f00[IRC - $fffChat$f00] [$fff'.$ircuser.'$f00] $fff'.$message);
 										break;
 									case "3on3":
+										$this->connection->chatSendServerMessage('$f00[IRC - $fffChat$f00] [$fff'.$ircuser.'$f00] $fff'.$message);
+										break;
+									case "3v3":
 										$this->connection->chatSendServerMessage('$f00[IRC - $fffChat$f00] [$fff'.$ircuser.'$f00] $fff'.$message);
 										break;
 								}
