@@ -83,7 +83,7 @@ class ChangeMap extends \ManiaLive\PluginHandler\Plugin {
 		$admins = AdminGroup::get();
 		Console::println('[' . date('H:i:s') . '] [BAZINGA] Plugin: ChangeMap v' . $this->getVersion());
 		$this->enableDedicatedEvents();
-		 if ($this->isPluginLoaded('MLEPP\Admin', '0.4.0') | $this->isPluginLoaded('Standard\Menubar', '1.1') ) {
+		 if ($this->isPluginLoaded('MLEPP\Admin', '0.5.0') | $this->isPluginLoaded('Standard\Menubar', '1.1') ) {
 			if($this->isPluginLoaded('Standard\Menubar')) {
 					$this->buildMenu(); 
 					$this->registerChatCommand("maplistsave", "maplistSave", 1, true, $admins);

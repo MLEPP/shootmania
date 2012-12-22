@@ -5,8 +5,8 @@
  *
  * -- MLEPP Plugin --
  * @name AudioNotations
- * @date 09-09-2012
- * @version 0.4.0
+ * @date 22-12-2012
+ * @version 0.5.0
  * @website mlepp.trackmania.nl
  * @package MLEPP
  *
@@ -49,7 +49,7 @@ class AudioNotations extends \ManiaLive\PluginHandler\Plugin {
 	private $players = array();
 
 	public function onInit() {
-		$this->setVersion('0.4.0');
+		$this->setVersion('0.5.0');
 		
 	}
 

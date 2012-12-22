@@ -5,8 +5,8 @@
  *
  * -- MLEPP Plugin --
  * @name AutoModeChange
- * @date 09-09-2012
- * @version 0.4.0
+ * @date 22-12-2012
+ * @version 0.5.0
  * @website mlepp.trackmania.nl
  * @package MLEPP
  *
@@ -65,7 +65,7 @@ class AutoModeChange extends \ManiaLive\PluginHandler\Plugin {
 	}
 
 	function onLoad() {
-		$this->setVersion('0.4.0');
+		$this->setVersion('0.5.0');
 		$this->enableDedicatedEvents();
 		Console::println('[' . date('H:i:s') . '] [MLEPP] Plugin: AutoModeChange v' . $this->getVersion());
 		$this->callPublicMethod('MLEPP\Core', 'registerPlugin', 'AutoModeChange', $this);
