@@ -2,11 +2,11 @@
 
 This plugin pack is for ManiaLive, the server controller made by [NADEO](http://www.nadeo.com/) for [ManiaPlanet](http://www.maniaplanet.com/).
 
-Tested with [ManiaLive](http://manialive.googlecode.com/files/ManiaLive_2.4.1.zip) r2.4.1
+Tested with [ManiaLive](http://manialive.googlecode.com/files/ManiaLive_2.5.0.zip) r2.5.0
 
 Currently MLEPP for ShootMania is under development. You can always download the latest commit [here](https://github.com/MLEPP/shootmania/downloads/) (click "Download as zip" or "Download as tar.gz")!
 
-Current release: v0.4.0 (bèta), 09-09-2012 (including statistics (kills/deaths) and ranks) Aswell as Elite statisctics towards IRC
+Current release: v0.5.0 (bèta), 22-12-2012 (including statistics (kills/deaths) and ranks) Aswell as Elite statisctics towards IRC
 
 [![Jetbrains PhpStorm](http://dump.klaversma.eu/phpstorm.jpg "This project is developed with Jetbrains PhpStorm")](http://www.jetbrains.com/phpstorm/)
 
