@@ -155,6 +155,7 @@ main() {
 		SM::SetupDefaultVisibility();
 		Rules::Attach();
 		
+		Mode::Synchro_DoBarrier();		
 		LayerUpdated = Layers::Update("ScoresTable", CreateLayerScoresTable());
 		LayerUpdated = Layers::Update("ScoresInSpawn", UpdateLayerScoresInSpawn());
 		LayerAttached = Layers::Attach("ScoresTable", NullId);
@@ -204,7 +205,8 @@ main() {
 						Score::AddPoints(Event.Shooter, Points);
 						Event.ShooterPoints = Points;
 						XmlRpc.SendCallback("playerHit", "Victim:"^Event.Victim.Login^";Shooter:"^Event.Shooter.Login^";"^Points);
-						// Play sound and notice if someone is taking the lead
+						if (Event.Shooter != Null && Event.Shooter.Score != Null) {
+							// Play sound and notice if someone is taking the lead
 							if (Event.Shooter.Score.RoundPoints > LeadPoints && Event.Shooter.User.Id != LeadId) {
 								LeadId = Event.Shooter.User.Id;
 								Message::SendBigMessage(
@@ -293,7 +295,7 @@ main() {
 					}
 				} else if (Event.Type == CSmModeEvent::EType::OnPlayerRequestRespawn) {
 					Score::RemovePoints(Event.Player, 1);
-if ((LeadId == NullId || Event.Player.User.Id == LeadId) && Event.Player.Score != Null) {
+					if ((LeadId == NullId || Event.Player.User.Id == LeadId) && Event.Player.Score != Null) {
 						LeadPoints = Event.Player.Score.RoundPoints;
 						declare NewLead = False;
 						declare TieLead = False;
@@ -310,10 +312,13 @@ if ((LeadId == NullId || Event.Player.User.Id == LeadId) && Event.Player.Score !
 							}
 						}
 						if (NewLead) {
+							declare Name = "Player";
+							if (Users.existskey(LeadId)) Name = Users[LeadId].Name;
 							Message::SendBigMessage(
 								TextLib::Compose(
 									_("$<%1$> takes the lead!"),
-									Users[LeadId].Name
+
+									Name
 								), 									///< Message
 								3000,								///< Duration
 								1,									///< Priority
@@ -321,10 +326,13 @@ if ((LeadId == NullId || Event.Player.User.Id == LeadId) && Event.Player.Score !
 								0									///< Sound variant
 							);
 						} else if (TieLead) {
+							declare Name = "Player";
+							if (Users.existskey(TieId)) Name = Users[TieId].Name;
 							Message::SendBigMessage(
 								TextLib::Compose(
 									_("$<%1$> tied the leader!"),
-									Users[TieId].Name
+
+									Name
 								), 									///< Message
 								3000,								///< Duration
 								0,									///< Priority

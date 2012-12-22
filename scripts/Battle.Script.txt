@@ -5,7 +5,7 @@
 #Extends "Modes/ShootMania/ModeBase.Script.txt"
  
 #Const	CompatibleMapTypes	"BattleArena"
-#Const	Version				"2012-10-11"
+#Const	Version				"2012-10-26"
 
 #Include "MathLib" as MathLib
 #Include "TextLib" as TextLib
@@ -28,6 +28,7 @@
 #Setting	S_TimeLimit			300 	as _("Time limit (seconds)") 		///< Time limit (seconds)
 #Setting	S_CaptureMaxValue	30000	as _("Capture time (milliseconds)") ///< Pole capture time (milliseconds)
 
+#Setting 	S_UsePlayerClublinks True	as _("Use player clublinks")		///< Use the players clublinks, or otherwise use the default teams (Set false for an open public server, true for a team competition server)
 #Const 		UITickPeriod			200
 #Const 		C_LadderBonusVictory	0		///< Victory bonus for ladder ranking
 #Const 		C_LadderBonusCapture	10.		///< Capture bonus for ladder ranking
@@ -89,6 +90,7 @@ for (Clan, 1, 2) {
 // Set mode options
 UseClans			= True;
 MB_UseSectionRound	= True;
+MB_UsePlayerClublinks = S_UsePlayerClublinks;
 
 // Add Top 5	
 Top::AddTop("Capture", 5);
@@ -230,7 +232,8 @@ foreach (Event in PendingEvents) {
 		PassOn(Event);
 	}
 }
-SM::UnspawnPlayersChangingClan();
+Clublink::UpdatePlayersFromTeams();		// --> will also UnspawnPlayersChangingClan().
+			
 				
 +++Update+++
 				
@@ -243,8 +246,10 @@ foreach (Player in Players) {
 // Spawning players		
 foreach (Player in Players) {
 	if (Player.SpawnStatus != CSmPlayer::ESpawnStatus::NotSpawned) continue;
+	declare Integer ClublinkClan for Player; 
+	if (ClublinkClan == 0)	continue;
 	BalancedWeapons::SetPlayerWeapon(Player, True);
-	SM::SpawnPlayer(Player, Player.RequestedClan, ClanSpawnAnchors[Player.RequestedClan], Now + S_RespawnTime);
+	SM::SpawnPlayer(Player, ClublinkClan, ClanSpawnAnchors[ClublinkClan], Now + S_RespawnTime);
 }	
 /* -------------------------------------- */
 // Capturing points
@@ -257,8 +262,8 @@ for (Clan, 1, 2) {
 		declare IsGoalDenied = False;
 		foreach (PlayerId in Pole.Sector.PlayersIds) {
 			if (Players[PlayerId].CurrentClan == Clan) { // GoalClan
-			IsGoalDenied = True;
-			break;
+				IsGoalDenied = True;
+				break;
 			}
 		}
 
@@ -270,7 +275,7 @@ for (Clan, 1, 2) {
 				if (Player.CurrentClan != Clan) { // Opponent team
 					NumberOfPlayerCapturing += 1;
 					if (FirstClanToStartCapture == 0) {
-						FirstClanToStartCapture = 	Player.CurrentClan;
+						FirstClanToStartCapture = Player.CurrentClan;
 						+++FirstCapture+++
 					}
 					declare CaptureRatio for Player = 0.;
@@ -396,6 +401,7 @@ if (Now > LatestUITick + UITickPeriod) {
 	} else {
 		UIManager.UIAll.OverlayScoreSummary = False;
 	}
+	Clublink::DefineTeamsAuto();
 					
 	foreach (Player in Players) {
 		declare UI <=> UIManager.GetUI(Player);
@@ -417,8 +423,12 @@ if (Now > LatestUITick + UITickPeriod) {
 		}
 		UI.UILayers.clear();
 		UI.UILayers.add(LayerTeams);
-										
-		UI.Hud3dMarkers = PolesMarkers[Player.RequestedClan];
+
+		
+		if (Player.CurrentClan != 0)
+			UI.Hud3dMarkers = PolesMarkers[Player.CurrentClan];
+		else
+			UI.Hud3dMarkers = "";
 		+++UIPlayer+++
 	}
 	foreach (Spectator in Spectators) {
